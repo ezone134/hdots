@@ -1,0 +1,25 @@
+#!/usr/bin/env luajit
+-- pick_accent_main — screen color picker for the shell's accent color.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+ch = read_line(states2 .. "/s")
+if ch == "" then ch = "n" end
+
+local hex = arg[1] or ""
+if hex == "" then
+    -- hyprpicker prints the picked color to stdout; Esc → no output + exit != 0.
+    hex = out("hyprpicker -a -l -q")
+    hex = hex:gsub("%s+", "")
+    if hex == "" then os.exit(0) end
+end
+
+if not hex:match("^#") then hex = "#" .. hex end
+
+write_line(states .. "/custom_acc_" .. ch, hex)
+write_line(states .. "/acc_source_" .. ch, "c")
+write_line(states2 .. "/acc_changed", "1")
+run(lua_bin .. "/theme_main restore")

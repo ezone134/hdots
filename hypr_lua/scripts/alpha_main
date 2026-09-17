@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- alpha_main — set channel-scoped alpha flags (acc_alpha, border_alpha, ...).
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/alpha_body")
+alpha_cmd(unpack(arg))

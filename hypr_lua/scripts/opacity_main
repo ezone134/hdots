@@ -1,0 +1,19 @@
+#!/usr/bin/env luajit
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/opacity_body")
+local cmd = arg[1]
+if cmd == "toggle" then
+    opacity_toggle_function()
+elseif cmd == "on" then
+    opacity_enable_function()
+elseif cmd == "off" then
+    opacity_disable_function()
+elseif cmd == "restore" then
+    opacity_restore_function()
+elseif cmd == "reset" then
+    opacity_reset_function()
+end

@@ -1,0 +1,69 @@
+#!/usr/bin/env luajit
+-- helper blur_body
+
+s = read_line(states2 .. "/s")
+
+function blur_restore_func()
+    local state = read_line(states .. "/hypr_blur_" .. s)
+    local blur_size = read_line(states .. "/hypr_blur_size_" .. s)
+    local blur_passes = read_line(states .. "/hypr_blur_passes_" .. s)
+    local blur_vibrancy = read_line(states .. "/hypr_blur_vibrancy_" .. s)
+    write(os.getenv("HOME") .. "/.config/hypr/configs/blur.lua", string.format(
+        [[hl.config({
+    decoration = {
+        blur = {
+            enabled = %s,
+            size = %s,
+            passes = %s,
+            vibrancy = %s,
+        },
+    },
+    })]], state or "nil", blur_size or "nil", blur_passes or "nil", blur_vibrancy or "nil"))
+    spawn("notify-send -a Blur 'Blur' 'Restored'")
+    write(states2 .. "/blur_done", "1\n")
+end
+
+function blur_on_func()
+    write_line(states .. "/hypr_blur_" .. s, "1")
+    local blur_size = read_line(states .. "/hypr_blur_size_" .. s)
+    local blur_passes = read_line(states .. "/hypr_blur_passes_" .. s)
+    local blur_vibrancy = read_line(states .. "/hypr_blur_vibrancy_" .. s)
+    write(os.getenv("HOME") .. "/.config/hypr/configs/blur.lua", string.format(
+        [[hl.config({
+    decoration = {
+        blur = {
+            enabled = 1,
+            size = %s,
+            passes = %s,
+            vibrancy = %s,
+        },
+    },
+    })]], blur_size or "nil", blur_passes or "nil", blur_vibrancy or "nil"))
+    spawn("notify-send -a Blur 'Blur' 'Enabled'")
+end
+
+function blur_off_func()
+    write_line(states .. "/hypr_blur_" .. s, "0")
+    write(os.getenv("HOME") .. "/.config/hypr/configs/blur.lua", [[hl.config({
+    decoration = {
+        blur = {
+            enabled = 0,
+        },
+    },
+    })]])
+    spawn("notify-send -a Blur 'Blur' 'Disabled'")
+end
+
+function blur_toggle_func()
+    local state = tonumber(read_line(states .. "/hypr_blur_" .. s)) or 0
+    if state == 0 then
+        blur_on_func()
+    else
+        blur_off_func()
+    end
+end
+
+function blur_reset_func()
+    write(os.getenv("HOME") .. "/.config/hypr/configs/blur.lua", "")
+    spawn("notify-send -a Blur 'Blur' 'Reset'")
+end

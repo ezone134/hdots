@@ -1,0 +1,4 @@
+# -*- mode: sh -*-
+# these vars are sourced before generating app configs
+export alacritty_font=Hack
+#export alacritty_font="Victor Mono"

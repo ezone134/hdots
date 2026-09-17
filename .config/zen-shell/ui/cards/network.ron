@@ -1,0 +1,44 @@
+(
+    // network card — fully declarative (zero Ink): live y-axis caption in
+    // the Header meta (the Rust drawer's bytes→bits ladder, empty until two
+    // samples), dual normalized history Sparks (download = muted info blue,
+    // upload = accent — ONE color voice per series) and the centered speed
+    // row below the plot (↓ glyph+mono · gap · ↑ glyph+mono, exact Rust
+    // insets). The series arrive pre-normalized against the deque's own
+    // peak (net_down_spark / net_up_spark), so a fluctuating link always
+    // uses the full plot height.
+    items: [
+        Header(
+            title: "Network",
+            meta: Some("{net_meta}"),
+            meta_mono: true,
+            meta_color: Some(fg3),
+        ),
+        // dual history graph — download first, upload over it
+        Spark(name: "net_down_spark", x: 12.0, y: 28.0, w: 0.0, h: -54.0,
+              color: Some(info), thickness: 2.0),
+        Spark(name: "net_up_spark", x: 12.0, y: 28.0, w: 0.0, h: -54.0,
+              color: Some(acc), thickness: 2.0),
+        // centered live speeds: ↓ 12.3 Mbps  ↑ 0.8 Mbps
+        Row(
+            x: 0.0, y: 0.0, w: 0.0, h: 20.0, pad: 12.0, spacing: 26.0,
+            bottom: true, valign: middle,
+            items: [
+                Row(x: 0.0, y: 0.0, w: 0.0, h: 20.0, pad: 0.0, spacing: 2.0, valign: middle,
+                    items: [
+                        Text(x: 0.0, y: 0.0, w: 0.0, h: 0.0, text: "\u{f063}", font_size: 9.0,
+                             color: Some(info), icon: true, center: true, center_y: true),
+                        Text(x: 0.0, y: 0.0, w: 0.0, h: 0.0, text: "{net_down}", font_size: 10.0,
+                             font: mono, color: Some(info), center_y: true),
+                    ]),
+                Row(x: 0.0, y: 0.0, w: 0.0, h: 20.0, pad: 0.0, spacing: 2.0, valign: middle,
+                    items: [
+                        Text(x: 0.0, y: 0.0, w: 0.0, h: 0.0, text: "\u{f062}", font_size: 9.0,
+                             color: Some(acc), icon: true, center: true, center_y: true),
+                        Text(x: 0.0, y: 0.0, w: 0.0, h: 0.0, text: "{net_up}", font_size: 10.0,
+                             font: mono, color: Some(acc), center_y: true),
+                    ]),
+            ],
+        ),
+    ],
+)

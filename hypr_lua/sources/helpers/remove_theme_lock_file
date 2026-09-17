@@ -1,0 +1,29 @@
+-- helper remove_theme_lock_file
+-- ported from bash sources/helpers/remove_theme_lock_file
+-- pure Lua: no external binaries
+
+local flags = { "general_done", "hs_done", "shadow_done", "opacity_done",
+                "shader_done", "blur_done", "configs_done", "awww_done", "gtk_css_generated" }
+
+local function flag_done(name)
+    local v = read(states2 .. "/" .. name)
+    return v and v:gsub("%s+", "") == "1"
+end
+
+local function all_done()
+    for _, f in ipairs(flags) do
+        if not flag_done(f) then return false end
+    end
+    return true
+end
+
+if not all_done() then
+    local tries = 0
+    while tries < 20 and not all_done() do
+        tries = tries + 1
+        sleep(0.5)
+    end
+end
+
+write(states2 .. "/all_theme_set", "1")
+rm(lock_files .. "/theme_run_lock")

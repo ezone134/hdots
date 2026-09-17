@@ -1,0 +1,149 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts_global/during_loop
+
+local SCRIPT_DIR = arg[0]:match("^(.*)[/\\][^/\\]*$") or "."
+
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long d_ino; long d_off; unsigned short d_reclen;
+                unsigned char d_type; char d_name[256]; } dirent_t;
+typedef struct { int _x; } DIR;
+typedef struct { long sec; long nsec; } timespec_t;
+DIR *opendir(const char *path);
+dirent_t *readdir(DIR *dirp);
+int closedir(DIR *dirp);
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int unlink(const char *path);
+int chmod(const char *path, unsigned int mode);
+]]
+
+local function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+local function shq(s)
+    return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+local function read(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function write(path, content)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+local function list_dir(path)
+    local entries = {}
+    local d = ffi.C.opendir(path)
+    if d == nil then return entries end
+    local e = ffi.C.readdir(d)
+    while e ~= nil do
+        local name = ffi.string(e.d_name)
+        if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
+        e = ffi.C.readdir(d)
+    end
+    ffi.C.closedir(d)
+    return entries
+end
+
+local function mounted(mp)
+    local mounts = read("/proc/mounts") or ""
+    return mounts:find(mp, 1, true) ~= nil
+end
+
+-- background worker: wait for an umount to settle, then clean the launcher file
+if arg[1] == "wait-unmount" then
+    local mp = arg[2]
+    local file = arg[3]
+    os.execute("umount " .. shq(mp) .. " || umount -l " .. shq(mp))
+    sleep(0.5)
+    if not mounted(mp) then
+        ffi.C.unlink(file)
+    end
+    os.exit(0)
+end
+
+-- background worker: unmount a partition found in /proc/mounts
+if arg[1] == "unmount-part" then
+    local part = arg[2]
+    print("Unmounting " .. part .. "...")
+    os.execute("umount " .. shq(part) .. " || umount -l " .. shq(part))
+    os.exit(0)
+end
+
+local script = arg[0]
+
+-- fire_count
+local fc = tonumber(read(SCRIPT_DIR .. "/fire_count")) or 0
+local new_count = fc - 1
+if new_count < 0 then new_count = 0 end
+write(SCRIPT_DIR .. "/fire_count", tostring(new_count))
+
+if tonumber(read(SCRIPT_DIR .. "/flag_cpu")) == 1 then
+    os.execute(SCRIPT_DIR .. "/set_cpu_freqs")
+    write(SCRIPT_DIR .. "/flag_cpu", "0")
+end
+
+local umount_counter = 0
+
+while umount_counter < 10 do
+    local files = list_dir(SCRIPT_DIR .. "/disks_to_unmount_batch")
+    if #files == 0 then break end
+
+    for _, base_name in ipairs(files) do
+        local file = SCRIPT_DIR .. "/disks_to_unmount_batch/" .. base_name
+        local mount_point = "/dev/" .. base_name
+        if base_name:match("%d") then
+            print(base_name .. " contains a number.")
+            local unmount_all = 0
+            if mounted(mount_point) then
+                os.execute(script .. " wait-unmount " .. shq(mount_point) .. " " .. shq(file) .. " &")
+            else
+                ffi.C.unlink(file)
+            end
+        else
+            local unmount_all = 1
+            print(base_name .. " does not contain a number.")
+            unmount_all = 1
+            print(base_name .. " does not contain a number. Finding partitions in /proc/mounts...")
+
+            local partitions = {}
+            local mounts = read("/proc/mounts") or ""
+            for line in mounts:gmatch("[^\n]+") do
+                local dev = line:match("^(%S+)")
+                if dev and dev:match("^/dev/" .. base_name .. "%d") then
+                    partitions[#partitions + 1] = dev
+                end
+            end
+
+            if #partitions == 0 then
+                ffi.C.unlink(file)
+            else
+                for _, part in ipairs(partitions) do
+                    os.execute(script .. " unmount-part " .. shq(part) .. " &")
+                end
+            end
+        end
+    end
+
+    umount_counter = umount_counter + 1
+    sleep(1)
+end
+
+ffi.C.chmod(SCRIPT_DIR .. "/fire_count", 0x1FF)
+ffi.C.chmod(SCRIPT_DIR .. "/set_cpu_freqs", 0x1FF)
+ffi.C.chmod(SCRIPT_DIR .. "/flag_disk_unmount", 0x1FF)
+write(SCRIPT_DIR .. "/loop_is_running", "hi_from_inside_loop")

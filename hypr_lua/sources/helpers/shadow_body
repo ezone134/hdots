@@ -1,0 +1,57 @@
+#!/usr/bin/env luajit
+-- helper shadow_body
+
+s = read_line(states2 .. "/s")
+
+function restore_logic()
+    local state = read_line(states .. "/shadow_enabled_" .. s)
+    local shadow_range = read_line(states .. "/shadow_range_" .. s)
+    local shadow_render_power = read_line(states .. "/shadow_render_power_" .. s)
+    local shadow_rgba = read_line(states .. "/shadow_rgba_" .. s)
+    write(os.getenv("HOME") .. "/.config/hypr/configs/shadow.lua", string.format(
+        [[hl.config({
+    decoration = {
+    shadow = {
+        enabled = %s,
+        range = %s,
+        render_power = %s,
+        color = %s,
+    },
+    },
+    })]], state or "nil", shadow_range or "nil", shadow_render_power or "nil", shadow_rgba or "nil"))
+    write_line(states2 .. "/shadow_done", "1")
+end
+
+function shadow_restore_func()
+    restore_logic()
+    spawn("notify-send -a Shadow 'Shadow' 'Restored'")
+end
+
+function shadow_off_func()
+    s = read_line(states2 .. "/s")
+    write_line(states .. "/shadow_enabled_" .. s, "0")
+    restore_logic()
+    spawn("notify-send -a Shadow 'Shadow' 'Disabled'")
+end
+
+function shadow_on_func()
+    s = read_line(states2 .. "/s")
+    write_line(states .. "/shadow_enabled_" .. s, "1")
+    restore_logic()
+    spawn("notify-send -a Shadow 'Shadow' 'Enabled'")
+end
+
+function shadow_toggle_func()
+    s = read_line(states2 .. "/s")
+    local state = tonumber(read_line(states .. "/shadow_enabled_" .. s)) or 0
+    if state == 1 then
+        shadow_off_func()
+    else
+        shadow_on_func()
+    end
+end
+
+function shadow_reset_func()
+    write(os.getenv("HOME") .. "/.config/hypr/configs/shadow.lua", "")
+    spawn("notify-send -a Shadow 'Shadow' 'Reset'")
+end

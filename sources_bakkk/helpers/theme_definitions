@@ -1,0 +1,61 @@
+# -*- mode: sh -*-
+
+
+font_vars () {
+    font_size=$(<"$states/font_size_${s}") || font_size=17
+    font=$(<"$states/font_${s}") || font="SF Pro Text"
+    font_name="${font} ${font_size}"
+}
+
+save_useful_colors () {
+    echo "$useful_green" > "$states2/ugreen"
+    echo "$useful_amber" > "$states2/uamber"
+    echo "$useful_red" > "$states2/ured"
+    useful_green_rgba=$(. "$hypr_sources/helpers/hex_to_rgba" "$useful_green")
+    useful_amber_rgba=$(. "$hypr_sources/helpers/hex_to_rgba" "$useful_amber")
+    useful_red_rgba=$(. "$hypr_sources/helpers/hex_to_rgba" "$useful_red")
+}
+useful_hex_d () {
+    useful_green="#99FF99"
+    useful_amber="#FFCC66"
+    useful_red="#FF6666"
+    save_useful_colors
+}
+
+useful_hex_l () {
+    useful_green="#007800"
+    useful_amber="#7D4A00"
+    useful_red="#8B0000"
+    save_useful_colors
+}
+
+
+vars_d () {
+    theme_name="hypr-theme-dark"
+    icon_name="Tela-black-dark"  # Cleaned up duplicate assignment
+    cursor_name="Bibata-Modern-Ice"
+}
+
+vars_l () {
+    theme_name="hypr-theme-light"
+    icon_name="Tela-black-light"  # Cleaned up duplicate assignment
+    cursor_name="Hypr-Ice"
+}
+
+common_setter_for_all () {
+    gsettings set org.gnome.desktop.interface font-name "$font_name"
+    gsettings set org.gnome.desktop.interface icon-theme "$icon_name"
+    [[ $(gsettings get org.gnome.desktop.interface cursor-theme) == *"$cursor_name"* ]] || {
+        gsettings set org.gnome.desktop.interface cursor-theme "$cursor_name"
+    }
+}
+
+set-theme-elements () {
+    gsettings set org.gnome.desktop.interface gtk-theme "$theme_name"
+    common_setter_for_all
+    export no_acc_reload="yes"
+}
+
+full_hot_reload_func () {
+    common_setter_for_all
+}

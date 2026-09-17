@@ -1,0 +1,24 @@
+   # -*- mode: sh -*-
+    files_pairs=(
+            $HOME/.config/gtk-3.0/gtk.css:$hypr_conf/gtk-override/gtk.css
+            $HOME/.config/lite-xl/user_settings.lua:$hypr_conf/lite-xl/user_settings.lua
+            $HOME/.config/lapce-stable/settings.toml:$hypr_conf/lapce-stable/settings.toml
+            $HOME/.config/sublime-text/Packages/User/Preferences.sublime-settings:$hypr_conf/sublime-text/Packages/User/Preferences.sublime-settings
+            $HOME/.config/alacritty/alacritty.toml:$hypr_conf/alacritty/alacritty.toml
+            $HOME/.config/geany/geany.conf:$hypr_conf/geany/geany.conf
+            $HOME/.config/geany/session.conf:$hypr_conf/geany/geany-session.conf
+            $HOME/.config/fuzzel/fuzzel.ini:$hypr_conf/fuzzel/fuzzel.ini
+            $HOME/.config/foot/foot.ini:$hypr_conf/foot/foot.ini
+            $HOME/.config/waybar/config.jsonc:$hypr_conf/waybar/config.jsonc
+            $HOME/.config/waybar/style.css:$hypr_conf/waybar/style.css
+            $HOME/.config/dunst/dunstrc:$hypr_conf/dunst/dunstrc
+            $HOME/.config/wofi/style.css:$hypr_conf/wofi/style.css
+            $HOME/.config/hypr/hypridle.conf:$hypr_conf/hypr/hypridle.conf
+            $HOME/.config/mimeapps.list:$hdots/.config/mimeapps.list_$USER
+            $HOME/.config/kitty/kitty.conf:$hypr_conf/kitty/kitty.conf
+            $HOME/.config/zed/settings.json:$hypr_conf/zed/settings.json
+            $HOME/.config/swayimg/init.lua:$hypr_conf/swayimg/init.lua
+            $HOME/.config/xdg-desktop-portal/hyprland-portals.conf:$hdots/.config//xdg-desktop-portal/hyprland-portals.conf
+
+            $HOME/.config/sublime-text/Packages/User/Bash.sublime-settings:$hdots/.config/sublime-text/Packages/User/Bash.sublime-settings
+)

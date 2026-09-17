@@ -1,0 +1,18 @@
+{
+    "classes": [
+        {
+            "className": "QsNetPlugin",
+            "lineNumber": 568,
+            "object": true,
+            "qualifiedClassName": "QsNetPlugin",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QQmlExtensionPlugin"
+                }
+            ]
+        }
+    ],
+    "inputFile": "qsnet.cpp",
+    "outputRevision": 69
+}

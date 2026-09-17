@@ -1,0 +1,7 @@
+(
+    // activewin card — declared here in the config tree; dynamic body drawn
+    // by the resident \`activewin\` Ink painter (Rust).
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "activewin"),
+    ],
+)

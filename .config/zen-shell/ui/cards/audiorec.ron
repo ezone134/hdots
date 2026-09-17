@@ -1,0 +1,11 @@
+(
+    items: [
+        Text(x: 12.0, y: 8.0, text: "{ic_mic}", font_size: 12.0, icon: true, color: Some(fg2)),
+        Text(x: 29.0, y: 9.0, text: "Recorder", font_size: 11.5, weight: semibold),
+        Text(x: 12.0, y: 11.0, w: 0.0, text: "{meta}", font_size: 8.5, right: true,
+             font: mono, weight: regular, color: Some(fg3)),
+        Hit(x: 12.0, y: 6.0, w: 16.0, h: 16.0, r: 5.0, key: 32302,
+            surface: Some(raised), text: "›", font_size: 10.0, icon: true,
+            action: None),
+    ],
+)

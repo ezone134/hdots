@@ -1,0 +1,51 @@
+(
+    // NEWS — fully declarative: the horizontal scrollable category `Strip`
+    // (chips from `news_chips`, active index from `news_cat_sel`, h-scroll
+    // from `news_cat_scroll` — the resident wheel handler clamps it), the
+    // filtered headline `Rows` (40-char title tinting accent on row hover,
+    // right open-glyph when the story is clickable, right source label below;
+    // `hairline` dividers + `hover_bar` accent rail byte-match the Rust
+    // drawer), and the centered fetching / no-feeds message when empty (no
+    // chips/rows bind to anything then, so the strip/list draw nothing).
+    // Chip and headline keys dispatch in the Rust key handler; the card's
+    // wheel-scrolling rect is tracked by `draw_card_scene` (scene owns all).
+    items: [
+        Header(
+            title: "News",
+            glyph: Some("\u{f1ea}"),
+            meta: Some("{news_label}"),
+        ),
+        Strip(
+            chips: "news_chips",
+            sel: Some("news_cat_sel"),
+            scroll: Some("news_cat_scroll"),
+            x: 0.0, y: 30.0, w: 0.0, h: 26.0,
+            pad: 12.0, spacing: 6.0, chip_pad: 11.0, fs: 8.5,
+            key_base: 13000,
+        ),
+        Text(
+            x: 0.0, y: -6.0, center_x: true, center_y: true,
+            text: "{news_msg}",
+            font_size: 9.0,
+            color: Some(fg3),
+            visible: Some("news_empty"),
+        ),
+        Rows(
+            name: "news_rows",
+            y: 59.0,
+            row_h: 30.0,
+            pitch: Some(30.0),
+            pad: 12.0,
+            row_dy: 2.0,
+            cols: [
+                (x: 5.0, dy: Some(2.0), size: 9.5, truncate: Some(46.0), color: Some(fg), hover: Some(acc)),
+                (x: 0.0, edge: Some(12.0), right: true, dy: Some(2.0), size: 8.0, icon: true, color: Some(fg3), hover: Some(acc)),
+                (x: 0.0, edge: Some(12.0), right: true, dy: Some(14.0), size: 7.5, color: Some(fg3)),
+            ],
+            key_base: 13300,
+            start: Some("news_scroll"),
+            hairline: true,
+            hover_bar: true,
+        ),
+    ],
+)

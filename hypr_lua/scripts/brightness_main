@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- brightness_main — backlight control CLI.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/brightness_body")
+bri_cmd(unpack(arg))

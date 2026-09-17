@@ -1,0 +1,3 @@
+# explicit qmldir for qs.polkit — disables the synthesizer
+module qs.polkit
+PolkitPanel 1.0 PolkitPanel.qml

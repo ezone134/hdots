@@ -1,0 +1,45 @@
+# -*- mode: sh -*-
+
+# Ensure necessary environment variables are set before proceeding
+
+# 1. Read input (can be a hex code starting with # or a color name)
+accent_input=$(<$states/custom_acc_${s})
+
+if [[ "${accent_input:0:1}" == "#" ]]; then
+    # Read hex code directly
+    hex_override=yes
+    hex_code="$accent_input"
+    hex_id="${hex_code:1}"
+    shades_list="$hypr_cache/accent_files/custom_acc_shades_${s}/${hex_id}/shades_list"
+else
+    # Treat input as a color name reference
+    . "$custom_acc_master_list"
+
+    hex_code=${!accent_input}
+    echo "custom_acc name is $accent_input"
+    echo "hex_code is $hex_code"
+
+    hex_override=""
+    shades_list="$hypr_cache/accent_files/custom_acc_shades_${s}/${accent_input}/shades_list"
+fi
+
+if [[ $scrim_mode == 0 ]]; then
+    # Universal validation for hex code
+    [[ -z $hex_code ]] && {
+        echo "Custom accent init_custom_accent error: hex is empty"
+        halt_pipeline=yes
+    }
+
+    [[ -f $shades_list ]] && {
+        echo "Exiting: Shades List already exists at source..."
+        notify-send -a theme-extras "Theme extras" "Shades list already exists" &
+        halt_pipeline=yes
+    }
+
+    [[ -z $halt_pipeline ]] && {
+        notify-send -a theme-extras "Theme extras" "Generating custom accent shades…" &
+        $hypr_sources/helpers/color_engine gen_shades "$hex_code" "$shades_list"
+    }
+else
+    echo "$hex_code" > "$states2/scrim_hex_${s}"
+fi

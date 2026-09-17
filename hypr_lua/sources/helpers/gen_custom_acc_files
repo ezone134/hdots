@@ -1,0 +1,31 @@
+-- helper gen_custom_acc_files
+-- ported from bash sources/helpers/gen_custom_acc_files
+if not is_file(custom_acc_master_list) then
+
+    err("Generating accent hex files gen_custom_acc_files")
+
+    spawn("notify-send -a theme-extras 'Theme extras' 'Generating accent hex files…'")
+
+    local default_colors = {
+        "accent_amber,#ffb000",
+        "muted_lavender,#9d8cbf",
+        "stealth_graphite,#2a2a2a",
+    }
+
+    dofile(hypr_sources .. "/custom_accents_array")
+
+    local master_array = {}
+    for _, c in ipairs(default_colors) do master_array[#master_array + 1] = c end
+    for _, c in ipairs(colors_external or {}) do master_array[#master_array + 1] = c end
+
+    local out_lines = {}
+    for _, c in ipairs(master_array) do
+        local name, normal_hex = c:match("^([^,]+),([^,]+)")
+        if name and normal_hex then
+            out_lines[#out_lines + 1] = name .. "=" .. normal_hex
+        end
+    end
+    write(custom_acc_master_list, table.concat(out_lines, "\n"))
+end
+
+spawn("luajit " .. shq(lua_helpers .. "/gen_custom_acc_shell_cache"))

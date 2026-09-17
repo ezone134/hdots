@@ -1,0 +1,19 @@
+#!/usr/bin/env luajit
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/shadow_body")
+local cmd = arg[1]
+if cmd == "toggle" then
+    shadow_toggle_func()
+elseif cmd == "on" then
+    shadow_on_func()
+elseif cmd == "off" then
+    shadow_off_func()
+elseif cmd == "restore" then
+    shadow_restore_func()
+elseif cmd == "reset" then
+    shadow_reset_func()
+end

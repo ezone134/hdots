@@ -1,0 +1,67 @@
+# -*- mode: sh -*-
+
+
+main () {
+    . $hypr_sources/helpers/link_it_defs
+    link_it_file_func $hypr_conf/mako/config $HOME/.config/mako/config
+
+if [[ $internal_mode = d ]]; then
+echo 'background-color=#303642bf
+text-color=#FDFCFB
+border-color=#FDFCFB80
+default-timeout=5000
+progress-color=#80808080
+border-radius=10
+border-size=2
+font=mono 12
+max-visible=15
+# anchor=bottom-right
+text-alignment=center
+padding=5
+margin=2
+width=300
+height=370
+max-history=50
+[urgency=low]
+border-color=#FDFCFB80
+[urgency=normal]
+border-color=#FDFCFB80
+[urgency=high]
+border-color=#ff5555
+
+[category=inverted]
+background-color=#FDFCFBbf
+text-color=#303642' > $hypr_conf/mako/config
+else
+echo 'background-color=#f3f5f7bf
+text-color=#333333
+border-color=#33333380
+default-timeout=5000
+progress-color=#80808080
+border-radius=10
+border-size=2
+font=mono 12
+max-history=50
+text-alignment=center
+
+max-visible=15
+# anchor=bottom-right
+padding=5
+margin=2
+width=300
+height=370
+
+
+[urgency=low]
+border-color=#33333380
+[urgency=normal]
+border-color=#33333380
+[urgency=high]
+border-color=#ff5555
+
+[category=inverted]
+background-color=#333333bf
+text-color=#f3f5f7' > $hypr_conf/mako/config
+fi
+}
+[[ -e $hypr_conf/mako/config ]] || main

@@ -1,0 +1,40 @@
+#!/usr/bin/env luajit
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+s = read_line(states2 .. "/s")
+
+if arg[1] == "reset" then
+    write(os.getenv("HOME") .. "/.config/hypr/configs/general.lua", "")
+    os.exit(0)
+end
+
+local gaps_in_val         = read_line(states .. "/gaps_in_" .. s)
+local gaps_out_val        = read_line(states .. "/gaps_out_" .. s)
+local rounding_val        = read_line(states .. "/rounding_" .. s)
+local rounding_power_val  = read_line(states .. "/rounding_power_" .. s)
+local border_size_val     = read_line(states .. "/border_size_" .. s)
+local resize_on_border_val = read_line(states .. "/resize_on_border_" .. s)
+local allow_tearing_val   = read_line(states .. "/allow_tearing_" .. s)
+local layout_val          = read_line(states .. "/layout_" .. s)
+
+write(os.getenv("HOME") .. "/.config/hypr/configs/general.lua",
+    "hl.config({\n" ..
+    "general = {\n" ..
+    "gaps_in = " .. gaps_in_val .. ",\n" ..
+    "gaps_out = " .. gaps_out_val .. ",\n" ..
+    "border_size = " .. border_size_val .. ",\n" ..
+    "resize_on_border = " .. resize_on_border_val .. ",\n" ..
+    "allow_tearing = " .. allow_tearing_val .. ",\n" ..
+    "layout = " .. layout_val .. ",\n" ..
+    "},\n" ..
+    "decoration = {\n" ..
+    "rounding = " .. rounding_val .. ",\n" ..
+    "rounding_power = " .. rounding_power_val .. ",\n" ..
+    "},\n" ..
+    "})")
+write_line(states2 .. "/general_done", "1")
+os.exit(0)

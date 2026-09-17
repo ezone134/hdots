@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+dismiss-all-notification
+
+
+# -f or -x
+
+
+if pgrep -x "chrome|google-chrome" > /dev/null; then
+    notify-send "Chrome Profile Switch" "Google Chrome is running, close it first" &
+    	exit 1
+    	exit 0
+fi  
+    
+src="$HOME/.config/google-chrome"
+target="/tmp/xyz-safety/$USER-target/google-chrome"
+target_persist="/home/@@user/$USER-user/google-chrome_TARGET"
+
+# check if unlinked
+[ "$(readlink -f "$src")" = "$(readlink -f "$target")" ] || {
+	# it is unlinked, add logic
+	mkdir -p $target
+	mkdir -p ~/.config
+	[ -L ~/.config/google-chrome ] && rm ~/.config/google-chrome
+	ln -s $target $src
+	    notify-send "Chrome Profile Switch" "Google Chrome is linked to TEMP profile" &
+	exit 0
+	exit 0
+}
+
+
+[ "$(readlink -f "$src")" = "$(readlink -f "$target")" ] && {
+	# it is unlinked, add logic
+	mkdir -p $target_persist
+	mkdir -p ~/.config
+		[ -L ~/.config/google-chrome ] && rm ~/.config/google-chrome
+	ln -s $target_persist $src
+		    notify-send "Chrome Profile Switch" "Google Chrome is linked to PERSIST profile" &
+}
+
+	exit 0
+	exit 0

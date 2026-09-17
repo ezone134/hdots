@@ -1,0 +1,92 @@
+# -*- mode: sh -*-
+
+global_vars () {
+    SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
+    bb_path=$(command -v busybox)
+    rnd="$RANDOM.delme"
+    persist_dir="/home/persist-link"
+    persist_dir_user="$persist_dir/user"
+    persist_dir_root="$persist_dir/root"
+    user_dir="/home/user-link"
+    user_dir_user="$user_dir/$u1-user"
+    user_dir_root="$user_dir/$u1-root"
+    home_dir="/home/$u1"
+    bind_dir="/home/bind-link"
+    media_dir="/home/media-link"
+    common_dir="/home/common-link"
+    common_dir_user="$common_dir/user"
+    common_dir_root="$common_dir/root"
+    config_dir="/home/$u1/.config"
+    local_dir="/home/$u1/.local"
+    cache_dir="/home/$u1/.cache"
+    boss_bin_dir="/tmp/boss-bins"
+    busy_box_bin_dir="/tmp/busybox/bin"
+    garbage="/tmp/garbage_$u1"
+
+case $u1 in
+    (tw)    distro=opensuse; de=hypr ;;
+    (tx)    distro=debian;   de=xfce ;;
+    (arch)  distro=arch;     de=hypr ;;
+    (a1)    distro=arch;     de=kde  ;;
+    (gnt)   distro=gentoo;   de=hypr ;;
+esac
+
+export SCRIPT_DIR="$SCRIPT_DIR"
+export PATH="$boss_bin_dir:$PATH:$busy_box_bin_dir"
+}
+
+
+none_root_vars () {
+    u1="$USER"
+    global_vars
+    rsync_flag="-cax --progress --inplace --fsync --delete-before --no-whole-file"
+    . "$SCRIPT_DIR/common"
+    case $distro in
+        (opensuse) [[ -f "$SCRIPT_DIR/opensuse" ]] && . "$SCRIPT_DIR/opensuse" ;;
+        (debian)   [[ -f "$SCRIPT_DIR/trixie" ]]   && . "$SCRIPT_DIR/trixie"   ;;
+        (arch)     [[ -f "$SCRIPT_DIR/arch" ]]     && . "$SCRIPT_DIR/arch"     ;;
+        (gentoo)   [[ -f "$SCRIPT_DIR/gentoo" ]]   && . "$SCRIPT_DIR/gentoo"   ;;
+    esac
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+
+    pat_file="/tmp/pat_${USER}"
+    [[ -e $pat_file ]] || {
+        echo "$(<$HOME/Documents/pat)" > $pat_file
+        chmod 600 $pat_file
+    }
+    export pat=$(<$pat_file)
+
+    [[ -e ~/.gitconfig ]] || {
+        echo "[user]
+        name = Ezone Solutions
+        email = ezonesolutions22@gmail.com" > ~/.gitconfig
+    }
+
+    [[ -e "/tmp/hypr_auto_${USER}" ]] || {
+        . ~/.config/hdots/sources/helpers/create_dummy_configs
+        > "/tmp/hypr_auto_${USER}"
+        hypr
+    }
+}
+
+root_only_vars () {
+    local user_options_pattern="(tw|tx|a1|arch|gnt|mc|debian|leap)"
+    local shell_pattern="(bash|sh|zsh)"
+    while IFS=: read -r name password uid gid info home shell; do
+        if [[ "$name" != "root" ]] && [[ "$name" =~ $user_options_pattern ]] && [[ "$shell" =~ $shell_pattern ]]; then
+            u1="$name"
+            echo "u1=$u1"
+            break
+        fi
+    done < /etc/passwd
+    global_vars
+    hdots="/home/$u1/.config/hdots"
+}
+
+if [[ $EUID -eq 0 ]]; then
+    root_only_vars
+else
+    none_root_vars
+fi
+. "$SCRIPT_DIR/functions"

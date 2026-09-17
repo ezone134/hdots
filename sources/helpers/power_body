@@ -1,0 +1,24 @@
+# -*- mode: sh -*-
+NOTIFY_DELAY=5000
+notify-send -a System -t $NOTIFY_DELAY "System" "State files in sync — please wait…" &
+. $hypr_sources/helpers/sync_back
+
+
+custom_logout_function () {
+    echo -e "$tui_msg"
+    read -p "Are you sure you want to logout? [Y/n]: " answer
+    answer=${answer:-Y}
+
+    case "$answer" in
+        [Yy]* )
+            echo "Logging out..."
+            loginctl terminate-user "$USER" || exit 0
+            ;;
+        [Nn]* )
+            echo "Logout cancelled."
+            ;;
+        * )
+            echo "Invalid input. Logout cancelled."
+            ;;
+    esac
+}

@@ -1,0 +1,5 @@
+/home/tw/.config/quickshell/backends/QsNet/build/CMakeFiles/QsNet.dir
+/home/tw/.config/quickshell/backends/QsNet/build/CMakeFiles/edit_cache.dir
+/home/tw/.config/quickshell/backends/QsNet/build/CMakeFiles/rebuild_cache.dir
+/home/tw/.config/quickshell/backends/QsNet/build/CMakeFiles/QsNet_autogen_timestamp_deps.dir
+/home/tw/.config/quickshell/backends/QsNet/build/CMakeFiles/QsNet_autogen.dir

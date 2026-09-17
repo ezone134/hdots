@@ -1,0 +1,390 @@
+-- helpers/utils — shared Lua utilities for the LuaJIT port
+-- Mirrors the common bash idioms: err/notify-send, state file read/write,
+-- external command capture + fire-and-forget. Loaded by every main script.
+
+local base_env = {}
+
+-- read a configurable env var (like bash "$var")
+function env_name(name, default)
+    local v = os.getenv(name)
+    if v == nil or v == "" then return default end
+    return v
+end
+
+-- exported dirs — already exported by ~/.config/hypr/env.lua; mirror them
+-- into globals here (no re-derivation). Only `garbage` lacks an env.lua entry.
+garbage       = os.getenv("garbage")
+
+hypr_base     = os.getenv("hypr_base") or "/tmp"
+hypr_conf     = os.getenv("hypr_conf")
+hypr_bin      = os.getenv("hypr_bin")
+hypr_sources  = os.getenv("hypr_sources")
+hypr_global   = os.getenv("hypr_global")
+hypr_cache    = os.getenv("hypr_cache")
+hypr_log      = os.getenv("hypr_log")
+hypr_scripts  = os.getenv("hypr_scripts")
+hypr_temp     = os.getenv("hypr_temp")
+lock_files    = os.getenv("lock_files")
+states        = os.getenv("states")
+states2       = os.getenv("states2")
+theme_elements = os.getenv("theme_elements")
+hdots         = os.getenv("hdots")
+rnd           = os.getenv("rnd")
+custom_acc_master_list = os.getenv("custom_acc_master_list")
+
+if hypr_conf == nil then hypr_conf = os.getenv("hypr_base") .. "/" .. (os.getenv("USER") or os.getenv("LOGNAME") or "user") .. "_hypr_conf" end
+if garbage == nil and hypr_conf then garbage = hypr_conf .. "/garbage" end
+
+-- this file's own location -> the hypr_lua root, so ported bodies/arrays can
+-- dofile() each other without depending on the bash-only $hypr_sources env.
+-- Override with env hypr_lua_root if you want to, but the automatic path wins.
+local lua_here = debug.getinfo(1, "S").source
+if lua_here:sub(1, 1) == "@" then lua_here = lua_here:sub(2) end
+if lua_here:sub(1, 1) ~= "/" then lua_here = arg and arg[0] or lua_here end
+lua_root    = env_name("hypr_lua_root", lua_here:match("^(.-)/sources/helpers/[^/]*$") or ".")
+-- $hypr_sources is the master location: the user points it at
+-- <root>/hypr_lua/sources once the port is live; fall back to our own path.
+lua_sources = env_name("hypr_sources", lua_root .. "/sources")
+lua_helpers = env_name("hypr_sources", lua_root .. "/sources") .. "/helpers"
+lua_bin     = lua_sources .. "/../scripts"
+
+-- ---------------------------------------------------------------- stderr ----
+function err(...)
+    local parts = {}
+    for i = 1, select("#", ...) do
+        parts[#parts + 1] = tostring(select(i, ...))
+    end
+    io.stderr:write(table.concat(parts, " ") .. "\n")
+    return nil
+end
+
+-- ---------------------------------------------------------------- notify ----
+-- fire-and-forget notify-send; app is optional
+function notify(...)
+    local title, body, app, extra = select(1, ...), select(2, ...), select(3, ...), select(4, ...)
+    app = app or title
+    extra = extra or ""
+    local cmd = "notify-send -a " .. shq(app) .. " " .. shq(title) .. " " .. shq(body)
+    if extra ~= "" then cmd = cmd .. " " .. extra end
+    spawn(cmd)
+end
+
+function notify_info(title, body, app)
+    notify(title, body, app)
+end
+
+function notify_errmsg(title, body, app)
+    notify(title, body, app, "-i error")
+end
+
+-- ---------------------------------------------------------- file helpers ----
+function read(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+function read_line(path)
+    local s = read(path)
+    if not s then return nil end
+    s = s:gsub("\n$", "")
+    return s
+end
+
+function write(path, content)
+    local f = io.open(path, "w")
+    if not f then err("cannot write: " .. path); return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+function write_line(path, content)
+    return write(path, tostring(content) .. "\n")
+end
+
+function read_num(path, default)
+    local s = read_line(path)
+    local n = s and tonumber(s)
+    if n then return n end
+    return default
+end
+
+function write_num(path, n)
+    return write_line(path, tostring(n))
+end
+
+function append(path, content)
+    local f = io.open(path, "a")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+-- bash $(<file) for state dirs
+function state_read(name)
+    return read_line(states .. "/" .. name)
+end
+
+function state_write(name, content)
+    return write_line(states .. "/" .. name, content)
+end
+
+function state2_read(name)
+    return read_line(states2 .. "/" .. name)
+end
+
+function state2_write(name, content)
+    return write_line(states2 .. "/" .. name, content)
+end
+
+-- ------------------------------------------------------------- execute ----
+function run(cmd)
+    return os.execute(cmd)
+end
+
+-- capture stdout of a command (strip trailing newline)
+function out(cmd)
+    local f = io.popen(cmd .. " 2>/dev/null")
+    if not f then return "" end
+    local s = f:read("*a")
+    f:close()
+    return s:gsub("\n$", "")
+end
+
+-- capture stdout as list of lines
+function out_lines(cmd)
+    local s = out(cmd)
+    local t = {}
+    for line in s:gmatch("[^\n]+") do t[#t + 1] = line end
+    return t
+end
+
+-- clone of the bash qpid (pidof) helper in /tmp/hypr_global/qpid: returns the
+-- PIDs of processes whose /proc/<pid>/comm equals name, as one space-y string
+function qpid(name)
+    name = tostring(name)
+    local found = {}
+    for _, pidf in ipairs(list_dir("/proc")) do
+        if pidf:match("%d+") then
+            local f = io.open("/proc/" .. pidf .. "/comm", "r")
+            if f then
+                local comm = f:read("*l")
+                f:close()
+                if comm == name then found[#found + 1] = pidf end
+            end
+        end
+    end
+    return table.concat(found, " ")
+end
+
+-- -------------------------------------------------------------- FFI posix ----
+-- Pure-Lua filesystem layer (no external binaries): mkdir/rm/mv/ln/ls/touch
+-- are implemented in-process via libc through LuaJIT FFI.
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long d_ino; long d_off; unsigned short d_reclen;
+                unsigned char d_type; char d_name[256]; } dirent_t;
+typedef struct { int _x; } DIR;
+typedef struct { long sec; long nsec; } timespec_t;
+typedef struct { long st_dev; long st_ino; unsigned long st_nlink;
+                unsigned int st_mode; } stat_struct_t;
+DIR *opendir(const char *path);
+dirent_t *readdir(DIR *dirp);
+int closedir(DIR *dirp);
+int lstat(const char *path, stat_struct_t *buf);
+int mkdir(const char *path, unsigned int mode);
+int rmdir(const char *path);
+int unlink(const char *path);
+int symlink(const char *target, const char *linkpath);
+int rename(const char *oldpath, const char *newpath);
+int chmod(const char *path, unsigned int mode);
+int stat(const char *path, void *buf);
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int getpid(void);
+]]
+
+-- pure-Lua sleep (FFI nanosleep, no external binary)
+function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+-- current process pid (FFI getpid; no external binary)
+function getpid()
+    return tonumber(ffi.C.getpid())
+end
+
+-- list directory entries (["."], [".."] excluded); bash `shopt -s nullglob` style
+function list_dir(path)
+    local entries = {}
+    local d = ffi.C.opendir(path)
+    if d == nil then return entries end
+    local e = ffi.C.readdir(d)
+    while e ~= nil do
+        local name = ffi.string(e.d_name)
+        if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
+        e = ffi.C.readdir(d)
+    end
+    ffi.C.closedir(d)
+    return entries
+end
+
+-- is a path a directory? (pure Lua, in-process)
+function is_dir(path)
+    local d = ffi.C.opendir(path)
+    if d ~= nil then ffi.C.closedir(d) return true end
+    return false
+end
+
+-- is a path a symlink? lstat (does NOT follow links), in-process
+function is_symlink(path)
+    local st = ffi.new("stat_struct_t")
+    if ffi.C.lstat(path, st) ~= 0 then return false end
+    return (math.floor(tonumber(st.st_mode) / 4096) % 16) == 10  -- >>12 & 0xF == S_IFLNK(0o12=10)
+end
+function mkdir_p(...)
+    local n = select("#", ...)
+    for i = 1, n do
+        local path = tostring(select(i, ...))
+        if not is_dir(path) then
+            local parent = dirname(path)
+            if parent ~= path and parent ~= "" and parent ~= "." then mkdir_p(parent) end
+            if (not is_dir(path)) and ffi.C.mkdir(path, tonumber("755", 8)) ~= 0 and (not is_dir(path)) then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+-- rm -f equivalent for one file; also removes a (possibly dangling) symlink
+function rm(path)
+    if is_file(path) or is_symlink(path) then ffi.C.unlink(path) end
+end
+
+-- rm -rf equivalent: recursive delete, symlink-safe (rm -rf never follows
+-- links: a symlink is unlinked, never descended into)
+function rm_rf(path)
+    if is_symlink(path) then ffi.C.unlink(path); return end
+    if is_dir(path) then
+        for _, n in ipairs(list_dir(path)) do rm_rf(path .. "/" .. n) end
+        ffi.C.rmdir(path)
+    else
+        ffi.C.unlink(path)
+    end
+end
+
+-- mv equivalent: rename when possible, else copy+delete (in-process)
+function mv(src, dst)
+    if ffi.C.rename(src, dst) == 0 then return true end
+    if is_dir(src) then
+        mkdir_p(dst)
+        for _, n in ipairs(list_dir(src)) do
+            if not mv(src .. "/" .. n, dst .. "/" .. n) then return false end
+        end
+        rm_rf(src)
+        return true
+    end
+    local c = read(src)
+    if not c then return false end
+    write(dst, c)
+    ffi.C.unlink(src)
+    return true
+end
+
+-- cp equivalent (in-process copy)
+function copy_file(src, dst)
+    local c = read(src)
+    if not c then return false end
+    mkdir_p(dirname(dst))
+    return write(dst, c)
+end
+
+-- ln -s equivalent: symlink via libc (no external binary)
+function symlink(target, link)
+    return ffi.C.symlink(target, link) == 0
+end
+
+-- touch equivalent
+function touch(path)
+    local f = io.open(path, "a")
+    if not f then return false end
+    f:close()
+    return true
+end
+
+-- chmod equivalent
+function chmod(path, mode)
+    return ffi.C.chmod(path, tonumber(mode, 8)) == 0
+end
+
+-- expand bash-style $VAR / ${VAR} inside template text from an env table
+function s_expand(s, env)
+    env = env or _G
+    s = s:gsub("${([%w_]+)}", function(k) return tostring(env[k] or "") end)
+    s = s:gsub("$([%w_]+)", function(k) return tostring(env[k] or "") end)
+    return s
+end
+
+-- fire-and-forget (our "&" replacement; FFI fork/exec lands later)
+function spawn(cmd)
+    os.execute(cmd .. " >/dev/null 2>&1 &")
+end
+
+function bg(cmd)
+    spawn(cmd)
+end
+
+function bg_delay(secs, cmd)
+    local s = tonumber(secs) or 0
+    local code = string.format(
+        "local f=require'ffi' f.cdef[[typedef struct{long sec;long nsec;}ts_t;]] "
+        .. "local r=f.new'ts_t' r.sec=%d r.nsec=%.0f f.C.nanosleep(r,nil) os.execute(%q)",
+        math.floor(s), math.floor((s - math.floor(s)) * 1e9), tostring(cmd))
+    spawn("luajit -e " .. shq(code))
+end
+
+-- ---------------------------------------------------------- shell quote ----
+function shq(s)
+    s = tostring(s)
+    return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+-- -------------------------------------------------------- string helpers ----
+-- basename: bash ${1##*/}
+function basename(p)
+    p = tostring(p):gsub("[/\\]+$", "")
+    return p:match("[^/\\]+$") or p
+end
+
+-- dirname: bash ${1%/*}
+function dirname(p)
+    p = tostring(p)
+    return p:match("^(.*)[/\\][^/\\]*$") or "."
+end
+
+-- strip all non digits: bash ${v//[^0-9]/}
+function num_only(s)
+    return tostring(s or ""):gsub("%D", "")
+end
+
+-- first integer substring: bash grep -o '[0-9]\+%' style
+function first_num(s)
+    return tostring(s or ""):match("%d+") or ""
+end
+
+-- ------------------------------------------------------------- misc -------
+function is_file(path)
+    local f = io.open(path, "r")
+    if f then f:close(); return true end
+    return false
+end
+
+return nil

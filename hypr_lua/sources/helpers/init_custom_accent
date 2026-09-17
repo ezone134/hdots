@@ -1,0 +1,47 @@
+-- helper init_custom_accent
+
+local accent_input = state_read("custom_acc_" .. s) or ""
+
+local hex_override, hex_code, shades_list
+
+if accent_input:sub(1, 1) == "#" then
+    hex_override = "yes"
+    hex_code = accent_input
+    local hex_id = hex_code:gsub("^#", "")
+    shades_list = hypr_cache .. "/accent_files/custom_acc_shades_" .. s .. "/" .. hex_id .. "/shades_list"
+else
+    hex_code = ""
+    if is_file(custom_acc_master_list) then
+        for line in io.lines(custom_acc_master_list) do
+            local name, hex = line:match("^([^=]+)=(.*)$")
+            if name == accent_input then
+                hex_code = hex
+                break
+            end
+        end
+    end
+    err("custom_acc name is " .. accent_input)
+    err("hex_code is " .. tostring(hex_code))
+    hex_override = ""
+    shades_list = hypr_cache .. "/accent_files/custom_acc_shades_" .. s .. "/" .. accent_input .. "/shades_list"
+end
+
+if scrim_mode == 0 then
+    if not hex_code or hex_code == "" then
+        err("Custom accent init_custom_accent error: hex is empty")
+        halt_pipeline = "yes"
+    end
+
+    if is_file(shades_list) then
+        err("Exiting: Shades List already exists at source...")
+        notify("Theme extras", "Shades list already exists", "theme-extras")
+        halt_pipeline = "yes"
+    end
+
+    if not halt_pipeline then
+        notify("Theme extras", "Generating custom accent shades…", "theme-extras")
+        run(hypr_sources .. "/helpers/color_engine gen_shades " .. shq(hex_code) .. " " .. shq(shades_list))
+    end
+else
+    state2_write("scrim_hex_" .. s, hex_code)
+end

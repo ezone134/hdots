@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+
+su -c $(command -v thunar)

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+exit 0
+
+notify-send -a "volume-osd" -r 4242 -t 800 "Quickshell" "Udev Triggered"

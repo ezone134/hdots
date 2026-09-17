@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+WATCHDOG_PID="$states2/pid_watchdog"
+LOOP_PID="$states2/pid_user_loop"
+LOOP_PATH="$hypr_conf/scripts/user_loop"
+LOG_FILE="$hypr_conf/log/watchdog.log"
+
+# ==========================================================
+# 1. THE SELF-RESTART CHECK (Kill old watchdog if running)
+# ==========================================================
+if [ -f "$WATCHDOG_PID" ]; then
+    OLD_WATCHDOG_PID=$(< "$WATCHDOG_PID")
+
+    if kill -0 "$OLD_WATCHDOG_PID" 2>/dev/null; then
+        echo "$(date): Old watchdog (PID $OLD_WATCHDOG_PID) detected. Killing it..." >> "$LOG_FILE"
+        kill -9 "$OLD_WATCHDOG_PID" 2>/dev/null
+        sleep 1
+    fi
+    rm -f "$WATCHDOG_PID"
+fi
+
+echo $$ > "$WATCHDOG_PID"
+trap "rm -f $WATCHDOG_PID" EXIT
+
+echo "$(date): Watchdog started fresh with PID $$" >> "$LOG_FILE"
+
+# ==========================================================
+# 2. INITIALIZATION: FORCE RESTART USER LOOP ONCE ON BOOT
+# ==========================================================
+echo "$(date): Watchdog entering loop - forcing initial restart of user loop..." >> "$LOG_FILE"
+
+if [ -f "$LOOP_PID" ]; then
+    OLD_LOOP_PID=$(< "$LOOP_PID")
+    if kill -0 "$OLD_LOOP_PID" 2>/dev/null; then
+        kill -15 "$OLD_LOOP_PID" 2>/dev/null
+        sleep 1 # Give the old loop a full second to exit and delete its PID file
+    fi
+    rm -f "$LOOP_PID" # Force clear it just in case
+fi
+
+# Launch the user loop fresh
+nohup "$LOOP_PATH" > /dev/null 2>&1 &
+sleep 0.5 # Give the new loop a moment to write its new PID file
+
+# ==========================================================
+# 3. THE MAIN MONITORING LOOP
+# ==========================================================
+while true; do
+    SHOULD_RESTART=false
+
+    # Check the user loop PID file
+    if [ -f "$LOOP_PID" ]; then
+        PID=$(< "$LOOP_PID")
+
+        if ! kill -0 "$PID" 2>/dev/null; then
+            echo "$(date): User loop PID $PID is dead." >> "$LOG_FILE"
+            SHOULD_RESTART=true
+        fi
+    else
+        echo "$(date): User loop PID file missing." >> "$LOG_FILE"
+        SHOULD_RESTART=true
+    fi
+
+    # Restart the user loop if needed
+    if [ "$SHOULD_RESTART" = true ]; then
+        echo "$(date): Launching $LOOP_PATH..." >> "$LOG_FILE"
+        rm -f "$LOOP_PID"
+        nohup "$LOOP_PATH" > /dev/null 2>&1 &
+        sleep 0.5
+    fi
+
+    # Check every 60 seconds
+    sleep 120
+done

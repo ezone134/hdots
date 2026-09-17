@@ -1,0 +1,2 @@
+# Catch any kernel brightness state changes on the capslock LED and fire the wrapper
+SUBSYSTEM=="leds", KERNEL=="*::capslock", ACTION=="change", RUN+="$hypr_global/caps_lock_trigger"

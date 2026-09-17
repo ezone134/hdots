@@ -1,0 +1,8 @@
+#!/usr/bin/env luajit
+-- helper sync_first
+
+spawn("cp -r " .. hdots .. "/states/* " .. states .. "/")
+
+spawn("cp -r " .. hdots .. "/states_global/* " .. hypr_global .. "/states/")
+
+dofile(hypr_sources .. "/helpers/sync_etc_files")

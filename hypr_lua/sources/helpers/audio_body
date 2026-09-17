@@ -1,0 +1,386 @@
+#!/usr/bin/env luajit
+-- helper audio_body
+-- audio_body -- vol/mic (wpctl) and audio routing/streams (pactl)
+-- functions. Sourced by audio_main for the vol|mic|audio subcommands.
+
+SINK = "@DEFAULT_AUDIO_SINK@"
+SRC = "@DEFAULT_AUDIO_SOURCE@"
+
+function vol_ensure()
+    if is_file(states2 .. "/vol") then return end
+    local s = out("wpctl get-volume " .. SINK)
+    if s == "" then
+        write_line(states2 .. "/vol", "0")
+        write_line(states2 .. "/vol_f", "0.00")
+        write_line(states2 .. "/vol_muted", "0")
+        return
+    end
+    local f = s:match(": (%S+)") or "0.00"
+    local v = tonumber(f:gsub("%.", "")) or 0
+    if s:find("MUTED") then
+        write_line(states2 .. "/vol_muted", "1")
+    else
+        write_line(states2 .. "/vol_muted", "0")
+    end
+    write_line(states2 .. "/vol", tostring(v))
+    write_line(states2 .. "/vol_f", f)
+end
+
+function vol_fraction(val)
+    val = tonumber(val) or 0
+    return string.format("%d.%02d", math.floor(val / 100), val % 100)
+end
+
+function vol_status()
+    vol_ensure()
+    local v = read_line(states2 .. "/vol") or "0"
+    local m = "no"
+    if read_line(states2 .. "/vol_muted") == "1" then m = "yes" end
+    print(string.format("volume: %s%%  muted: %s", v, m))
+end
+
+function vol_apply()
+    local f = vol_fraction(read_line(states2 .. "/vol"))
+    write_line(states2 .. "/vol_f", f)
+    run("wpctl set-volume " .. SINK .. " " .. f .. " " .. f .. " >/dev/null 2>&1")
+end
+
+function vol_apply_ch(side, val)
+    side = side or "left"
+    val = tonumber(val) or 0
+    vol_ensure()
+    local s = out("wpctl get-volume " .. SINK)
+    local cur_l, cur_r = s:match(": (%d+%.%d+) / (%d+%.%d+)")
+    cur_l = cur_l or "0.00"
+    cur_r = cur_r or "0.00"
+    local f = vol_fraction(val)
+    if side == "left" then
+        run("wpctl set-volume " .. SINK .. " " .. f .. " " .. cur_r .. " >/dev/null 2>&1")
+    else
+        run("wpctl set-volume " .. SINK .. " " .. cur_l .. " " .. f .. " >/dev/null 2>&1")
+    end
+    write_line(states2 .. "/vol_f", f)
+end
+
+function vol_set_ch(side, val)
+    side = side or "left"
+    val = tonumber(val) or 50
+    vol_ensure()
+    if not tostring(val):match("^%d+$") then
+        err("vol_set_ch: need a number")
+        return 1
+    end
+    local max = tonumber(read_line(states .. "/max_vol")) or 100
+    if val > max then val = max end
+    if val < 0 then val = 0 end
+    write_line(states2 .. "/vol_" .. side, tostring(val))
+    vol_apply_ch(side, val)
+end
+
+function vol_set(m)
+    m = tonumber(m) or 50
+    vol_ensure()
+    if not tostring(m):match("^%d+$") then
+        err("vol set: need a number")
+        return 1
+    end
+    local max = tonumber(read_line(states .. "/max_vol")) or 100
+    if m > max then m = max end
+    write_line(states2 .. "/vol", tostring(m))
+    vol_apply()
+end
+
+function vol_step(delta, sign)
+    delta = tonumber(delta) or 5
+    sign = sign or "+"
+    vol_ensure()
+    local m = tonumber(read_line(states2 .. "/vol")) or 0
+    if sign == "-" then
+        m = m - delta
+    else
+        m = m + delta
+    end
+    local max = tonumber(read_line(states .. "/max_vol")) or 100
+    if m < 0 then m = 0 end
+    if m > max then m = max end
+    write_line(states2 .. "/vol", tostring(m))
+    vol_apply()
+end
+
+function vol_mute_on()
+    vol_ensure()
+    write_line(states2 .. "/vol_muted", "1")
+    run("wpctl set-mute " .. SINK .. " 1")
+end
+
+function vol_mute_off()
+    vol_ensure()
+    write_line(states2 .. "/vol_muted", "0")
+    run("wpctl set-mute " .. SINK .. " 0")
+end
+
+function vol_mute_toggle()
+    vol_ensure()
+    write_line(states2 .. "/vol_muted", tostring(1 - (tonumber(read_line(states2 .. "/vol_muted")) or 0)))
+    run("wpctl set-mute " .. SINK .. " toggle")
+end
+
+function vol_cmd(...)
+    local cmd = select(1, ...) or "get"
+    local a2 = select(2, ...)
+    if cmd == "get" or cmd == "cur" then
+        vol_status()
+    elseif cmd == "set" then
+        vol_set(a2 or 50)
+    elseif cmd == "up" then
+        vol_step(a2 or 5, "+")
+    elseif cmd == "down" then
+        vol_step(a2 or 5, "-")
+    elseif cmd == "left" then
+        vol_set_ch("left", a2 or 50)
+    elseif cmd == "right" then
+        vol_set_ch("right", a2 or 50)
+    elseif cmd == "mute" then
+        vol_mute_on()
+    elseif cmd == "unmute" then
+        vol_mute_off()
+    elseif cmd == "toggle" then
+        vol_mute_toggle()
+    else
+        err("vol: use get|set N|up [N]|down [N]|left N|right N|mute|unmute|toggle")
+    end
+end
+
+-- ---- mic (source) ----
+
+function mic_ensure()
+    if is_file(states2 .. "/mic") then return end
+    local s = out("wpctl get-volume " .. SRC)
+    if s == "" then
+        write_line(states2 .. "/mic", "0")
+        write_line(states2 .. "/mic_f", "0.00")
+        write_line(states2 .. "/mic_muted", "0")
+        return
+    end
+    local f = s:match(": (%S+)") or "0.00"
+    local v = tonumber(f:gsub("%.", "")) or 0
+    if s:find("MUTED") then
+        write_line(states2 .. "/mic_muted", "1")
+    else
+        write_line(states2 .. "/mic_muted", "0")
+    end
+    write_line(states2 .. "/mic", tostring(v))
+    write_line(states2 .. "/mic_f", f)
+end
+
+function mic_fraction(val)
+    val = tonumber(val) or 0
+    return string.format("%d.%02d", math.floor(val / 100), val % 100)
+end
+
+function mic_status()
+    mic_ensure()
+    local v = read_line(states2 .. "/mic") or "0"
+    local m = "no"
+    if read_line(states2 .. "/mic_muted") == "1" then m = "yes" end
+    print(string.format("mic:    %s%%  muted: %s", v, m))
+end
+
+function mic_apply()
+    local f = mic_fraction(read_line(states2 .. "/mic"))
+    write_line(states2 .. "/mic_f", f)
+    run("wpctl set-volume " .. SRC .. " " .. f .. " >/dev/null 2>&1")
+end
+
+function mic_set(m)
+    m = tonumber(m) or 50
+    mic_ensure()
+    if not tostring(m):match("^%d+$") then
+        err("mic set: need a number")
+        return 1
+    end
+    local max = tonumber(read_line(states .. "/max_mic")) or 100
+    if m > max then m = max end
+    write_line(states2 .. "/mic", tostring(m))
+    mic_apply()
+end
+
+function mic_step(delta, sign)
+    delta = tonumber(delta) or 5
+    sign = sign or "+"
+    mic_ensure()
+    local m = tonumber(read_line(states2 .. "/mic")) or 0
+    if sign == "-" then
+        m = m - delta
+    else
+        m = m + delta
+    end
+    local max = tonumber(read_line(states .. "/max_mic")) or 100
+    if m < 0 then m = 0 end
+    if m > max then m = max end
+    write_line(states2 .. "/mic", tostring(m))
+    mic_apply()
+end
+
+function mic_mute_on()
+    mic_ensure()
+    write_line(states2 .. "/mic_muted", "1")
+    run("wpctl set-mute " .. SRC .. " 1")
+end
+
+function mic_mute_off()
+    mic_ensure()
+    write_line(states2 .. "/mic_muted", "0")
+    run("wpctl set-mute " .. SRC .. " 0")
+end
+
+function mic_mute_toggle()
+    mic_ensure()
+    write_line(states2 .. "/mic_muted", tostring(1 - (tonumber(read_line(states2 .. "/mic_muted")) or 0)))
+    run("wpctl set-mute " .. SRC .. " toggle")
+end
+
+function mic_cmd(...)
+    local cmd = select(1, ...) or "get"
+    local a2 = select(2, ...)
+    if cmd == "get" or cmd == "cur" then
+        mic_status()
+    elseif cmd == "set" then
+        mic_set(a2 or 50)
+    elseif cmd == "up" then
+        mic_step(a2 or 5, "+")
+    elseif cmd == "down" then
+        mic_step(a2 or 5, "-")
+    elseif cmd == "mute" then
+        mic_mute_on()
+    elseif cmd == "unmute" then
+        mic_mute_off()
+    elseif cmd == "toggle" then
+        mic_mute_toggle()
+    else
+        err("mic: use get|set N|up [N]|down [N]|mute|unmute|toggle")
+    end
+end
+
+-- ---- audio (device routing) ----
+
+function audio_list(kind)
+    kind = kind or "sinks"
+    local def
+    if kind == "sources" then
+        def = out("pactl get-default-source")
+    else
+        def = out("pactl get-default-sink")
+    end
+    local name, desc, id = "", "", ""
+    for _, line in ipairs(out_lines("pactl list " .. kind)) do
+        if line:find("^Sink #") or line:find("^Source #") then
+            if name ~= "" then
+                local star = " "
+                if name == def then star = "*" end
+                print(id .. "\t" .. name .. "\t" .. desc .. "\t" .. star)
+            end
+            id = line:gsub("^[^#]*#", "")
+            name, desc = "", ""
+        elseif line:find("^\tName:") then
+            name = line:gsub("^\tName:", "")
+            name = name:gsub("^ +", "")
+        elseif line:find("^\tDescription:") then
+            desc = line:gsub("^\tDescription:", "")
+            desc = desc:gsub("^ +", "")
+        end
+    end
+    if name ~= "" then
+        local star = " "
+        if name == def then star = "*" end
+        print(id .. "\t" .. name .. "\t" .. desc .. "\t" .. star)
+    end
+end
+
+function audio_cmd(...)
+    local cmd = select(1, ...) or "sinks"
+    if cmd == "sinks" then
+        audio_list("sinks")
+    elseif cmd == "sources" then
+        audio_list("sources")
+    elseif cmd == "set-sink" then
+        if select("#", ...) >= 2 then
+            run("pactl set-default-sink " .. select(2, ...))
+        else
+            err("audio set-sink: need name")
+        end
+    elseif cmd == "set-source" then
+        if select("#", ...) >= 2 then
+            run("pactl set-default-source " .. select(2, ...))
+        else
+            err("audio set-source: need name")
+        end
+    elseif cmd == "streams" then
+        audio_streams()
+    elseif cmd == "stream-vol" then
+        audio_stream_vol(select(2, ...), select(3, ...))
+    elseif cmd == "stream-mute" then
+        audio_stream_mute(select(2, ...), select(3, ...) or "toggle")
+    else
+        err("audio: use sinks|sources|set-sink NAME|set-source NAME|streams|stream-vol ID PCT|stream-mute ID [on|off|toggle]")
+    end
+end
+
+-- ---- per-app audio streams (sink-inputs) ----
+
+function audio_streams()
+    local id, app, vol, mute = "", "", "0", 0
+    for _, line in ipairs(out_lines("pactl list sink-inputs")) do
+        if line:find("^Sink Input #") then
+            if id ~= "" and app ~= "" then
+                print(id .. "\t" .. app .. "\t" .. vol .. "\t" .. mute)
+            end
+            id = line:gsub("^[^#]*#", "")
+            app = ""
+            vol = "0"
+            mute = 0
+        elseif line:find("^\tApplication name :") then
+            app = line:gsub("^.-: ", "")
+            app = app:gsub("^ +", "")
+        elseif line:find("^\tVolume:") then
+            local rest = line:gsub("^.-: ", "")
+            local pct = rest:match("/ +(%d+)%%")
+            if pct then vol = tonumber(pct) end
+        elseif line:find("^\tMute:") then
+            if line:find("yes") then mute = 1 else mute = 0 end
+            if id ~= "" and app ~= "" then
+                print(id .. "\t" .. app .. "\t" .. vol .. "\t" .. mute)
+                id = ""
+                app = ""
+            end
+        end
+    end
+    if id ~= "" and app ~= "" then
+        print(id .. "\t" .. app .. "\t" .. vol .. "\t" .. mute)
+    end
+end
+
+function audio_stream_vol(id, pct)
+    if id ~= nil and pct ~= nil then
+        run("pactl set-sink-input-volume " .. id .. " " .. pct .. "%")
+    else
+        err("audio stream-vol: need ID PCT")
+    end
+end
+
+function audio_stream_mute(id, mode)
+    if id == nil then
+        err("audio stream-mute: need ID")
+        return 1
+    end
+    mode = mode or "toggle"
+    if mode == "on" then
+        run("pactl set-sink-input-mute " .. id .. " 1")
+    elseif mode == "off" then
+        run("pactl set-sink-input-mute " .. id .. " 0")
+    elseif mode == "toggle" then
+        run("pactl set-sink-input-mute " .. id .. " toggle")
+    else
+        err("stream-mute: use on|off|toggle")
+    end
+end

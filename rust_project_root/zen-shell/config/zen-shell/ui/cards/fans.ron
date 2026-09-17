@@ -1,0 +1,45 @@
+(
+    // fans card — fully declarative (zero Ink): Header with the live
+    // "{n} fans" meta, one row per hwmon fan (dim caption label · right
+    // mono rpm · per-fan meter bar). The bar fraction is the Rust drawer's
+    // slow-peak-decay frac (rpm / decayed peak, clamped) — spin-ups read
+    // without hardcoding maxima; live fans fill info-blue via the bar's
+    // `fill` (the per-cell color), stopped fans leave a quiet hover track
+    // (frac 0 → zero-width fill). Empty state: one centered dim caption.
+    items: [
+        Header(
+            title: "Fans",
+            glyph: Some("\u{e9e4}"),
+            meta: Some("{fan_meta}"),
+        ),
+        // empty state — gated off once any fan sensor appears
+        Text(
+            x: 0.0,
+            y: 0.0,
+            center_x: true,
+            center_y: true,
+            text: "no hwmon fan sensors",
+            font_size: 9.0,
+            color: Some(fg3),
+            visible: Some("fans_empty"),
+        ),
+        Rows(
+            name: "fans_rows",
+            y: 28.0,
+            row_h: 24.0,
+            pad: 12.0,
+            row_dy: 1.0,
+            visible: Some("fans_live"),
+            cols: [
+                (x: 0.0, dy: Some(0.0), size: 8.5, truncate: Some(80.0)),
+                (x: 0.0, edge: Some(12.0), right: true, dy: Some(0.0), size: 8.5, font: mono),
+                (
+                    x: 0.0,
+                    w: 0.0,
+                    dy: Some(13.0),
+                    bar: Some((height: 3.0, top: 13.0, radius: 1.5)),
+                ),
+            ],
+        ),
+    ],
+)

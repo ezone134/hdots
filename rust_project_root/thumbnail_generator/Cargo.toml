@@ -1,0 +1,9 @@
+[package]
+name = "thumbnail_generator"
+version = "0.1.0"
+edition.workspace = true
+description = "Generate 200x200 wallpapers thumbs into ~/.cache (Rust port of generate_thumbs.lua). Pure Rust."
+license.workspace = true
+
+[dependencies]
+image.workspace = true

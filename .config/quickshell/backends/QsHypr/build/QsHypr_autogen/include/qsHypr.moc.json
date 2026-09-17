@@ -1,0 +1,18 @@
+{
+    "classes": [
+        {
+            "className": "QsHyprPlugin",
+            "lineNumber": 90,
+            "object": true,
+            "qualifiedClassName": "QsHyprPlugin",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QQmlExtensionPlugin"
+                }
+            ]
+        }
+    ],
+    "inputFile": "qsHypr.cpp",
+    "outputRevision": 69
+}

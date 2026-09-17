@@ -1,0 +1,55 @@
+# -*- mode: sh -*-
+# caffeine_body — functions for the caffeine_main CLI: caffeine
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- caffeine (idle inhibit) ----------------------------------------------
+
+# Caffeine swaps hypridle to a listener-free config (no timeouts, nothing can
+# fire) and swaps it back on decaf. State lives in $states/caffeine so the
+# shell UI and the CLI agree. Pure bash; the only external calls are the
+# device/daemon I/O (pkill / hyprctl / hypridle).
+caffeine_conf() {
+    printf '%s\n' \
+        "general {" \
+        "    lock_cmd = pidof hyprlock || hyprlock" \
+        "    before_sleep_cmd = custom-sleep" \
+        "    after_sleep_cmd = hyprctl dispatch dpms on" \
+        "}"
+}
+
+caffeine_on() {
+    local conf="$hypr_conf/hypr/hypridle-caffeine.conf"
+    mkdir -p "${conf%/*}" "$states"
+    caffeine_conf > "$conf"
+    printf '1\n' > "$states/caffeine"
+    pkill hypridle 2>/dev/null
+    hyprctl dispatch exec "hypridle --config $conf" 2>/dev/null \
+        || { nohup hypridle --config "$conf" >/dev/null 2>&1 & }
+    printf 'caffeine: on\n'
+}
+
+caffeine_off() {
+    mkdir -p "$states"
+    printf '0\n' > "$states/caffeine"
+    pkill hypridle 2>/dev/null
+    hyprctl dispatch exec hypridle 2>/dev/null \
+        || { nohup hypridle >/dev/null 2>&1 & }
+    printf 'caffeine: off\n'
+}
+
+caffeine_status() {
+    local v=0
+    [[ -f "$states/caffeine" ]] && v="$(<"$states/caffeine")"
+    [[ "${v//[[:space:]]/}" == 1 ]] && printf 'on\n' || printf 'off\n'
+}
+
+caffeine_cmd() {
+    case "${1:-status}" in
+        status|get) caffeine_status;;
+        on)         caffeine_on;;
+        off)        caffeine_off;;
+        toggle)     [[ "$(caffeine_status)" == on ]] && caffeine_off || caffeine_on;;
+        *)          err "caffeine: use status|on|off|toggle";;
+    esac
+}
+

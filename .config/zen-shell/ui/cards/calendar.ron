@@ -1,0 +1,35 @@
+(
+    // CALENDAR — fully declarative. The `Grid` renders the 42-cell month
+    // matrix (`cal_cells` from scene_values: off-month slots invisible,
+    // today acc-on-accTint) with the weekday heads and day keys 30000+i;
+    // the prev/next nav chevrons are right-anchored hover-only `Hit`s
+    // (keys 30100/30101); the month name heads the card in accent ink.
+    items: [
+        Header(title: "{cal_month}", title_color: Some(acc)),
+        Hit(
+            x: 46.0, y: 4.0, w: 22.0, h: 20.0, r: 10.0,
+            surface: Some(hover_hl), hover_only: true,
+            icon: true, center: true, dy: 1.0,
+            text: "\u{f053}", font_size: 10.0, color: Some(fg),
+            key: 30100,
+        ),
+        Hit(
+            x: 12.0, y: 4.0, w: 22.0, h: 20.0, r: 10.0, right: true,
+            surface: Some(hover_hl), hover_only: true,
+            icon: true, center: true, dy: 1.0,
+            text: "\u{f054}", font_size: 10.0, color: Some(fg),
+            key: 30101,
+        ),
+        Grid(
+            name: "cal_cells",
+            x: 0.0, y: 24.0,
+            cols: 7,
+            gap: 0.0, pad: 0.0,
+            r: 8.0,
+            font_size: 9.0,
+            key_base: 30000,
+            hover_surface: Some(hover),
+            head: Some(["S", "M", "T", "W", "T", "F", "S"]),
+        ),
+    ],
+)

@@ -1,0 +1,12 @@
+#!/usr/bin/env luajit
+-- gen-exp — dump the list of installed packages to /tmp/pkg-list.txt.
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+run([[zypper packages --installed-only | awk '$1=="i+" {print $5}' | tee /tmp/pkg-list.txt]])

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+enable_log=1
+
+save_log_func () {
+    log_file=/tmp/boot.log
+    > $log_file
+    exec >> "$log_file" 2>&1
+}
+[[ $enable_log == 1 ]] && save_log_func
+
+[[ $EUID -eq 0 ]] || {
+    echo "Not running as root, exiting......"
+    # exit 1
+}
+
+SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
+. "$SCRIPT_DIR/vars"
+# mind the order do not mess up
+chain_symlink_function
+link_to_bin_boss
+
+own_it_function &
+777_it_function &
+
+
+rfkill unblock bluetooth &
+zypper_donot_recommend_packages &
+
+{
+    timedatectl set-timezone Asia/Kathmandu
+    timedatectl set-ntp true
+} &
+chown -R tmp:tmp /home/tmp
+chmod 1755 /tmp/home-tmp
+
+mkdir -p "$home_dir/bins-test"
+chown "$u1:$u1" $log_file
+wait
+link_speedy_bins
+exit 0

@@ -1,0 +1,3 @@
+# explicit qmldir for qs.mpris — disables the synthesizer
+module qs.mpris
+MprisPanel 1.0 MprisPanel.qml

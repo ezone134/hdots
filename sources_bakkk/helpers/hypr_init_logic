@@ -1,0 +1,323 @@
+# -*- mode: sh -*-
+
+# log_it "$hypr_log/hypr_init.log"
+
+(( EUID == 0 )) && {
+    echo "Running as root not allowed, exiting..."
+    exit 1
+}
+
+if [[ -z $hypr_base ]]; then
+    echo "\$hypr_base=$hypr_base, it is not defined, setting default values"
+    export rnd=$RANDOM.$RANDOM.delme
+    export hypr_base=/tmp
+    export hypr_conf=$hypr_base/${USER}_hypr_conf
+    export hypr_bin=$hypr_conf/hypr_bin
+    export hdots=$HOME/.config/hdots
+    export hdots_sources=$HOME/.config/hdots/sources
+    export hypr_log=$hypr_conf/log
+    export lock_files=$hypr_conf/lock_hold_files
+    export hypr_scripts=$hypr_conf/scripts
+    export hypr_global=/tmp/hypr_global
+    export hypr_cache=$hypr_conf/hypr_cache
+    export states=$hypr_conf/states
+    export states2=$hypr_conf/states2
+    export hypr_temp=$hypr_conf/hypr_temp
+    export hypr_sources=$hypr_conf/sources
+    export hypr_bin=$hypr_conf/hypr_bin
+    export dark_color_list=$hypr_cache/accent_files/custom_acc/dark_variant/colors_list
+    export light_color_list=$hypr_cache/accent_files/custom_acc/light_variant/colors_list
+    export theme_elements=$hypr_conf/theme_elements_states
+
+    export unusual_var=aalu_pyaz_323232323232323 # if this set then fine
+else
+    echo "\$hypr_base=$hypr_base, it is defined"
+fi
+
+[[ x${hypr_base} == x ]] && exit 1 # final gate keeper
+
+{
+    rm -rf $HOME/.config/sublime-text
+} &
+
+{
+    chmod +x $hypr_sources/helpers/*
+} &
+. $hypr_sources/helpers/setup_dirs_master
+
+. $hypr_sources/helpers/gen_primary
+
+[[ -f $lock_files/hypr_first_run ]] || {
+    > $lock_files/hypr_first_run
+    . $hypr_sources/helpers/mako_dummy_conf_gen # this already creates symlink so later we dont need to recreate
+}
+disown
+. $hypr_sources/helpers/alphas_helper &
+. $hypr_sources/helpers/gen_flags_master "from_hypr_init" # call it before sync-first
+. $hypr_sources/helpers/sync_first
+cp -r $hdots/scripts_global/* $hypr_global/ &
+chmod +x $hypr_global/* 2>/dev/null &
+cp -r $hdots/hypr_cache/* $hypr_cache/ 2>/dev/null &
+. $hypr_sources/helpers/hex_to_alpha
+wait
+# rm -rf $HOME/.local/share/zed/* &
+rm ~/.config/google-chrome/SingletonLock 2>/dev/null &
+
+{
+    # this block generates fallback colors
+    echo 0 > $states2/fallback_colors_ready
+    acc=#2e3440
+    border=#2e3440
+
+    . $hypr_sources/helpers/theme_init
+    resolve_theme default_nord
+    d_side
+    echo "fetch_color_final border is $border acc is $acc acc_ec is $acc_ec and acc_hc is $acc_hc"
+
+    echo $acc > $states2/acc_dd
+    echo $acc > $states2/acc_nd
+    echo $border > $states2/border_dd
+    echo $border > $states2/border_nd
+
+    echo $acc_hc > $states2/acc_hc_d
+    echo $acc_ec > $states2/acc_ec_d
+
+    acc=#88c0d0
+    border=#88c0d0
+
+    l_side
+    echo "fetch_color_final border is $border acc is $acc acc_ec is $acc_ec and acc_hc is $acc_hc"
+
+    echo $acc > $states2/acc_ll
+    echo $acc > $states2/acc_nl
+    echo $border > $states2/border_ll
+    echo $border > $states2/border_nl
+
+    echo $acc_hc > $states2/acc_hc_l
+    echo $acc_ec > $states2/acc_ec_l
+
+    echo 1 > $states2/fallback_colors_ready
+} &
+
+{
+    caps_paths=(/sys/class/leds/input*::capslock/brightness)
+    caps_lock_file_path=${caps_paths[0]}
+    echo $caps_lock_file_path > $states2/caps_lock_file_path
+    echo $(< $caps_lock_file_path) > $states2/caps_lock_state
+} &
+
+{
+    # set default browser
+    [[ -z $(xdg-settings get default-web-browser) ]] && {
+        xdg-settings set default-web-browser google-chrome.desktop
+    }
+} &
+
+{
+    max_vol=500
+    max_mic=200
+    vol_string=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    mic_string=$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@)
+    [[ $vol_string == *MUTED* ]] && vol_muted=1 || vol_muted=0
+    [[ $mic_string == *MUTED* ]] && mic_muted=1 || mic_muted=0
+    echo $vol_muted > $states2/vol_muted
+    echo $mic_muted > $states2/mic_muted
+    echo $max_vol > $states/max_vol
+    echo $max_mic > $states/max_mic
+
+    vol_f=${vol_string#*Volume: }
+    vol_f=${vol_f%% *}
+    vol=$((10#${vol_f/./}))
+
+    mic_f=${mic_string#*Volume: }
+    mic_f=${mic_f%% *}
+    mic=$((10#${mic_f/./}))
+
+    echo $vol > $states2/vol
+    echo $vol_f > $states2/vol_f
+    echo $mic > $states2/mic
+    echo $mic_f > $states2/mic_f
+
+    PW_MASTER_ID=$(wpctl status | awk '/Sinks:/,/Sources:/ {if ($2=="*") print $3}' | tr -d '.')
+    echo $PW_MASTER_ID > $states2/audio_id
+} &
+
+create_hex_individual_files() {
+    [[ -e $hypr_conf/alpha-refs/bf ]] || {
+    for dec in {0..255}; do
+        local hex=$(printf "%02x" "$dec")
+        local percent=$(((dec * 100 + 254) / 255))
+        echo "${percent}%" > "$hypr_conf/alpha-refs/$hex"
+    done
+    }
+}
+create_hex_individual_files &
+
+cp -r $hdots/global_icons/* $hypr_global/icons/ 2>/dev/null &
+
+. $hypr_sources/helpers/hypr_init_run_once
+. $hypr_sources/helpers/expand_gen_body
+
+{
+    for i in $hypr_sources/desktop_launchers/entries/*; do
+        base="${i##*/}"
+        expand_gen $i $hypr_conf/desktop_launchers/${base}.desktop
+    done
+
+    . $hypr_sources/symlink_dirs
+    . $hypr_sources/symlink_files
+    . $hypr_sources/target_point
+    . $hypr_sources/helpers/point_to_contents
+    . $hypr_sources/helpers/link_it_defs
+
+    for d in ${dirs_pairs[@]}; do
+        link_it_dir_func ${d##*:} ${d%%:*}
+    done
+    for f in ${files_pairs[@]}; do
+        link_it_file_func ${f##*:} ${f%%:*} &
+    done
+    for i in ${target_contents_of_second_pairs_array[@]}; do
+        point_to_contents_function ${i##*:} ${i%%:*} &
+    done
+
+    . $hypr_sources/hypr_init_gen_array
+    for d in ${hypr_init_run_array[@]}; do
+        expand_gen ${d%%:*} ${d##*:} &
+    done
+
+    . $hypr_sources/helpers/shaders_gen
+
+    for i in $hypr_sources/rofi/*; do
+        base="${i##*/}"
+        expand_gen $i $hypr_conf/rofi/${base} &
+    done
+} &
+
+{
+    if ! . $hypr_global/qpid gnome-keyring-daemon >/dev/null; then
+        eval $(gnome-keyring-daemon --start --components=secrets)
+        export GNOME_KEYRING_CONTROL
+        export GNOME_KEYRING_DEC_PATH
+        export GNOME_KEYRING_SOCK
+    fi
+    dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP GNOME_KEYRING_CONTROL GNOME_KEYRING_SOCK
+} &
+
+{
+    shopt -s nullglob
+    batteries=(/sys/class/power_supply/BAT*)
+
+    # Check if the array length is greater than 0
+    if ((${#batteries[@]} > 0)); then
+        echo 1 > "$states2/battery_found"
+    else
+        echo 0 > "$states2/battery_found"
+    fi
+} &
+
+. $hypr_sources/helpers/gen_alpha_sample &
+. $hypr_sources/helpers/hypr_idle_lock_conf_gen &
+
+{ # opening of theme block
+    . $hypr_sources/helpers/theme_block_init
+    . $hypr_sources/helpers/gen_custom_acc_files # create color files dark and light variant
+
+    [[ -z $m_init ]] && { # this logic runs only when manually calling hypr_init
+        [[ $(gsettings get org.gnome.desktop.interface gtk-theme) == *"dark"* ]] && m_init=d || m_init=l
+        # at this monet all files are synced to $states
+        s=$(< $states/s)
+        [[ $s == 1 ]] && {
+            s_init=$m_init
+        }
+        sm="${s_init}${m_init}"
+        echo $sm > $states2/sm # this is aready done by prelaunch we only do this when directly running hyprinit
+    }
+
+    echo $m_init > $states2/m # is set by prelaunch bins
+    echo $m_init > $states2/m_dummy
+    echo $s_init > $states2/s
+    echo $s_init > $states2/s_dummy
+
+{
+    . $hypr_sources/helpers/gen_theme_cards
+} &
+
+    echo 1 > $hypr_global/fire_count
+    [[ -e $hypr_global/flag_cpu ]] || echo 1 > $hypr_global/flag_cpu # only create once this file this must set to apply clock freqs
+
+    echo 0 > $hypr_global/flag_disk_umount
+    > $hypr_global/disk_to_umount
+
+    > $hypr_conf/geany/geany-session.conf
+
+
+    {
+        :
+        hyprctl plugin load "$hdots/scrolloverview.so"
+    } &
+
+    [[ $(< $states2/fallback_colors_ready) == 0 ]] && { # if fall back colors not ready then wait before calling theme restore
+        max_try=10
+        while (( $(< $states2/fallback_colors_ready) == 0 && max_try > 0 )); do
+            sleep 1
+            ((max_try--))
+        done
+    }
+    echo 0 > $states2/acc_changed # setting 1 only hot reloads accent
+    if [[ -n $theme_panic ]]; then
+        echo 1 > $states2/full_theme_reload  # making it 1 full reapplies all themes
+    else
+        echo 0 > $states2/full_theme_reload
+    fi
+
+    echo 0 > $states2/run_thunar_daemon
+{
+    . $hypr_global/qpid thunar || {
+        hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+        sleep 2
+        echo 1 > $states2/run_thunar_daemon
+    }
+} &
+
+. "$hypr_sources/sr/theme_main_restore"
+
+
+    # wait for hypridle and other configs to be ready
+    (( $(<$states2/all_theme_set) != 1 )) && {
+        max_try=10
+        while (( $(<$states2/all_theme_set) != 1 && max_try > 0 )); do
+            sleep 0.5 # max waits 5 sec for configs
+            ((max_try--))
+        done
+    }
+
+    chmod +x $hypr_conf/scripts/*
+    $hypr_conf/scripts/run_inside_loop # manually run it once
+    $hypr_conf/scripts/watch_dog
+} & # close of theme block
+
+command -v hypr_init_final_run >/dev/null 2>&1 && hypr_init_final_run
+echo "$USER" > $hypr_global/user
+. "$hypr_sources/sr/hs_main_restore" &
+{
+    . $hypr_sources/helpers/gen_keybinds_cache
+} &
+# wait
+
+chmod -R 700 "$hypr_conf" "$garbage" "$hypr_base/hypr_misc" "$hypr_global" &
+
+# some extra flags
+echo "wf-recorder" > $states2/screen_recorder
+
+echo "End of hypr-init"
+# Background process safely isolated in parentheses
+(
+    sleep 5
+    rm -f "$lock_files/dirs_setup"
+) &
+
+{
+    [[ -x $hdots/sources/helpers/splash ]] || chmod +x $hdots/sources/helpers/splash
+} &
+
+exit 0

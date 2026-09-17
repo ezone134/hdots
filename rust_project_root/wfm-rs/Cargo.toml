@@ -1,0 +1,21 @@
+[package]
+name = "wfm"
+version = "0.5.0"
+edition.workspace = true
+description = "Pure Wayland file manager (Rust rewrite)"
+license.workspace = true
+
+[dependencies]
+smithay-client-toolkit.workspace = true
+wayland-client = { workspace = true, features = ["dlopen"] }
+wayland-protocols = "0.32"
+xkbcommon = "0.8"
+ab_glyph = "0.2"
+fontdb = "0.20"
+image.workspace = true
+resvg.workspace = true
+tiny-skia.workspace = true
+regex = "1"
+calloop = "0.14"
+dirs = "5"
+libc.workspace = true

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+
+fc-list : family
+# fc-list

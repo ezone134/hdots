@@ -1,0 +1,127 @@
+#1782650600
+/bin/bash -c /acc/common/misc/boot
+#1782650591
+bash
+#1782670503
+/bin/bash -c /acc/common/misc/boot
+#1782670508
+exit
+#1782721604
+/acc/common/misc/boot
+#1782722325
+lite-xl
+#1782722329
+lite_xl
+#1782722332
+lite-xl
+#1782722338
+sublime_text
+#1782722464
+sudo cat << 'EOF' > /etc/systemd/system/boot.service
+
+[Unit]
+
+Description=Stable Custom Boot Script
+
+After=local-fs.target
+
+
+
+[Service]
+
+Type=oneshot
+
+ExecStart=/acc/common/misc/boot
+
+
+
+[Install]
+
+WantedBy=multi-user.target
+
+EOF
+
+#1782722696
+systemctl disable boot
+#1782722702
+systemctl enable boot
+#1782722718
+systemctl start boot
+#1782722730
+systemctl status boot.service
+#1782723515
+/acc/common/misc/boot
+#1782723538
+which chown
+#1782732520
+/acc/common/misc/boot
+#1782734147
+which chown
+#1782734150
+exit
+#1782734196
+which cp
+#1782734224
+link-all
+#1782734372
+/acc/common/misc/boot
+#1782734393
+link-all
+#1782734401
+/acc/common/misc/boot
+#1782734410
+cat /acc/common/misc/boot
+#1782734463
+echo $EUID
+#1782734471
+cat /acc/common/misc/boot
+#1782734473
+/acc/common/misc/boot
+#1782838786
+zypper addrepo https://download.opensuse.org/repositories/GNOME:Apps/openSUSE_Factory+GNOME_Factory/GNOME:Apps.repo
+#1782838795
+zypper ref
+#1782838812
+zypper in yad
+#1782928653
+link-all
+#1783137642
+lite-xl
+#1783137847
+lite-xl /etc/default/grub
+#1783138144
+plymouth-set-default-theme
+#1783138204
+ls /usr/share/plymouth/themes/
+#1783138788
+lite-xl /etc/dracut.conf.d/plymouth.conf
+#1783138850
+lite-xl /etc/default/grub
+#1783145494
+# plymouthd
+#1783145494
+# plymouth --show-splash
+#1783145495
+# plymouth --quit
+#1783145501
+plymouthd
+#1783145513
+plymouth --show-splash
+#1783148765
+lite-xl /etc/default/grub
+#1783256467
+udisksctl power-off -b /dev/sda
+#1783681570
+vim /etc/default/gru
+#1783681578
+vim /etc/default/grub
+#1783845736
+zypper addrepo https://download.opensuse.org/repositories/home:AvengeMedia:danklinux/openSUSE_Tumbleweed/home:AvengeMedia:danklinux.repo
+#1783845737
+zypper refresh
+#1783884026
+zypper addrepo https://download.opensuse.org/repositories/home:Zukunter/openSUSE_Tumbleweed/home:Zukunter.repo
+#1783884027
+zypper refresh
+#1783884049
+sd zp in hyprpm

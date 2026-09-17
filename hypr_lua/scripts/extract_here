@@ -1,0 +1,81 @@
+#!/usr/bin/env luajit
+-- extract_here — extract archives into a folder beside the archive.
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+local file = arg[1]
+if not file then os.exit(1) end
+local dir = dirname(file)
+local name = basename(file)
+local base = name:match("^(.*)%.[^.]*$") or name
+
+local cd = "cd " .. shq(dir) .. " && "
+
+print("Extracting....")
+notify("Extractor", "Extracting " .. name .. "…")
+
+local function final_message()
+    notify("Extractor", "All files extracted")
+end
+
+-- Handle AppImages first
+if name:match("%.AppImage$") or name == base then
+    if out("file " .. shq(dir .. "/" .. name)):find("executable") then
+        chmod(dir .. "/" .. name, "755")
+        run(cd .. shq("./" .. name) .. " --appimage-extract")
+        os.exit(0)
+    end
+end
+
+if name:match("%.zip$") then
+    run(cd .. "unzip " .. shq(name) .. " -d " .. shq(base))
+    final_message()
+elseif name:match("%.tar$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "tar -xf " .. shq(name) .. " -C " .. shq(base))
+    final_message()
+elseif name:match("%.tar%.gz$") or name:match("%.tgz$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "tar -xzf " .. shq(name) .. " -C " .. shq(base))
+    final_message()
+elseif name:match("%.tar%.xz$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "tar -xJf " .. shq(name) .. " -C " .. shq(base))
+    final_message()
+elseif name:match("%.tar%.bz2$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "tar -xjf " .. shq(name) .. " -C " .. shq(base))
+    final_message()
+elseif name:match("%.lz$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "lzip -dc " .. shq(name) .. " > " .. shq(base .. "/" .. base))
+    final_message()
+elseif name:match("%.gz$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "gunzip -c " .. shq(name) .. " > " .. shq(base .. "/" .. base))
+    final_message()
+elseif name:match("%.7z$") then
+    run(cd .. "7z x " .. shq(name) .. " -o" .. shq(base))
+    final_message()
+elseif name:match("%.rar$") then
+    mkdir_p(dir .. "/" .. base)
+    run(cd .. "unrar x " .. shq(name) .. " " .. shq(base .. "/"))
+    final_message()
+elseif name:match("%.apk$") then
+    run(cd .. "7z x " .. shq(name) .. " -o" .. shq(base))
+    final_message()
+elseif name:match("%.deb$") then
+    run(cd .. "7z x " .. shq(name) .. " -o" .. shq(base))
+    final_message()
+else
+    notify("Extractor", "Unsupported file: " .. name)
+    os.exit(1)
+end
+
+os.exit(0)

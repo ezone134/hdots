@@ -1,0 +1,18 @@
+# explicit qmldir for qs.settings — disables the synthesizer
+module qs.settings
+AboutCategory 1.0 AboutCategory.qml
+CaptureCategory 1.0 CaptureCategory.qml
+AppearanceCategory 1.0 AppearanceCategory.qml
+KeybindsCategory 1.0 KeybindsCategory.qml
+KeyboardCategory 1.0 KeyboardCategory.qml
+NotificationCategory 1.0 NotificationCategory.qml
+PillCategory 1.0 PillCategory.qml
+SettingsAction 1.0 SettingsAction.qml
+SettingsPanel 1.0 SettingsPanel.qml
+ShellCategory 1.0 ShellCategory.qml
+WallpaperCategory 1.0 WallpaperCategory.qml
+WmCategory 1.0 WmCategory.qml
+WmCombo 1.0 WmCombo.qml
+WmHeader 1.0 WmHeader.qml
+WmSlider 1.0 WmSlider.qml
+WmToggle 1.0 WmToggle.qml

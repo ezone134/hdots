@@ -1,0 +1,5 @@
+# Hashes of file build rules.
+19199840d2bc6e8e870ec3fe683beb24 CMakeFiles/QsIo_autogen
+1a9a2befde2febb507afe90760c73706 QsIo_autogen/timestamp
+cafb637e01532cc09e65d6efd6859a23 meta_types/QsIo_json_file_list.txt
+3cc99f16a1ad559e53f83148faa4dd69 meta_types/qt6qsio_metatypes.json.gen

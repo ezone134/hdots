@@ -1,0 +1,7 @@
+# -*- mode: sh -*-
+
+screen_recorder=$(<$states2/screen_recorder)
+. $hypr_global/qpid $screen_recorder && {
+pkill $screen_recorder
+notify-send -a Recording "Recording" "Stopped and saved to ~/Videos/wf" &
+}

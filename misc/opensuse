@@ -1,0 +1,196 @@
+# -*- mode: sh -*-
+
+alias zp='zypper '
+alias zyp='zypper '
+alias zpr='zypper '
+alias zypp='zypper '
+alias ref='sudo zypper -vvv ref; sudo chown -R $u1:$u1 /var/cache/zypp; up-zypp '
+alias dup='sudo zypper dup '
+alias up='sudo zypper up '
+alias ff='fastfetch '
+alias nf='neofetch '
+alias mm='master-menu '
+
+
+clean-deps () {
+	sudo zypper rm $(zypper packages --unneeded | grep ^i | cut -d '|' -f 3)
+}
+
+hm () {
+echo $1 > $states2/hyprsunset_manual
+hyprsunset-manual
+}
+rmd () {
+	sudo zypper rm --clean-deps "$@"
+}
+
+
+chroot_dir () {
+dir="${1%/}"
+sudo mkdir -p $dir/proc $dir/sys $dir/dev $dir/run $dir/dev
+sudo mount --types proc /proc $dir/proc
+sudo mount --rbind /sys $dir/sys
+sudo mount --make-rslave $dir/sys
+sudo mount --rbind /dev $dir/dev
+sudo mount --make-rslave $dir/dev
+sudo mount --bind /run $dir/run
+sudo mount --make-slave $dir/run
+
+sudo chroot $dir /bin/bash
+source /etc/profile
+export PS1="(chroot) ${PS1}"
+}
+
+
+tw-install () {
+dir="${1%/}"
+echo "installing fresh tumbleweed to $dir"
+sudo mkdir -p $dir
+
+sudo touch "$dir/gen-fstab"
+sudo chmod 777 "$dir/gen-fstab"
+cat > "$dir/gen-fstab" <<'EOF'
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+echo "on host or without chroot it works  the script must be at / of the given partition it will work without chroot"
+echo "script dir $SCRIPT_DIR"
+
+# if not on host os then make it empty so /etc/fstab not //etc/fstab
+[ "$SCRIPT_DIR" = "/" ] && {
+	echo "script is currently on running os"
+	SCRIPT_DIR="" # make it empty
+}
+# exit 0
+sudo cp $SCRIPT_DIR/etc/fstab $SCRIPT_DIR/etc/fstab.bak
+root_uuid=$(findmnt -n -o UUID $SCRIPT_DIR/)
+[ -z "$root_uuid" ] && exit 1
+echo "UUID=$root_uuid  /      ext4  defaults,noatime      0  1
+UUID=dcd25a01-9288-4f8c-ba7d-be902083998e  /acc/data  ext4  data=ordered,noatime  0  2
+UUID=180e659d-f0f4-4335-a7bf-57db77a5ec5f   /acc/common   ext4    defaults,noatime           0 2
+# entry added by boot.sh
+tmpfs   /tmp   tmpfs   size=5G,noatime   0   0" | tee $SCRIPT_DIR/etc/fstab
+echo
+echo
+echo
+echo $root_uuid > /root_uuid
+echo "here is updated fstab"
+echo
+cat /etc/fstab
+EOF
+sudo chmod +x "$dir/gen-fstab"
+echo "gen-fstab script created at the dir u are going to install tumbleweed"
+
+# now second script
+sudo touch "$dir/run-after-chroot"
+sudo chmod 777 "$dir/run-after-chroot"
+cat > "$dir/run-after-chroot" <<'EOF'
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+/gen-fstab # run it
+
+systemctl enable NetworkManager
+
+# mkdir -p /var/cache
+# mount -t tmpfs -o size=5G tmpfs /var/cache
+echo "adding password for root"
+passwd root
+echo "adding user tw"
+useradd tw
+echo "adding password for tw"
+passwd tw
+
+mkdir -p /boot/grub2
+grub2-mkconfig -o /boot/grub2/grub.cfg
+echo "NOW MANUALLY ADD GRUB CHAINLOADER TO LOAD /boot/grub2/grub.cfg"
+echo "After successfull boot run third script with 3_script"
+
+EOF
+echo "2nd script created run-after-chroot immediately"
+sudo chmod +x "$dir/run-after-chroot"
+
+
+
+# now third script
+sudo touch "$dir/3_script"
+sudo chmod 777 "$dir/3_script"
+cat > "$dir/3_script" <<'EOF'
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+sudo systemctl enable NetworkManager
+sudo systemctl start NetworkManager
+
+sudo nmtui
+
+sudo mkdir -p /var/cache
+sudo mount -t tmpfs -o size=5G tmpfs /var/cache
+
+sudo zypper ar https://download.opensuse.org/tumbleweed/repo/oss/ oss
+sudo zypper ref
+sudo zypper in --no-recommends patterns-base-base zypper sypper NetworkManager NetworkManager-tui sudo shadow kernel-default kernel-firmware-mediatek kernel-firmware-amdgpu ucode-amd dracut libva-utils Mesa-libva grub2-x86_64-efi gsettings-desktop-schemas hyprland hyprlock pipewire pipewire-pulseaudio wireplumber mate-polkit thunar tlp udisks2 gvfs-backends tumbler fuse libfuse2 nix flatpak
+
+sudo systemctl enable tlp
+sudo systemctl enable NetworkManager tlp
+
+# third script is finallay ran only after all is final we enable boot script in this
+
+
+read -p "WARNING: This script is intended for a NEW INSTALL only. (Not for tw-virgin, but after u rsync to new partition and run from that partition) Proceed? (y/N): " response
+[[ ! $response =~ ^[Yy]$ ]] && exit 1
+echo "[Unit]
+Description=Run async boot script
+After=local-fs.target
+Requires=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/acc/common/scripts/boot.sh &'
+RemainAfterExit=yes
+TimeoutStartSec=0
+RuntimeMaxSec=20min
+
+[Install]
+WantedBy=local-fs.target" | sudo tee /etc/systemd/system/boot.service
+sudo systemctl enable boot.service
+# optional
+sudo mkdir -p /boot/grub2
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+EOF
+echo "3rd script created 3_script run this only after all are final and successful boot to fresh new os"
+sudo chmod +x "$dir/3_script"
+
+# install base os tiny base
+#sudo zypper --installroot "$dir" in --no-recommends patterns-base-base zypper sypper # always start with sypper and zypper first
+sudo zypper --installroot "$dir" in --no-recommends patterns-base-base zypper sypper grub2-x86_64-efi  NetworkManager  sudo shadow NetworkManager-tui kernel-default kernel-firmware-mediatek dracut
+
+echo "to transfer the current os to another drive hit following command without before chroot"
+echo
+echo "sudo rsync -caAxXhHiv --inplace --no-whole-file $dir/ /destination"
+
+echo "base system installed now chroot and run second script"
+
+echo "Run below code to chroot:"
+
+echo
+echo 'sudo mkdir -p $dir/proc $dir/sys $dir/dev $dir/run $dir/dev
+sudo mount --types proc /proc $dir/proc
+sudo mount --rbind /sys $dir/sys
+sudo mount --make-rslave $dir/sys
+sudo mount --rbind /dev $dir/dev
+sudo mount --make-rslave $dir/dev
+sudo mount --bind /run $dir/run
+sudo mount --make-slave $dir/run
+
+sudo chroot $dir /bin/bash
+source /etc/profile
+export PS1="(chroot) ${PS1}"'
+echo
+
+
+}

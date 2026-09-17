@@ -1,0 +1,73 @@
+#!/usr/bin/env luajit
+
+local WATCHDOG_PID = states2 .. "/pid_watchdog"
+local LOOP_PID = states2 .. "/pid_user_loop"
+local LOOP_PATH = hypr_conf .. "/scripts/user_loop"
+local LOG_FILE = hypr_conf .. "/log/watchdog.log"
+
+local function log(msg)
+    local f = io.open(LOG_FILE, "a")
+    if f then
+        f:write(os.date() .. ": " .. msg .. "\n")
+        f:close()
+    end
+end
+
+if is_file(WATCHDOG_PID) then
+    local old_watchdog_pid = read_line(WATCHDOG_PID)
+    if old_watchdog_pid and old_watchdog_pid ~= "" then
+        if os.execute("kill -0 " .. old_watchdog_pid .. " 2>/dev/null") then
+            log("Old watchdog (PID " .. old_watchdog_pid .. ") detected. Killing it...")
+            run("kill -9 " .. old_watchdog_pid .. " 2>/dev/null")
+            run("sleep 1")
+        end
+    end
+    rm(WATCHDOG_PID)
+end
+
+write_line(WATCHDOG_PID, tostring(os.getpid()))
+log("Watchdog started fresh with PID " .. os.getpid())
+
+log("Watchdog entering loop - forcing initial restart of user loop...")
+
+if is_file(LOOP_PID) then
+    local old_loop_pid = read_line(LOOP_PID)
+    if old_loop_pid and old_loop_pid ~= "" then
+        if os.execute("kill -0 " .. old_loop_pid .. " 2>/dev/null") then
+            run("kill -15 " .. old_loop_pid .. " 2>/dev/null")
+            run("sleep 1")
+        end
+    end
+    rm(LOOP_PID)
+end
+
+spawn("nohup " .. shq(LOOP_PATH) .. " > /dev/null 2>&1 &")
+run("sleep 0.5")
+
+while true do
+    local should_restart = false
+
+    if is_file(LOOP_PID) then
+        local pid = read_line(LOOP_PID)
+        if pid and pid ~= "" then
+            if not os.execute("kill -0 " .. pid .. " 2>/dev/null") then
+                log("User loop PID " .. pid .. " is dead.")
+                should_restart = true
+            end
+        else
+            should_restart = true
+        end
+    else
+        log("User loop PID file missing.")
+        should_restart = true
+    end
+
+    if should_restart then
+        log("Launching " .. LOOP_PATH .. "...")
+        rm(LOOP_PID)
+        spawn("nohup " .. shq(LOOP_PATH) .. " > /dev/null 2>&1 &")
+        run("sleep 0.5")
+    end
+
+    run("sleep 120")
+end

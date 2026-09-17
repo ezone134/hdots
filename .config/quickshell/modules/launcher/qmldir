@@ -1,0 +1,3 @@
+# explicit qmldir for qs.launcher — disables the synthesizer
+module qs.launcher
+LauncherPanel 1.0 LauncherPanel.qml

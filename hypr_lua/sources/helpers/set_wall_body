@@ -1,0 +1,57 @@
+#!/usr/bin/env luajit
+-- helper set_wall_body
+
+if is_file(lock_files .. "/awww_init_lock") then
+    spawn("notify-send -a Wallpaper 'Wallpaper' 'Please wait — previous instance still running...'")
+    local max_try = 10
+    while is_file(lock_files .. "/awww_init_lock") and max_try > 0 do
+        run("sleep 1")
+        max_try = max_try - 1
+    end
+end
+
+local wall
+if arg[1] and is_file(arg[1]) then
+    wall = arg[1]
+else
+    local base = basename(arg[1] or "")
+    wall = os.getenv("HOME") .. "/Wallpapers/" .. base
+end
+
+if is_file(wall) then
+    local s = read_line(states2 .. "/s") or "n"
+    local current_wall = read_line(states .. "/current_wall_" .. s)
+    if current_wall ~= wall then
+        write_line(states .. "/current_wall_" .. s, wall)
+        local acc_reload
+        if read_line(states .. "/acc_source_" .. s) == "w" then
+            acc_reload = 1
+        else
+            acc_reload = 0
+        end
+
+        if is_file(lock_files .. "/awww_init_lock") then
+            spawn("notify-send -a Wallpaper 'Wallpaper' 'Waiting for pending processes...'")
+            local max_try = 10
+            while is_file(lock_files .. "/awww_init_lock") and max_try > 0 do
+                run("sleep 0.5")
+                max_try = max_try - 1
+            end
+        end
+        touch(lock_files .. "/awww_init_lock")
+
+        s = read_line(states2 .. "/s") or "n"
+        local m = read_line(states2 .. "/m") or "d"
+        local acc_source = read_line(states .. "/acc_source_" .. s) or "0"
+        wall = read_line(states .. "/current_wall_" .. s)
+
+        local wall_bak = wall
+        spawn("luajit " .. hypr_sources .. "/helpers/awww_final")
+
+        if acc_reload == 1 then
+            dofile(hypr_sources .. "/helpers/theme_body")
+            regen_accent_and_theme_colors()
+        end
+        rm(lock_files .. "/awww_init_lock")
+    end
+end

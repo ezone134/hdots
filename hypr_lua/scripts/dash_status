@@ -1,0 +1,48 @@
+#!/usr/bin/env luajit
+-- dash_status — one line of dashboard telemetry for zen-shell.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+local function num(s)
+    return (s or ""):gsub("%D", "")
+end
+
+local bri  = num(out("brightness_main get"))
+local vl   = out("audio_main vol get")
+local ml   = out("audio_main mic get")
+local vol  = num((vl:match("(%d+%%)")) or "")
+local mic  = num((ml:match("(%d+%%)")) or "")
+local mmut = 0
+if (ml or ""):match("muted: yes") then mmut = 1 end
+
+local sh = out("shader_main status")
+local shst, shsat = sh:match("^(%S*)%s*(.-)$")
+if shst == nil then shst = "0" end
+if shsat == nil or shsat == "" then shsat = sh end
+if shsat == nil or shsat == "" or shsat:match("%D") then shsat = "100" end
+
+local su = out("hs_main status")
+local sust, sukv = su:match("^(%S*)%s*(.-)$")
+if sukv == "" then sukv = su end
+
+local caff = out("caffeine_main status")
+
+-- compositor effect states — read the same state files the helpers toggle.
+s = read_line(states2 .. "/s")
+local blur_on = 0
+if read_line(states .. "/hypr_blur_" .. (s ~= "" and s or "d")) == "1" then blur_on = 1 end
+local shadow_on = 0
+if read_line(states .. "/shadow_enabled_" .. (s ~= "" and s or "d")) == "1" then shadow_on = 1 end
+-- opacity: active_opacity 1.0 = normal (off), <1.0 = dimming applied (on)
+local opac_on = 0
+local opac_act = read_line(states .. "/opacity_active_" .. (s ~= "" and s or "d"))
+if opac_act ~= "1.0" and opac_act ~= "" then opac_on = 1 end
+
+print(string.format("%s %s %s %s %s %s %s %s %s %s %s %s",
+    (bri ~= "" and bri or "0"), (vol ~= "" and vol or "0"), (mic ~= "" and mic or "0"), mmut,
+    (shsat ~= "" and shsat or "100"), (shst == "1" and "1" or "0"),
+    (sust ~= "" and sust or "c"), (sukv ~= "" and sukv or "4000"), (caff ~= "" and caff or "off"),
+    blur_on, shadow_on, opac_on))

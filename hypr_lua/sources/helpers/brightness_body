@@ -1,0 +1,184 @@
+#!/usr/bin/env luajit
+-- helper brightness_body
+
+function _bri_dir()
+    for _, d in ipairs(list_dir("/sys/class/backlight")) do
+        local path = "/sys/class/backlight/" .. d
+        if is_file(path .. "/brightness") and is_file(path .. "/max_brightness") then
+            return path
+        end
+    end
+    return nil
+end
+
+function bri_get()
+    local d = _bri_dir()
+    if not d then return 0 end
+    local cur = tonumber(read_line(d .. "/brightness")) or 0
+    local max = tonumber(read_line(d .. "/max_brightness")) or 1
+    if max <= 0 then max = 1 end
+    return math.floor(cur * 100 / max)
+end
+
+function bri_raw()
+    local d = _bri_dir()
+    if not d then return 0 end
+    return tonumber(read_line(d .. "/brightness")) or 0
+end
+
+function bri_max()
+    local d = _bri_dir()
+    if not d then return 65535 end
+    return tonumber(read_line(d .. "/max_brightness")) or 65535
+end
+
+function bri_write(raw)
+    raw = tonumber(raw) or 0
+    local dir = _bri_dir()
+    if not dir then return false end
+    local max = tonumber(read_line(dir .. "/max_brightness")) or 1
+    if max <= 0 then max = 1 end
+    if raw < 1 then raw = 1 end
+    if raw > max then raw = max end
+
+    local bright_path = dir .. "/brightness"
+    if is_file(bright_path) then
+        local f = io.open(bright_path, "w")
+        if f then f:write(tostring(raw) .. "\n"); f:close(); return true end
+    end
+    if out("command -v busctl") ~= "" then
+        local dev = basename(dir)
+        run("busctl call org.freedesktop.login1 /org/freedesktop/login1/session/auto org.freedesktop.login1.Session SetBrightness ssu backlight " .. shq(dev) .. " " .. tostring(raw))
+    else
+        local f = io.open(bright_path, "w")
+        if f then f:write(tostring(raw) .. "\n"); f:close() end
+    end
+end
+
+function bri_step(sign, step)
+    sign = sign or "+"
+    step = tonumber(step) or 5
+    local max_val = bri_max()
+    local cur = bri_raw()
+    local raw = math.floor(max_val * step / 100)
+    if raw < 1 then raw = 1 end
+    local new
+    if sign == "+" then
+        new = cur + raw
+        if new > max_val then new = max_val end
+    else
+        new = cur - raw
+        if new < 1 then new = 1 end
+    end
+    bri_write(new)
+end
+
+function gamma_up_func()
+    local s_val = read_line(states2 .. "/s")
+    if not is_file(states2 .. "/gamma") then write_line(states2 .. "/gamma", "0") end
+    local gamma = tonumber(read_line(states2 .. "/gamma")) or 0
+    gamma = gamma + 1
+    if gamma > 16 then gamma = 16 end
+    write_line(states2 .. "/gamma", tostring(gamma))
+    local frag = string.format("%.1f", gamma * 5 * 0.1)
+    local file = os.getenv("HOME") .. "/.config/hypr/shaders/gamma/" .. frag .. ".frag"
+    if gamma > 0 then
+        write_line(states .. "/shader_state_" .. s_val, "1")
+        write_line(states .. "/shader_val_" .. s_val, file)
+    end
+    shader_main("on")
+end
+
+function gamma_down_func()
+    local s_val = read_line(states2 .. "/s")
+    if not is_file(states2 .. "/gamma") then write_line(states2 .. "/gamma", "0") end
+    local gamma = tonumber(read_line(states2 .. "/gamma")) or 0
+    gamma = gamma - 1
+    if gamma < 0 then gamma = 0 end
+    write_line(states2 .. "/gamma", tostring(gamma))
+    if gamma == 0 then
+        write_line(states .. "/shader_state_" .. s_val, "0")
+        shader_main("reset")
+        run("hyprctl reload")
+        return
+    end
+    local frag = string.format("%.1f", gamma * 5 * 0.1)
+    local file = os.getenv("HOME") .. "/.config/hypr/shaders/gamma/" .. frag .. ".frag"
+    write_line(states .. "/shader_val_" .. s_val, file)
+    shader_main("on")
+end
+
+function bri_up_func(step)
+    step = tonumber(step) or 5
+    local max_val = bri_max()
+    local cur = bri_raw()
+    if cur ~= nil and tostring(cur) == tostring(max_val) then
+        spawn("notify-send -a Brightness -t 800 'Brightness' 'Max brightness -- tweaking gamma'")
+        gamma_up_func()
+        return
+    end
+    bri_step("+", step)
+end
+
+function bri_down_func(step)
+    step = tonumber(step) or 5
+    local gamma = 0
+    if is_file(states2 .. "/gamma") then gamma = tonumber(read_line(states2 .. "/gamma")) or 0 end
+    if gamma > 0 then
+        gamma_down_func()
+        return
+    end
+    bri_step("-", step)
+end
+
+function bri_lazy_up_func()
+    local max_val = bri_max()
+    local cur = bri_raw()
+    if cur ~= nil and tostring(cur) == tostring(max_val) then
+        gamma_up_func()
+        return
+    end
+    bri_step("+", 1)
+    local p = bri_get()
+    spawn(string.format("notify-send -a Brightness -u low -h int:value:%s -t 2000 -h string:x-canonical-private-synchronous:brightness 'Brightness' '%s%%'", p, p))
+end
+
+function bri_lazy_down_func()
+    local gamma = 0
+    if is_file(states2 .. "/gamma") then gamma = tonumber(read_line(states2 .. "/gamma")) or 0 end
+    if gamma > 0 then
+        gamma_down_func()
+        return
+    end
+    bri_step("-", 1)
+    local p = bri_get()
+    spawn(string.format("notify-send -a Brightness -u low -h int:value:%s -t 2000 -h string:x-canonical-private-synchronous:brightness 'Brightness' '%s%%'", p, p))
+end
+
+function bri_cmd(action, arg2)
+    action = action or "get"
+    arg2 = arg2 or ""
+    if action == "get" or action == "cur" then
+        print(bri_get() .. "%")
+    elseif action == "set" then
+        bri_write(math.floor(bri_max() * (tonumber(arg2) or 50) / 100))
+    elseif action == "up" then
+        bri_up_func(tonumber(arg2) or 5)
+    elseif action == "down" then
+        bri_down_func(tonumber(arg2) or 5)
+    elseif action == "lazy" then
+        local sub = arg2 ~= "" and arg2 or "up"
+        if sub == "up" then bri_lazy_up_func()
+        elseif sub == "down" then bri_lazy_down_func()
+        else err("bri lazy: use up|down")
+        end
+    elseif action == "gamma" then
+        local sub = arg2 ~= "" and arg2 or "up"
+        if sub == "up" then gamma_up_func()
+        elseif sub == "down" then gamma_down_func()
+        else err("bri gamma: use up|down")
+        end
+    else
+        err("bri: use get|set N|up [N]|down [N]|lazy up|down|gamma up|down")
+    end
+end

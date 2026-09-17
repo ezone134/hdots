@@ -1,0 +1,29 @@
+#!/usr/bin/env luajit
+-- helper sync_back
+
+states = states or "/home/user/data/states"
+hdots = hdots or "/mnt/backup/server/aalu_pyaz"
+
+local s_val = read_line(states2 .. "/s")
+if s_val == "n" then
+    write_line(states .. "/s", "0")
+else
+    write_line(states .. "/s", "1")
+end
+
+spawn("rsync -crv --inplace --no-whole-file --delete-before " .. states .. "/ " .. hdots .. "/states/")
+
+spawn("rsync -crv --inplace --no-whole-file " .. hypr_global .. "/states/ " .. hdots .. "/states_global/")
+
+if out("command -v sync_extras") ~= "" then
+    spawn("sync_extras")
+end
+
+local accent_caching = tonumber(read_line(states .. "/accent_caching")) or 0
+if accent_caching == 1 then
+    mkdir_p(hypr_cache .. "/accent_files")
+    mkdir_p(hdots .. "/hypr_cache/accent_files")
+    spawn("rsync -cr --inplace --no-whole-file " .. hypr_cache .. "/accent_files/ " .. hdots .. "/hypr_cache/accent_files")
+end
+
+run("wait")

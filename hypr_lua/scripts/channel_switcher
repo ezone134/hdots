@@ -1,0 +1,82 @@
+#!/usr/bin/env luajit
+-- channel_switcher — debounce-switch between normal/split UI channels.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+local ffi = require("ffi")
+ffi.cdef[[
+int getpid(void);
+]]
+
+local function main_func_fire()
+    local s = state2_read("s_dummy")
+    state2_write("s", s)
+    state2_write("sm", s .. (state2_read("m") or ""))
+
+    local new_channel
+    if s == "n" then
+        new_channel = "normal"
+    else
+        new_channel = "split"
+    end
+
+    os.setenv("acc_change_force", "yes_force_it")
+    os.setenv("do_not_relaunch_rofi", "yea do not relaunch rofi")
+
+    io.write("this is chanel switcher main ufnc restoreting theme\n")
+    state2_write("all_theme_set", "0")
+    state2_write("acc_changed", "1")
+
+    dofile(lua_sources .. "/helpers/theme_main_body")
+    spawn("theme_main_restore_func")
+
+    local max_try = 10
+    while (tonumber(state2_read("all_theme_set")) or 0) ~= 1 and max_try < 10 do
+        run("sleep 0.5")
+        max_try = max_try - 1
+    end
+
+    if new_channel == "split" then
+        dofile(lua_sources .. "/helpers/center_pop")
+        spawn("center_pop 'SPLIT' 'Switched to split UI State'")
+    else
+        dofile(lua_sources .. "/helpers/center_pop")
+        spawn("center_pop 'NORMAL' 'Switched to normal UI State'")
+    end
+
+    os.exit(0)
+end
+
+-- debounce logic
+local s_dummy = state2_read("s_dummy") or ""
+local m = state2_read("m") or ""
+if s_dummy == "n" then
+    s_dummy = m
+else
+    s_dummy = "n"
+end
+state2_write("s_dummy", s_dummy)
+
+-- spawn a background Lua script that sleeps 1s then checks the debounce
+local pid = ffi.C.getpid()
+local dir_esc = dir:gsub("\\", "\\\\"):gsub('"', '\\"')
+local src_esc = dir_esc
+local tmp = os.tmpname()
+write(tmp,
+    "#!/usr/bin/env luajit\n"
+    .. "local dir = \"" .. dir_esc .. "\"\n"
+    .. "lua_bin = dir; lua_sources = dir .. \"/sources\"; lua_helpers = lua_sources .. \"/helpers\"\n"
+    .. "dofile(lua_helpers .. \"/utils\")\n"
+    .. "run(\"sleep 1\")\n"
+    .. "if " .. tostring(pid) .. " == tonumber(state2_read(\"channel_switch_pid\")) then\n"
+    .. "  if state2_read(\"s_dummy\") ~= state2_read(\"s\") then\n"
+    .. "    io.write(\"channel differs switching\\n\")\n"
+    .. "    main_func_fire()\n"
+    .. "  end\n"
+    .. "end\n"
+    .. "os.remove(\"" .. tmp .. "\")\n"
+)
+state2_write("channel_switch_pid", tostring(pid))
+spawn("luajit " .. shq(tmp))

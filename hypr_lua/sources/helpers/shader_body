@@ -1,0 +1,71 @@
+#!/usr/bin/env luajit
+-- helper shader_body
+
+s = read_line(states2 .. "/s")
+state = tonumber(read_line(states .. "/shader_state_" .. s)) or 0
+
+function shader_reset_func()
+    write(os.getenv("HOME") .. "/.config/hypr/configs/shader.lua", "")
+    write_line(states .. "/shader_state_" .. s, "0")
+    spawn("notify-send -a Shader 'Shader' 'Turned off / Reset'")
+end
+
+function shader_restore_func()
+    local shader_dir = os.getenv("HOME") .. "/.config/hypr/shaders/saturations"
+    state = tonumber(read_line(states .. "/shader_state_" .. s)) or 0
+    if state == 1 then
+        local val = read_line(states .. "/shader_val_" .. s) or ""
+        if not is_file(val) then
+            if is_file(shader_dir .. "/" .. val) then
+                val = shader_dir .. "/" .. val
+            elseif is_file(shader_dir .. "/" .. val .. ".glsl") then
+                val = shader_dir .. "/" .. val .. ".glsl"
+            else
+                val = shader_dir .. "/100.glsl"
+            end
+        end
+        if val == shader_dir .. "/100.glsl" then
+            shader_reset_func()
+            return
+        end
+        spawn("notify-send -a Shader 'Shader' 'Using " .. val .. "'")
+        write(os.getenv("HOME") .. "/.config/hypr/configs/shader.lua", string.format(
+            [[hl.config({
+    decoration = {
+        screen_shader = "%s"
+    }
+})]], val))
+    end
+    write_line(states2 .. "/shader_done", "1")
+end
+
+function shader_on_func()
+    write_line(states .. "/shader_state_" .. s, "1")
+    shader_restore_func()
+end
+
+function shader_toggle_func()
+    if (state or 0) == 0 then
+        shader_on_func()
+    else
+        shader_reset_func()
+    end
+end
+
+function shader_set_func(n_str)
+    n_str = tostring(n_str or ""):gsub("\r", ""):match("^%s*(.-)%s*$") or ""
+    n_str = n_str:gsub("%.glsl$", ""):match("[^/]+$") or n_str
+    if n_str == "" or not n_str:match("^%d+$") then
+        err("shader_main set: need integer 0..200, got: " .. tostring(n_str))
+        return false
+    end
+    local n = tonumber(n_str)
+    if n > 200 then
+        err("shader_main set: " .. n_str .. " out of range 0..200")
+        return false
+    end
+    local shaders_dir = os.getenv("HOME") .. "/.config/hypr/shaders"
+    write_line(states .. "/shader_val_" .. s, shaders_dir .. "/saturations/" .. n .. ".glsl")
+    write_line(states .. "/shader_state_" .. s, "1")
+    shader_restore_func()
+end

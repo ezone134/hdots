@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+. $hypr_sources/helpers/blur_body
+
+
+case $1 in
+toggle)
+    blur_toggle_func
+    ;;
+on)
+    blur_on_func
+;;
+off)
+    blur_off_func
+;;
+restore)
+    blur_restore_func
+;;
+reset)
+    blur_reset_func
+;;
+esac

@@ -1,0 +1,66 @@
+#!/usr/bin/env luajit
+-- helper sync_etc_files
+
+if is_file(lock_files .. "/etc_synced") then return end
+touch(lock_files .. "/etc_synced")
+
+function sync_it_file(l, r)
+    mkdir_p(dirname(r))
+    if not is_file(r) then
+        local content = read(l)
+        if content then
+            write(r, content)
+            print("Created NEW FILE, " .. l .. " -> " .. r)
+        end
+        return
+    end
+    local lc = read(l) or ""
+    local rc = read(r) or ""
+    if lc ~= rc then
+        write(r, lc)
+        print("Updated, " .. l .. " -> " .. r)
+    end
+end
+
+function sync_it_dir(l, r)
+    run("rsync -cr --inplace --no-whole-file " .. l .. "/ " .. r .. "/")
+end
+
+function sync_files_11()
+    local files_pairs = {
+        "/etc/fstab:" .. hdots .. "/system-tumbleweed/etc/fstab",
+        "/etc/group:" .. hdots .. "/system-tumbleweed/etc/group",
+        "/etc/group-:" .. hdots .. "/system-tumbleweed/etc/group-",
+        "/etc/tlp.conf:" .. hdots .. "/system-tumbleweed/etc/tlp.conf",
+        "/etc/hosts:" .. hdots .. "/system-tumbleweed/etc/hosts",
+        "/etc/host.conf:" .. hdots .. "/system-tumbleweed/etc/host.conf",
+        "/etc/machine-id:" .. hdots .. "/system-tumbleweed/etc/machine-id",
+        "/etc/hostname:" .. hdots .. "/system-tumbleweed/etc/hostname",
+        "/usr/etc/sudoers:" .. hdots .. "/system-tumbleweed/usr/etc/sudoers",
+        "/etc/sudoers:" .. hdots .. "/system-tumbleweed/etc/sudoers",
+        "/etc/zypp/zypp.conf:" .. hdots .. "/system-tumbleweed/etc/zypp/zypp.conf",
+        "/etc/zypp/zypper.conf:" .. hdots .. "/system-tumbleweed/etc/zypp/zypper.conf",
+        "/etc/zypp/repos.d/oss.repo:" .. hdots .. "/system-tumbleweed/etc/zypp/repos.d/oss.repo",
+    }
+    for _, pair in ipairs(files_pairs) do
+        local l = pair:match("^(.-):")
+        local r = pair:match(":(.*)$")
+        spawn("luajit -e 'dofile(" .. shq(arg[0]) .. "); sync_it_file(" .. shq(l) .. "," .. shq(r) .. ")'")
+    end
+end
+
+function sync_folders_11()
+    local folders_pairs = {
+        "/etc/zypp/repos.d:" .. hdots .. "/system-tumbleweed/etc/zypp/repos.d",
+    }
+    for _, pair in ipairs(folders_pairs) do
+        local l = pair:match("^(.-):")
+        local r = pair:match(":(.*)$")
+        mkdir_p(l)
+        mkdir_p(r)
+        spawn("luajit -e 'dofile(" .. shq(arg[0]) .. "); sync_it_dir(" .. shq(l) .. "," .. shq(r) .. ")'")
+    end
+end
+
+sync_files_11()
+print("All etc files synced")

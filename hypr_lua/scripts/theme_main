@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- theme_main — theme CLI: dark/light/toggle/restore/reapply + list/apply <id>
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/theme_main_body")
+theme_cmd(unpack(arg))

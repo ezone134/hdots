@@ -1,0 +1,303 @@
+# -*- mode: sh -*-
+# audio_body — vol/mic (wpctl) and audio routing/streams (pactl)
+# functions. Sourced by audio_main for the vol|mic|audio subcommands.
+#
+SINK="@DEFAULT_AUDIO_SINK@"
+SRC="@DEFAULT_AUDIO_SOURCE@"
+## ---- volume (sink) ------------------------------------------------------
+
+# Volume/mic state lives in $states2 (vol = integer 0..max_vol, vol_f = the
+# wpctl fraction string "0.40", vol_muted = 0/1); the max_vol/max_mic clamps
+# live in $states (persist across sessions), seeded ONCE at startup by
+# hypr_init (same files audio_body/audio_main use, so terminal CLI, keybinds
+# and the shell all agree). Reads NEVER spawn wpctl; wpctl runs only to
+# apply an actual change. vol_ensure() re-seeds from the device only when
+# the state file is missing (bare terminal before Hyprland).
+
+vol_ensure() {
+    [[ -f "$states2/vol" ]] && return 0
+    local s f v
+    s="$(wpctl get-volume "$SINK")" || {
+        # complete the state set so readers/toggles never hit missing files
+        printf '0\n' > "$states2/vol"
+        printf '0.00\n' > "$states2/vol_f"
+        printf '0\n' > "$states2/vol_muted"
+        return 0
+    }
+    f="${s#*: }"; f="${f%% *}"
+    v=$((10#${f/./}))
+    [[ "$s" == *MUTED* ]] && printf '1\n' > "$states2/vol_muted" || printf '0\n' > "$states2/vol_muted"
+    printf '%s\n' "$v" > "$states2/vol"
+    printf '%s\n' "$f" > "$states2/vol_f"
+}
+
+# integer hundredths (0..max_vol) -> wpctl fraction string (40 -> "0.40")
+vol_fraction() { printf "%d.%02d\n" $((${1:-0} / 100)) $((${1:-0} % 100)); }
+
+vol_status() {
+    local v m
+    vol_ensure
+    v="$(<"$states2/vol")"
+    m=no; [[ "$(<"$states2/vol_muted")" == 1 ]] && m=yes
+    printf 'volume: %s%%  muted: %s\n' "$v" "$m"
+}
+
+vol_apply() {  # push the saved value to the device (spawns wpctl ONCE per change)
+    local f
+    f=$(vol_fraction "$(<"$states2/vol")")
+    printf '%s\n' "$f" > "$states2/vol_f"
+    # Set both channels to the same value so L/R stay balanced when the main
+    # slider moves. If the user adjusted a channel separately, the shell writes
+    # $states2/vol_left / vol_right and calls vol_apply_ch instead.
+    wpctl set-volume "$SINK" "$f" "$f" >/dev/null 2>&1
+    # No OSD IPC: the shell's VolumeManager reacts to the PipeWire sink node
+    # signal (volumeOsdWatch) and renders the slider OSD itself.
+}
+
+# apply a single channel (L or R) without touching the other.
+# reads the current sink volume, preserves the unchanged channel.
+vol_apply_ch() {  # ch = left|right, val = integer hundredths
+    local side=$1 val=$2 f other
+    vol_ensure
+    # read current L/R from wpctl get-volume (format: "Volume: 0.70 / 0.70 ...")
+    local s="$(wpctl get-volume "$SINK" 2>/dev/null)"
+    local both="${s#*: }"; both="${both%% *}"
+    local cur_l="${both%%/*}"; cur_l="${cur_l## }"
+    local cur_r="${both##*/}"; cur_r="${cur_r%% *}"; cur_r="${cur_r## }"
+    f=$(vol_fraction "$val")
+    if [[ "$side" == left ]]; then
+        wpctl set-volume "$SINK" "$f" "$cur_r" >/dev/null 2>&1
+    else
+        wpctl set-volume "$SINK" "$cur_l" "$f" >/dev/null 2>&1
+    fi
+    printf '%s\n' "$f" > "$states2/vol_f"
+}
+
+vol_set_ch() {  # side = left|right, val = integer hundredths (0..max_vol)
+    local side=$1 val=${2:-50} max
+    vol_ensure
+    [[ "$val" =~ ^[0-9]+$ ]] || { err "vol_set_ch: need a number"; return 1; }
+    max="$(<"$states/max_vol")"
+    (( val > max )) && val=$max
+    (( val < 0 )) && val=0
+    printf '%s\n' "$val" > "$states2/vol_${side}"
+    vol_apply_ch "$side" "$val"
+}
+
+vol_set() {
+    local m=${1:-50} max
+    vol_ensure
+    [[ "$m" =~ ^[0-9]+$ ]] || { err "vol set: need a number"; return 1; }
+    max="$(<"$states/max_vol")"
+    (( m > max )) && m=$max
+    printf '%s\n' "$m" > "$states2/vol"
+    vol_apply
+}
+
+vol_step() {
+    local delta=${1:-5} sign=${2:-+} m max
+    vol_ensure
+    m="$(<"$states2/vol")"
+    if [[ "$sign" == - ]]; then m=$((m - delta)); else m=$((m + delta)); fi
+    max="$(<"$states/max_vol")"
+    (( m < 0 )) && m=0
+    (( m > max )) && m=$max
+    printf '%s\n' "$m" > "$states2/vol"
+    vol_apply
+}
+
+vol_mute_on()     { vol_ensure; printf '1\n' > "$states2/vol_muted"; wpctl set-mute "$SINK" 1; }
+vol_mute_off()    { vol_ensure; printf '0\n' > "$states2/vol_muted"; wpctl set-mute "$SINK" 0; }
+vol_mute_toggle() {
+    vol_ensure
+    printf '%s\n' $((1 - $(<"$states2/vol_muted"))) > "$states2/vol_muted"
+    wpctl set-mute "$SINK" toggle
+}
+
+vol_cmd() {
+    case "${1:-get}" in
+        get|cur)     vol_status;;
+        set)         vol_set "${2:-50}";;
+        up)          vol_step "${2:-5}" +;;
+        down)        vol_step "${2:-5}" -;;
+        left)        vol_set_ch left "${2:-50}";;
+        right)       vol_set_ch right "${2:-50}";;
+        mute)        vol_mute_on;;
+        unmute)      vol_mute_off;;
+        toggle)      vol_mute_toggle;;
+        *)           err "vol: use get|set N|up [N]|down [N]|left N|right N|mute|unmute|toggle";;
+    esac
+}
+
+## ---- mic (source) -------------------------------------------------------
+
+mic_ensure() {
+    [[ -f "$states2/mic" ]] && return 0
+    local s f v
+    s="$(wpctl get-volume "$SRC")" || {
+        printf '0\n' > "$states2/mic"
+        printf '0.00\n' > "$states2/mic_f"
+        printf '0\n' > "$states2/mic_muted"
+        return 0
+    }
+    f="${s#*: }"; f="${f%%$'\n'*}"; f="${f%% *}"
+    v=$((10#${f/./}))
+    [[ "$s" == *MUTED* ]] && printf '1\n' > "$states2/mic_muted" || printf '0\n' > "$states2/mic_muted"
+    printf '%s\n' "$v" > "$states2/mic"
+    printf '%s\n' "$f" > "$states2/mic_f"
+}
+
+mic_fraction() { printf "%d.%02d\n" $((${1:-0} / 100)) $((${1:-0} % 100)); }
+
+mic_status() {
+    local v m
+    mic_ensure
+    v="$(<"$states2/mic")"
+    m=no; [[ "$(<"$states2/mic_muted")" == 1 ]] && m=yes
+    printf 'mic:    %s%%  muted: %s\n' "$v" "$m"
+}
+
+mic_apply() {
+    local f
+    f=$(mic_fraction "$(<"$states2/mic")")
+    printf '%s\n' "$f" > "$states2/mic_f"
+    wpctl set-volume "$SRC" "$f" >/dev/null 2>&1
+}
+
+mic_set() {
+    local m=${1:-50} max
+    mic_ensure
+    [[ "$m" =~ ^[0-9]+$ ]] || { err "mic set: need a number"; return 1; }
+    max="$(<"$states/max_mic")"
+    (( m > max )) && m=$max
+    printf '%s\n' "$m" > "$states2/mic"
+    mic_apply
+}
+
+mic_step() {
+    local delta=${1:-5} sign=${2:-+} m max
+    mic_ensure
+    m="$(<"$states2/mic")"
+    if [[ "$sign" == - ]]; then m=$((m - delta)); else m=$((m + delta)); fi
+    max="$(<"$states/max_mic")"
+    (( m < 0 )) && m=0
+    (( m > max )) && m=$max
+    printf '%s\n' "$m" > "$states2/mic"
+    mic_apply
+}
+
+mic_mute_on()     { mic_ensure; printf '1\n' > "$states2/mic_muted"; wpctl set-mute "$SRC" 1; }
+mic_mute_off()    { mic_ensure; printf '0\n' > "$states2/mic_muted"; wpctl set-mute "$SRC" 0; }
+mic_mute_toggle() {
+    mic_ensure
+    printf '%s\n' $((1 - $(<"$states2/mic_muted"))) > "$states2/mic_muted"
+    wpctl set-mute "$SRC" toggle
+}
+
+mic_cmd() {
+    case "${1:-get}" in
+        get|cur) mic_status;;
+        set)     mic_set "${2:-50}";;
+        up)      mic_step "${2:-5}" +;;
+        down)    mic_step "${2:-5}" -;;
+        mute)    mic_mute_on;;
+        unmute)  mic_mute_off;;
+        toggle)  mic_mute_toggle;;
+        *)       err "mic: use get|set N|up [N]|down [N]|mute|unmute|toggle";;
+    esac
+}
+
+## ---- audio (device routing) ----------------------------------------------
+
+audio_list() {
+    local kind=$1 def name desc id line star
+    if [[ "$kind" == sources ]]; then
+        def="$(pactl get-default-source 2>/dev/null)"
+    else
+        def="$(pactl get-default-sink 2>/dev/null)"
+    fi
+    name=""; desc=""; id=""
+    while IFS= read -r line; do
+        case "$line" in
+            "Sink #"*|"Source #"*)
+                [[ -n "$name" ]] && {
+                    star=" "; [[ "$name" == "$def" ]] && star="*"
+                    printf '%s\t%s\t%s\t%s\n' "$id" "$name" "$desc" "$star"
+                }
+                id="${line##*#}"
+                name=""; desc=""
+                ;;
+            $'\tName:'*)
+                name="${line#$'\tName:'}"; name="${name# }"
+                ;;
+            $'\tDescription:'*)
+                desc="${line#$'\tDescription:'}"; desc="${desc# }"
+                ;;
+        esac
+    done < <(pactl list "$kind" 2>/dev/null)
+    [[ -n "$name" ]] && {
+        star=" "; [[ "$name" == "$def" ]] && star="*"
+        printf '%s\t%s\t%s\t%s\n' "$id" "$name" "$desc" "$star"
+    }
+}
+
+audio_cmd() {
+    case "${1:-sinks}" in
+        sinks)      audio_list sinks;;
+        sources)    audio_list sources;;
+        set-sink)   (( $# >= 2 )) && pactl set-default-sink "$2" || err "audio set-sink: need name";;
+        set-source) (( $# >= 2 )) && pactl set-default-source "$2" || err "audio set-source: need name";;
+        streams)    audio_streams;;
+        stream-vol) audio_stream_vol "${2:-}" "${3:-}";;
+        stream-mute) audio_stream_mute "${2:-}" "${3:-toggle}";;
+        *)          err "audio: use sinks|sources|set-sink NAME|set-source NAME|streams|stream-vol ID PCT|stream-mute ID [on|off|toggle]";;
+    esac
+}
+
+## ---- per-app audio streams (sink-inputs) ----------------------------------
+
+# Lists active sink-inputs as: ID<TAB>app<TAB>volume%<TAB>muted(0/1). Parsed
+# straight from `pactl list sink-inputs` with parameter expansion — no text
+# munging binaries.
+audio_streams() {
+    local id app vol mute line rest pct
+    id=""; app=""; vol="0"; mute=0
+    while IFS= read -r line; do
+        case "$line" in
+            "Sink Input #"*)
+                [[ -n "$id" && -n "$app" ]] && printf '%s\t%s\t%s\t%s\n' "$id" "$app" "$vol" "$mute"
+                id="${line##*#}"
+                app=""; vol="0"; mute=0
+                ;;
+            $'\tApplication name :'*)
+                app="${line#*: }"; app="${app# }"
+                ;;
+            $'\tVolume:'*)
+                rest="${line#*: }"        # drop "Volume: "
+                rest="${rest#* / }"       # first channel's "NN% / …"
+                pct="${rest%%%*}"
+                [[ "$pct" =~ ^[0-9]+$ ]] && vol="$pct"
+                ;;
+            $'\tMute:'*)
+                [[ "$line" == *yes* ]] && mute=1 || mute=0
+                [[ -n "$id" && -n "$app" ]] && { printf '%s\t%s\t%s\t%s\n' "$id" "$app" "$vol" "$mute"; id=""; app=""; }
+                ;;
+        esac
+    done < <(pactl list sink-inputs 2>/dev/null)
+    [[ -n "$id" && -n "$app" ]] && printf '%s\t%s\t%s\t%s\n' "$id" "$app" "$vol" "$mute"
+}
+
+audio_stream_vol() {
+    (( $# >= 2 )) && pactl set-sink-input-volume "$1" "$2%" || err "audio stream-vol: need ID PCT"
+}
+
+audio_stream_mute() {
+    (( $# >= 1 )) || { err "audio stream-mute: need ID"; return 1; }
+    case "${2:-toggle}" in
+        on)     pactl set-sink-input-mute "$1" 1;;
+        off)    pactl set-sink-input-mute "$1" 0;;
+        toggle) pactl set-sink-input-mute "$1" toggle;;
+        *)      err "stream-mute: use on|off|toggle";;
+    esac
+}
+

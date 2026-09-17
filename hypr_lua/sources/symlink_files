@@ -1,0 +1,29 @@
+#!/usr/bin/env luajit
+-- array symlink_files
+-- ported from bash sources/symlink_files
+
+local home = os.getenv("HOME") or ""
+local user = os.getenv("USER") or os.getenv("LOGNAME") or ""
+
+files_pairs = {
+    home .. "/.config/gtk-3.0/gtk.css:" .. hypr_conf .. "/gtk-override/gtk.css",
+    home .. "/.config/lite-xl/user_settings.lua:" .. hypr_conf .. "/lite-xl/user_settings.lua",
+    home .. "/.config/lapce-stable/settings.toml:" .. hypr_conf .. "/lapce-stable/settings.toml",
+    home .. "/.config/sublime-text/Packages/User/Preferences.sublime-settings:" .. hypr_conf .. "/sublime-text/Packages/User/Preferences.sublime-settings",
+    home .. "/.config/alacritty/alacritty.toml:" .. hypr_conf .. "/alacritty/alacritty.toml",
+    home .. "/.config/geany/geany.conf:" .. hypr_conf .. "/geany/geany.conf",
+    home .. "/.config/geany/session.conf:" .. hypr_conf .. "/geany/geany-session.conf",
+    home .. "/.config/fuzzel/fuzzel.ini:" .. hypr_conf .. "/fuzzel/fuzzel.ini",
+    home .. "/.config/foot/foot.ini:" .. hypr_conf .. "/foot/foot.ini",
+    home .. "/.config/waybar/config.jsonc:" .. hypr_conf .. "/waybar/config.jsonc",
+    home .. "/.config/waybar/style.css:" .. hypr_conf .. "/waybar/style.css",
+    home .. "/.config/dunst/dunstrc:" .. hypr_conf .. "/dunst/dunstrc",
+    home .. "/.config/wofi/style.css:" .. hypr_conf .. "/wofi/style.css",
+    home .. "/.config/hypr/hypridle.conf:" .. hypr_conf .. "/hypr/hypridle.conf",
+    home .. "/.config/mimeapps.list:" .. hdots .. "/.config/mimeapps.list_" .. user,
+    home .. "/.config/kitty/kitty.conf:" .. hypr_conf .. "/kitty/kitty.conf",
+    home .. "/.config/zed/settings.json:" .. hypr_conf .. "/zed/settings.json",
+    home .. "/.config/swayimg/init.lua:" .. hypr_conf .. "/swayimg/init.lua",
+    home .. "/.config/xdg-desktop-portal/hyprland-portals.conf:" .. hdots .. "/.config//xdg-desktop-portal/hyprland-portals.conf",
+    home .. "/.config/sublime-text/Packages/User/Bash.sublime-settings:" .. hdots .. "/.config/sublime-text/Packages/User/Bash.sublime-settings",
+}

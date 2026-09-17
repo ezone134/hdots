@@ -1,0 +1,14 @@
+(
+    // ssh / vpn card — fully declarative (Batch 1). Static list of
+    // connections from `sshvpn_rows`; globe icon for VPN lines, shield for
+    // SSH. Empty state via `{sshvpn_status}`. No click/scroll interaction.
+    items: [
+        Header(title: "SSH / VPN", pad: 14.0),
+        Text(x: 0.0, y: 0.0, w: 0.0, text: "{sshvpn_status}", font_size: 9.5,
+             center_x: true, center_y: true, color: Some(fg)),
+        Rows(name: "sshvpn_rows", y: 32.0, pad: 14.0, row_h: 22.0, cols: [
+            (x: 0.0, size: 10.0, color: Some(acc), icon: true),
+            (x: 30.0, size: 9.5),
+        ]),
+    ],
+)

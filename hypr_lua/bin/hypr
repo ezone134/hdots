@@ -1,0 +1,16 @@
+#!/usr/bin/env luajit
+-- bin/hypr — print a random hyprland banner, then start hyprland.
+-- ported from bash ~/bin/hypr (backup: /tmp/opencode/bash_version_scripts/hypr)
+
+local home = os.getenv("HOME") or ""
+dofile(home .. "/.config/hdots/hypr_lua/sources/hyprland_branding")
+
+local ffi = require("ffi")
+ffi.cdef[[int getpid(void);]]
+local pid = tonumber(ffi.C.getpid())
+math.randomseed(os.time() * 256 + pid)
+
+local msgs = hyprland_branding
+print(msgs[math.random(#msgs)])
+
+os.execute("start-hyprland")

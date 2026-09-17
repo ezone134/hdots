@@ -1,0 +1,3 @@
+# explicit qmldir for qs.clipboard — disables the synthesizer
+module qs.clipboard
+ClipboardPanel 1.0 ClipboardPanel.qml

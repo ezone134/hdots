@@ -1,0 +1,21 @@
+# explicit qmldir for qs.components — disables the synthesizer
+module qs.components
+BatteryIcon 1.0 BatteryIcon.qml
+StatusIcon 1.0 StatusIcon.qml
+Slider 1.0 Slider.qml
+CcTile 1.0 CcTile.qml
+CcSlider 1.0 CcSlider.qml
+CcSection 1.0 CcSection.qml
+ToggleSwitch 1.0 ToggleSwitch.qml
+Txt 1.0 Txt.qml
+TxtInput 1.0 TxtInput.qml
+LockScreen 1.0 LockScreen.qml
+EmptyState 1.0 EmptyState.qml
+IconButton 1.0 IconButton.qml
+ListItem 1.0 ListItem.qml
+OverlayFocusScope 1.0 OverlayFocusScope.qml
+ScrollDragger 1.0 ScrollDragger.qml
+SectionTitle 1.0 SectionTitle.qml
+Tray 1.0 Tray.qml
+CommandRunner 1.0 CommandRunner.qml
+DetachedLauncher 1.0 DetachedLauncher.qml

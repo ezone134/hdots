@@ -1,0 +1,239 @@
+$nu.startup-time<\n>
+echo $SHELL
+echo $env.SHELL
+time echo $env.SHELL
+hyprland
+exit
+hypr
+hyprland
+start-hyprland
+$nu.startup-timeexit<\n>
+zsh
+exit
+echo $nu.home-path
+echo $env.HOME
+echo $SHELL
+echo env$SHELL
+echo env.$SHELL
+echo $env.SHELL
+echo $env.HOME
+echo $env.hypr_conf
+time echo $env.hypr_conf
+hypr
+exit
+which alacritty
+hypr
+launch_terminal
+which launch_terminal
+hypr
+exit
+''
+echo $env.PATH
+alacritty
+echo $env.USER
+echo $env.HOME
+hypr
+hyprland
+exit
+link-all
+hyprland
+exit
+echo $env.$PATH
+echo $env.PATH
+echo $env.hypr_base
+hypr
+exit
+echo $env.PATH
+. $hypr_global/pidof_bash hyprsunset
+bash
+echo $0
+echo $env.0
+echo $env."0"
+$hypr_conf/scripts/run_inside_loop
+hypr
+exir
+exit
+pidof thunar
+pidof alacritty
+$hypr_conf/scripts/run_inside_loop
+reboot
+hypr
+hyprland
+exit
+hypr
+hyprland
+hypr
+which hypr
+hyprland
+exit
+hypr
+echo $env.hypr
+echo $env.hypr_base
+echo $env.hypr_conf
+theme_main restore
+echo $env.shaders
+theme_main restore
+echo $env.states2
+hyprland
+exit
+hypr
+hyprland
+exit
+echo $env.hypr_cache
+hyprland
+theme_main restore
+theme_main dark
+theme_main light
+theme_main dark
+echo $env.PATH
+exit
+module_reload notif_signal
+/tmp/user-tw/hypr_bin/menu/notification_toggles/history
+module_reload notif_signal
+/tmp/user-tw/hypr_bin/menu/notification_toggles/history
+ref
+sd
+ref
+up-zypp
+ref
+time pat = (open $pat_path)
+time let pat = (open $pat_path)
+time { let pat = (open $pat_path) }
+version
+up-hyde
+echo $env.pat
+cat /tmp/pat_tw
+echo $env.pat
+up-hyde
+echo $env.pat
+up-hyde
+echo $env.pat
+up-hyde
+/home/tw/hypr_bin/menu/notification_toggles/history
+ff
+nf
+ff
+zp se nu
+zp se nushell
+dup
+up-hyde-mirror
+which gz
+which tar
+command -v tar
+which tar
+tar
+hypr_init
+reboot
+/tmp/user-tw/.config/hdots/launch_bins/hypr_auto
+hyprland
+exit
+/tmp/user-tw/.config/hdots/launch_bins/hypr_auto
+hypr
+pkill thunar
+which hypr
+hypr
+bash -c hypr
+hyprland
+exit
+hypr
+hyprexit
+exit
+thunar
+reboot
+echo $env.PATH
+hyprland
+exit
+#!/bin/bash<\n>for i in {1..100000}; do<\n>    x=$i<\n>done
+time { for i in 1..100000 { let x = $i } }
+bench { for i in 1..100000 { let x = $i } }
+timeit { for i in 1..100000 { let x = $i } }
+down-zypp
+timeit { 1..100000 | filter { |i| ($i mod 2) == 0 } | math sum }
+timeit { <\n><\n>    1..50000 | each { <\n><\n>        "abcd" | save -f /tmp/aa; <\n><\n>        let x = (open /tmp/aa | str trim -r -c "\n") <\n><\n>    } | ignore <\n><\n>}
+zsh
+which zsh
+sd zp in zsh
+sudo zypper in zsh
+timeit { 1..50000 | each { "abcd" } | ignore }
+timeit { 1..500 | each { open /tmp/tw_hypr_conf/hypr_cache/accent_files/custom_acc_shades_d/copper_core_hypr/shades_list | lines } }
+timeit { 1..500 | each { source /tmp/tw_hypr_conf/hypr_cache/accent_files/custom_acc_shades_d/copper_core_hypr/shades_list } }
+timeit { ls -l /usr/bin | where size > 100kb | sort-by size -r | first 10 }
+timeit { 1..50 | each { open /tmp/user-tw/Wallpapers/zen.png | save -f /tmp/aa } }
+timeit { ls /usr/bin | where type == file | get size | math sum | into filesize }
+timeit { 1..500 | each { echo (random integer 0..32767) | save -f /tmp/testfile } }
+timeit { 1..50000 | each { random integer 0..32767 | save -f /tmp/testfile } }
+timeit { 1..50000 | each { random int 0..32767 | save -f /tmp/testfile } }
+chsh -s /usr/bin/zsh
+exit
+hi
+time {<\n>  1..100000 | each { |i| ^echo $"line ($i)" } | save -f /tmp/xz<\n>}
+time {<\n>  1..100000 | each { |i| ^echo ("line " + ($i | into string)) } | save -f /tmp/xz<\n>}
+time {<\n>  1..100000 | each { |i| ^echo $"line ($i)" } | save -f /tmp/xz<\n>}
+time {<\n>  1..100000 | each { |i| $"line ($i)" | ^echo $in } | save -f /tmp/xz<\n>}
+time {<\n>  1..100000 | each { |i| $"line ($i)" } | str join "\n" | save -f /tmp/xz<\n>}
+time {<\n>  1..100000 | each { |i| $"line ($i)" } | str join (char newline) | save -f /tmp/xz<\n>}
+time { 1..100000 | str collect "line " | save -f /tmp/xz }
+1..10000 | each { "l" } | save -f /tmp/xz
+timeit { 1..10000 | each { "l" } | save -f /tmp/xz }
+timeit {<\n>    # Clear the file first<\n>    "" | save -f /tmp/xz<\n>    <\n>    mut i = 0<\n>    while $i < 10000 {<\n>        "l" | save --append /tmp/xz<\n>        $i = $i + 1<\n>    }<\n>}
+timeit {<\n>    # Clear the file first<\n>    "" | save -f /tmp/xz<\n>    <\n>    mut i = 0<\n>    while $i < 100000 {<\n>        "l" | save --append /tmp/xz<\n>        $i = $i + 1<\n>    }<\n>}
+timeit {<\n>    # Clear the file first<\n>    "" | save -f /tmp/xz<\n>    <\n>    mut i = 0<\n>    while $i < 2000 {<\n>        "l" | save --append /tmp/xz<\n>        $i = $i + 1<\n>    }<\n>}
+ls ($states | path join *) | where type == file | insert content { |f| open --raw $f.name } | select name content | save -f master_file.json
+ls ($env.states | path join *) | where type == file | insert content { |f| open --raw $f.name } | select name content | save -f /tmp/master_file.json
+glob ($env.states | path join '*') | ls $in | where type == file | insert content { |f| open --raw $f.name } | select name content | save -f /tmp/master_file.json
+glob ($env.states | path join '*') | where { $in | path type == file } | insert content { |f| open --raw $f } | select name content | save -f /tmp/master_file.json
+ls ($env.states | path join '*') | where type == file | insert content { |f| open --raw $f.name } | select name content | save -f /tmp/master_file.json
+glob ($env.states | path join '*') | where { $in | path type == file } | each { |f| { name: ($f | path basename), content: (open --raw $f) } } | save -f /tmp/master_file.json
+glob ($env.states | path join '*') | filter { |f| ($f | path exists) and (not ($f | path type == dir)) } | each { |f| { name: ($f | path basename), content: (open --raw $f) } } | save -f /tmp/master_file.json
+timeit { <\n>    1..10000 | each { |i| null | save -f $"/tmp/test/file_($i)" } <\n>}
+timeit {<\n>    for _ in 1..10000 {<\n>        "" | save --raw --force $"/tmp/test/file_((random int))"<\n>    }<\n>}
+timeit {<\n>    for _ in 1..100000000 { }<\n>}
+timeit {<\n>    for _ in 1..10000000 { }<\n>}
+timeit {<\n>    for _ in 1..1000000 { }<\n>}
+timeit {<\n>    for _ in 1..1000000 {<\n>        null<\n>    }<\n>}
+timeit {<\n>    for _ in 1..100000 {<\n>        let var = (open --raw /tmp/z)<\n>    }<\n>}
+mut var = ""<\n><\n>timeit {<\n>    for _ in 1..100000 {<\n>        $var = (open --raw /tmp/z)<\n>    }<\n>}
+mut var = ""<\n><\n>timeit {<\n>    for _ in 1..100000 {<\n>        let var = (open --raw /tmp/z)<\n>    }<\n>}
+mut var = ""<\n><\n>timeit {<\n>    for _ in 1..100000 {<\n>        let var = (open /tmp/z)<\n>    }<\n>}
+echo hi o> /tmp/zz
+cat /tmp/zz
+echo hi o> /tmp/zz
+timeit {<\n>    for _ in 1..10000 {<\n>        echo hi o> /tmp/zz<\n>    }<\n>}
+timeit {<\n>    for _ in 1..100000 {<\n>        echo hi o> /tmp/zz<\n>    }<\n>}
+for i in 1..10000 {<\n>    $"let var($i) = \"\"\n"<\n>} | str join "" | save /tmp/vars.nu
+1..10000 | each { |i| $"let var($i) = \"\"\n" } | str join "" | save /tmp/vars.nu
+open /tmp/vars.nu | lines | length
+timeit {<\n>    source /tmp/vars.nu<\n>}
+cat /tmp/vars.nu
+timeit {<\n>    source /tmp/vars.nu<\n>}
+echo (open --raw /tmp/z)
+echo dsfksdfkdsfklsd sdfkjsdlf dsfksd o> /tmp/z
+echo (open --raw /tmp/z)
+echo "dsfksdfkdsfklsd sdfkjsdlf dsfksd" o> /tmp/z
+echo (open --raw /tmp/z)
+echo "dsfksdfkdsfklsd sdfkjsdlf dsfksd                                     " o> /tmp/z
+echo '(open --raw /tmp/z)'
+echo ('open --raw /tmp/z')
+echo ('open --raw /tmp/z'\)
+echo "dsfksdfkdsfklsd sdfkjsdlf dsfksd                                     " o> /tmp/z
+echo ('open --raw /tmp/z'\)
+echo $"' (open --raw /tmp/z) '"
+echo "dsfksdfkdsfklsd sdfkjsdlf dsfksd                                     " o> /tmp/z
+echo $"' (open --raw /tmp/z) '"
+echo $"' (open --raw /tmp/z | str trim) '"
+echo $"'(open --raw /tmp/z | str trim)'"
+echo "dsfksdfkdsfklsd sdfkjsdlf dsfksd                                     " o> /tmp/z
+echo "maalu daalu" o> /tmp/z
+echo $"'(open --raw /tmp/z | str trim)'"
+echo (open --raw /tmp/z)
+echo ("'open --raw /tmp/z'")
+echo $"'(open --raw /tmp/z)'"
+echo "maalu daalu   " o> /tmp/z
+echo $"'(open --raw /tmp/z)'"
+echo "maalu daalu   dfd" o> /tmp/z
+echo $"'(open --raw /tmp/z)'"
+echo "maalu daalu   dfd" o> /tmp/z
+echo $"'(open --raw /tmp/z)'"
+use std bench<\n>bench -n 100000 { echo "maalu daalu   dfd" o> /tmp/z }
+ls
+which ls

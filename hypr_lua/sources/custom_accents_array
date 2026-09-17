@@ -1,0 +1,25 @@
+#!/usr/bin/env luajit
+-- array custom_accents_array
+-- ported from bash sources/custom_accents_array
+-- NOTE: the per-accent array files (vlt/lt/lmt/mt/ht/vht/neutrals/hypr/hc)
+-- live in the custom_accents/ config-template DIR, which was NOT ported.
+-- The dofile() calls below are kept structurally faithful; port those
+-- files into sources/custom_accents/ to make colors_external resolvable.
+
+local dir = hypr_sources .. "/custom_accents"
+dofile(dir .. "/vlt")
+dofile(dir .. "/lt")
+dofile(dir .. "/lmt")
+dofile(dir .. "/mt")
+dofile(dir .. "/ht")
+dofile(dir .. "/vht")
+dofile(dir .. "/neutrals")
+dofile(dir .. "/hypr")
+dofile(dir .. "/hc")
+
+colors_external = {}
+for _, accent in ipairs({ vlt, lt, lmt, mt, ht, vht, neutrals, hypr, hc }) do
+    for _, hex in ipairs(accent or {}) do
+        colors_external[#colors_external + 1] = hex
+    end
+end

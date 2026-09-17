@@ -1,0 +1,51 @@
+-- helper theme_logic_d
+-- ported from bash sources/helpers/theme_logic_d
+bg_tint_strength = tonumber(state_read("bg_tint_strength_" .. s) or "0") or 0
+
+local function shade(n)
+    return _G["shade_" .. tostring(n)]
+end
+
+bg_accented = shade(math.floor(bg_tint_strength * accent_anchor / 100))
+acc = shade(math.floor(accent_anchor * 100 / 100))
+acc_us = shade(math.floor(accent_anchor * 120 / 100))
+acc_hc = shade(math.floor(accent_anchor * 60 / 100))
+acc_ec = shade(math.floor(accent_anchor * 30 / 100))
+
+border = acc
+border8 = acc .. tostring(border_alpha)
+
+err("border is " .. tostring(border) .. " and acc is " .. tostring(acc))
+
+contrast_check_function_d(acc, bg, accent_anchor, acc_target_thresh_dark, "acc_boosted", "Accent Color")
+
+if scaled_diff > 700 then
+    sfg_mode = "d"
+    gtk_acc_bak = shade(math.floor(accent_anchor * 80 / 100))
+    acc = shade(math.floor(accent_anchor * 95 / 100))
+    gtk_acc_override = 1
+elseif scaled_diff > acc_flip_thresh_dark then
+    sfg_mode = "d"
+    acc = shade(math.floor(accent_anchor * 105 / 100))
+elseif scaled_diff <= acc_flip_thresh_dark and scaled_diff > acc_manual_override then
+    needs_color_boost_flag = 0
+    sfg_mode = "d"
+    acc = shade(math.floor(accent_anchor * 110 / 100))
+end
+
+if needs_color_boost_flag == 1 and sfg_mode == "l" then
+    acc = acc_boosted
+end
+
+focus = shade(math.floor(accent_anchor * 120 / 100))
+
+if start_icon_flag == 1 then
+    start_icon = shade(accent_anchor + start_icon_contrast)
+end
+
+bg2 = shade(math.floor(accent_anchor * 5 / 100))
+bg2_8 = bg2 .. "ff"
+
+useful_acc_d = shade(math.floor(accent_anchor * 150 / 100))
+
+common_sfg_assign_func()

@@ -1,0 +1,18 @@
+#!/usr/bin/env luajit
+-- add_to_zip — zip a file/directory into a .zip beside it.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+if arg[1] and is_file(arg[1]) then
+    local base = basename(arg[1])
+    local dirpath = dirname(arg[1])
+    local r = out("command -v zip")
+    if r ~= "" then
+        run("zip -r " .. shq(dirpath .. "/" .. base .. ".zip") .. " " .. shq(arg[1]))
+    else
+        notify("Zip", "Zip package is not found")
+    end
+end

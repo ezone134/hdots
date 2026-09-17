@@ -1,0 +1,155 @@
+-- helper theme_init
+-- this is theme_init
+
+dofile(lua_helpers .. "/themes")
+
+-- ==============================================================================
+-- Theme Definition Field Schema (fixed layout, no extras short-cut)
+-- ==============================================================================
+-- Every side block is a fixed 27-field record. Singles carry one side
+-- (30 fields incl. sort_index/theme_mode/extras header); duals carry two
+-- (57 fields). Indices below are 1-based array offsets (Lua convention).
+--
+--   [1]=sort_index  [2]=theme_mode(d/l/b)  [3]=extras(always "1")
+--
+--   side block (dark side of a single, or the dark block of a dual):
+--     [4]=sfg_mode  [5]=bg  [6]=bg2  [7]=bg3
+--     [8]=fg  [9]=fg2  [10]=fg3
+--     [11]=acc  [12]=acc_hc  [13]=acc_ec  [14]=acc_us  [15]=border
+--     [16]=hover  [17]=focus  [18]=disabled
+--     [19]=success  [20]=warning  [21]=danger  [22]=info
+--     [23]=sfg_d  [24]=sfg_l
+--     [25]=series1  [26]=series2  [27]=series3
+--     [28]=series4  [29]=series5  [30]=series6
+--
+--   dual light block: same layout shifted by +27 ([31..57]).
+
+function display_final_vars()
+    err(string.format(
+        "theme_mode=%s extras_first=%s extras_second=%s sfg_mode=%s " ..
+        "bg=%s bg2=%s bg3=%s fg=%s fg2=%s fg3=%s " ..
+        "acc=%s acc_hc=%s acc_ec=%s acc_us=%s border=%s " ..
+        "hover=%s focus=%s disabled=%s success=%s warning=%s danger=%s info=%s " ..
+        "sfg_d=%s sfg_l=%s series1=%s series2=%s series3=%s series4=%s series5=%s series6=%s",
+        theme_mode or "", extras_first or "", extras_second or "", sfg_mode or "",
+        bg or "", bg2 or "", bg3 or "", fg or "", fg2 or "", fg3 or "",
+        acc or "", acc_hc or "", acc_ec or "", acc_us or "", border or "",
+        hover or "", focus or "", disabled or "", success or "", warning or "", danger or "", info or "",
+        sfg_d or "", sfg_l or "", series1 or "", series2 or "", series3 or "", series4 or "", series5 or "", series6 or ""))
+end
+
+function save_theme_vars()
+    local content = string.format(
+        "theme_mode=%s\nextras_first=%s\nextras_second=%s\nsfg_mode=%s\n" ..
+        "bg=%s\nbg2=%s\nbg3=%s\nfg=%s\nfg2=%s\nfg3=%s\n" ..
+        "acc=%s\nacc_hc=%s\nacc_ec=%s\nacc_us=%s\nborder=%s\n" ..
+        "hover=%s\nfocus=%s\ndisabled=%s\nsuccess=%s\nwarning=%s\ndanger=%s\ninfo=%s\n" ..
+        "sfg_d=%s\nsfg_l=%s\nseries1=%s\nseries2=%s\nseries3=%s\nseries4=%s\nseries5=%s\nseries6=%s",
+        theme_mode or "", extras_first or "", extras_second or "", sfg_mode or "",
+        bg or "", bg2 or "", bg3 or "", fg or "", fg2 or "", fg3 or "",
+        acc or "", acc_hc or "", acc_ec or "", acc_us or "", border or "",
+        hover or "", focus or "", disabled or "", success or "", warning or "", danger or "", info or "",
+        sfg_d or "", sfg_l or "", series1 or "", series2 or "", series3 or "", series4 or "", series5 or "", series6 or "")
+    write(states2 .. "/theme_vars", content)
+end
+
+function load_default_extras()
+    hover = "#1c1a20"
+    focus = "#6a6d75"
+    disabled = "#6a6d75"
+    success = "#9ece6a"
+    warning = "#ff9e64"
+    danger = "#f7768e"
+    info = "#7dcfff"
+    sfg_d = "#1a1a1e"
+    sfg_l = "#f3f4f6"
+end
+
+function parse_first_base(t)
+    err("Loading first base fields...")
+    sfg_mode = t[4]
+    bg = t[5]; bg2 = t[6]; bg3 = t[7]
+    fg = t[8]; fg2 = t[9]; fg3 = t[10]
+    acc = t[11]; acc_hc = t[12]; acc_ec = t[13]; acc_us = t[14]; border = t[15]
+end
+
+function parse_first_extras(t)
+    err("Loading first extra fields...")
+    hover = t[16]; focus = t[17]; disabled = t[18]
+    success = t[19]; warning = t[20]; danger = t[21]; info = t[22]
+    sfg_d = t[23]; sfg_l = t[24]
+end
+
+function parse_first_series(t)
+    err("Loading first series fields...")
+    series1 = t[25]; series2 = t[26]; series3 = t[27]
+    series4 = t[28]; series5 = t[29]; series6 = t[30]
+end
+
+function parse_second_base(t)
+    err("Loading light base fields...")
+    sfg_mode = t[31]
+    bg = t[32]; bg2 = t[33]; bg3 = t[34]
+    fg = t[35]; fg2 = t[36]; fg3 = t[37]
+    acc = t[38]; acc_hc = t[39]; acc_ec = t[40]; acc_us = t[41]; border = t[42]
+end
+
+function parse_second_extras(t)
+    err("Loading light extra fields...")
+    hover = t[43]; focus = t[44]; disabled = t[45]
+    success = t[46]; warning = t[47]; danger = t[48]; info = t[49]
+    sfg_d = t[50]; sfg_l = t[51]
+end
+
+function parse_second_series(t)
+    err("Loading light series fields...")
+    series1 = t[52]; series2 = t[53]; series3 = t[54]
+    series4 = t[55]; series5 = t[56]; series6 = t[57]
+end
+
+function resolve_theme(active_theme_name)
+    theme_mode = ""
+    found = 0
+    ACTIVE_THEME = active_theme_name
+    err("theme_id is " .. ACTIVE_THEME)
+
+    local ref = _G[ACTIVE_THEME]
+    if not ref then err("theme table not found: " .. ACTIVE_THEME); return end
+
+    sort_index = ref[1]
+    theme_mode = ref[2]
+    extras_first = ref[3]
+
+    if theme_mode == "d" or theme_mode == "l" or theme_mode == "b" then
+        found = 1
+        err("The found -> " .. ACTIVE_THEME)
+    end
+
+    if theme_mode == "b" then
+        extras_second = 1
+        err("first extra is " .. tostring(extras_first))
+        err("second extra is " .. tostring(extras_second))
+    else
+        parse_first_base(ref)
+        parse_first_extras(ref)
+        parse_first_series(ref)
+        extras_second = 0
+        display_final_vars()
+    end
+end
+
+function d_side(active_theme_name)
+    local ref = _G[active_theme_name]
+    parse_first_base(ref)
+    parse_first_extras(ref)
+    parse_first_series(ref)
+    display_final_vars()
+end
+
+function l_side(active_theme_name)
+    local ref = _G[active_theme_name]
+    parse_second_base(ref)
+    parse_second_extras(ref)
+    parse_second_series(ref)
+    display_final_vars()
+end

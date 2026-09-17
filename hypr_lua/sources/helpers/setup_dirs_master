@@ -1,0 +1,12 @@
+-- setup_dirs_master — create directories from dirs_array (loaded from bash)
+
+if not is_file(lock_files .. "/dirs_setup") then
+    touch(lock_files .. "/dirs_setup")
+    write_line(lock_files .. "/dirs_setup", "This is setup dirs master")
+    -- source dirs_master_array (bash array dirs_array)
+    dofile(hypr_sources .. "/dirs_master_array")
+    -- dirs_array is a Lua table defined in dirs_master_array
+    if type(dirs_array) == "table" then
+        mkdir_p(unpack(dirs_array))
+    end
+end

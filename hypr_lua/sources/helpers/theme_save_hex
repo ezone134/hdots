@@ -1,0 +1,107 @@
+-- helper theme_save_hex
+-- ported from bash sources/helpers/theme_save_hex
+-- pure Lua: no external binaries, no trailing newline on writes
+write(states2 .. "/border", border)
+write(states2 .. "/border8", border8)
+write(states2 .. "/acc_ec", acc_ec)
+write(states2 .. "/sfg_ec", sfg_ec)
+acc_ec8 = tostring(acc_ec) .. tostring(acc_alpha)
+write(states2 .. "/acc_ec8", acc_ec8)
+err("theme_save_hex acc_ec is " .. tostring(acc_ec) .. " and acc_hc is " .. tostring(acc_hc))
+
+write(states2 .. "/acc", acc)
+acc8 = acc .. tostring(acc_alpha)
+write(states2 .. "/acc8", acc8)
+
+gtk_acc = hex_to_rgba(acc8)
+
+write(states2 .. "/acc_virgin", acc_virgin)
+write(states2 .. "/acc_virgin8", tostring(acc_virgin) .. tostring(acc_alpha))
+
+write(states2 .. "/bg", bg)
+bg8 = bg .. tostring(bg_alpha)
+write(states2 .. "/bg8", bg8)
+
+if tonumber(gtk_app_bg_flag or 1) ~= 1 then
+    bg_gtk = bg_bak
+end
+write(states2 .. "/bg_gtk", bg_gtk)
+
+write(states2 .. "/fg", fg)
+write(states2 .. "/fg8", fg .. "ff")
+
+write(states2 .. "/acc_alpha", acc_alpha)
+err("border alpha is " .. tostring(border_alpha))
+write(states2 .. "/border_alpha", border_alpha)
+write(states2 .. "/bg_alpha", bg_alpha)
+write(states2 .. "/bg_rgba", tostring(bg8):gsub("^#", ""))
+
+if tonumber(hyprland_border_flag or 0) == 0 then
+    hyprland_border_active = border8_bak
+else
+    hyprland_border_active = border8
+end
+hyprland_border_active = tostring(hyprland_border_active):gsub("^#", "")
+write(states2 .. "/hyprland_border_active", "rgba(" .. hyprland_border_active .. ")")
+
+hyprland_border_inactive = tostring(bg) .. tostring(border_alpha)
+hyprland_border_inactive = hyprland_border_inactive:gsub("^#", "")
+write(states2 .. "/hyprland_border_inactive", "rgba(" .. hyprland_border_inactive .. ")")
+
+write(states2 .. "/gtk_acc", gtk_acc)
+write(states2 .. "/sfg", sfg)
+
+write(states2 .. "/fg2", fg2)
+write(states2 .. "/fg3", fg3)
+write(states2 .. "/bg2", bg2)
+write(states2 .. "/bg3", bg3)
+write(states2 .. "/hover", hover)
+write(states2 .. "/focus", focus)
+write(states2 .. "/disabled", disabled)
+write(states2 .. "/success", success)
+write(states2 .. "/warning", warning)
+write(states2 .. "/danger", danger)
+write(states2 .. "/info", info)
+write(states2 .. "/series1", series1)
+write(states2 .. "/series2", series2)
+write(states2 .. "/series3", series3)
+write(states2 .. "/series4", series4)
+write(states2 .. "/series5", series5)
+write(states2 .. "/series6", series6)
+
+local sv = {}
+sv[#sv + 1] = "{"
+sv[#sv + 1] = '  "fg": "' .. fg .. '",'
+sv[#sv + 1] = '  "fg2": "' .. fg2 .. '",'
+sv[#sv + 1] = '  "fg3": "' .. fg3 .. '",'
+sv[#sv + 1] = '  "bg": "' .. bg .. '",'
+sv[#sv + 1] = '  "bg2": "' .. bg2 .. '",'
+sv[#sv + 1] = '  "bg3": "' .. bg3 .. '",'
+sv[#sv + 1] = '  "acc": "' .. acc .. '",'
+sv[#sv + 1] = '  "sfg": "' .. sfg .. '",'
+sv[#sv + 1] = '  "hover": "' .. hover .. '",'
+sv[#sv + 1] = '  "focus": "' .. focus .. '",'
+sv[#sv + 1] = '  "disabled": "' .. disabled .. '",'
+sv[#sv + 1] = '  "success": "' .. success .. '",'
+sv[#sv + 1] = '  "warning": "' .. warning .. '",'
+sv[#sv + 1] = '  "danger": "' .. danger .. '",'
+sv[#sv + 1] = '  "info": "' .. info .. '",'
+sv[#sv + 1] = '  "series1": "' .. series1 .. '",'
+sv[#sv + 1] = '  "series2": "' .. series2 .. '",'
+sv[#sv + 1] = '  "series3": "' .. series3 .. '",'
+sv[#sv + 1] = '  "series4": "' .. series4 .. '",'
+sv[#sv + 1] = '  "series5": "' .. series5 .. '",'
+sv[#sv + 1] = '  "series6": "' .. series6 .. '"'
+sv[#sv + 1] = "}"
+write(states2 .. "/shell_vars.json", table.concat(sv, "\n"))
+
+err("calling zen-shell reload colors")
+spawn("zen-shell reload")
+
+write(states2 .. "/cur_font", font_name)
+write(states2 .. "/cur_theme", theme_name)
+write(states2 .. "/cur_icon", icon_name)
+write(states2 .. "/cur_cursor", cursor_name)
+
+err("sfg_mode is " .. tostring(sfg_mode))
+write(states2 .. "/sfg_mode", sfg_mode)

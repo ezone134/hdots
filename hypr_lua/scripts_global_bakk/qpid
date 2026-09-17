@@ -1,0 +1,20 @@
+#!/usr/bin/env luajit
+
+local function qpid(name)
+    local out_parts = {}
+    local proc_entries = list_dir("/proc")
+    for _, entry in ipairs(proc_entries) do
+        if entry:match("^%d+$") then
+            local comm_path = "/proc/" .. entry .. "/comm"
+            local comm = read_line(comm_path)
+            if comm == name then
+                table.insert(out_parts, entry)
+            end
+        end
+    end
+    if #out_parts > 0 then
+        print(table.concat(out_parts, " "))
+    end
+end
+
+qpid(arg[1])

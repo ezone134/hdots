@@ -1,0 +1,6 @@
+# -*- mode: sh -*-
+
+contents_point_array=(
+    $home_dir/.fonts:$persist_dir_user/.fonts
+    $boss_bin_dir:$home_dir/.pixi/bin
+)

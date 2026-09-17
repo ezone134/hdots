@@ -1,0 +1,53 @@
+#!/usr/bin/env luajit
+-- helper caffeine_body
+
+function caffeine_conf()
+    return table.concat({
+        "general {",
+        "    lock_cmd = pidof hyprlock || hyprlock",
+        "    before_sleep_cmd = custom-sleep",
+        "    after_sleep_cmd = hyprctl dispatch dpms on",
+        "}",
+    }, "\n") .. "\n"
+end
+
+function caffeine_on()
+    local conf = hypr_conf .. "/hypr/hypridle-caffeine.conf"
+    mkdir_p(dirname(conf))
+    mkdir_p(states)
+    write(conf, caffeine_conf())
+    write_line(states .. "/caffeine", "1")
+    run("pkill hypridle 2>/dev/null")
+    run("hyprctl dispatch exec 'hypridle --config " .. conf .. "' 2>/dev/null || hypridle --config " .. shq(conf) .. " &")
+    print("caffeine: on")
+end
+
+function caffeine_off()
+    mkdir_p(states)
+    write_line(states .. "/caffeine", "0")
+    run("pkill hypridle 2>/dev/null")
+    run("hyprctl dispatch exec hypridle 2>/dev/null || hypridle &")
+    print("caffeine: off")
+end
+
+function caffeine_status()
+    local v = "0"
+    if is_file(states .. "/caffeine") then v = read_line(states .. "/caffeine") or "0" end
+    v = v:gsub("%s+", "")
+    if v == "1" then return "on" else return "off" end
+end
+
+function caffeine_cmd(action)
+    action = action or "status"
+    if action == "status" or action == "get" then
+        print(caffeine_status())
+    elseif action == "on" then
+        caffeine_on()
+    elseif action == "off" then
+        caffeine_off()
+    elseif action == "toggle" then
+        if caffeine_status() == "on" then caffeine_off() else caffeine_on() end
+    else
+        err("caffeine: use status|on|off|toggle")
+    end
+end

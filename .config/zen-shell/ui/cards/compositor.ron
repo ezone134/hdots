@@ -1,0 +1,6 @@
+(
+    items: [
+        Header(title: "Effects", glyph: Some("\u{e894}"), meta: Some("{comp_meta}"), pad: 12.0),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "compositor"),
+    ],
+)

@@ -1,0 +1,101 @@
+# -*- mode: sh -*-
+
+alias sd='sudo '
+chroot_path () {
+
+C="$1"
+
+mkdir -p "$C"/{dev,proc,sys,tmp,run}
+
+mount --rbind /dev "$C/dev"
+mount --make-rslave "$C/dev"
+mount -t proc /proc "$C/proc"
+mount --rbind /sys "$C/sys"
+mount --make-rslave "$C/sys"
+mount --rbind /tmp "$C/tmp"
+mount --bind /run "$C/run"
+
+chroot "$C" /bin/bash
+
+}
+
+
+
+
+
+
+old_method_not_working_nowrewr () {
+	# THIS OLD METHOD NOW DOES NOT WORK IT USE NEW DRIVER WHICH IS SAFE
+verify_rapid_charge () {
+echo '\_SB.PCI0.LPC0.EC0.QCHO' | sudo tee /proc/acpi/call
+# sudo bash -c "cat /proc/acpi/call; printf '\n'"
+sudo bash -c "cat /proc/acpi/call"
+echo "where 0x0 stands for off and 0x1 stands for on."
+}
+
+load_acpi_modulewer () {
+sudo modprobe -q acpi_call || true
+sudo modprobe acpi_call || true
+}
+
+enable_rapid_chargerwer () {
+	echo '\_SB.PCI0.LPC0.EC0.VPC0.SBMC 0x07' | sudo tee /proc/acpi/call
+	verify_rapid_charge
+}
+
+disable_rapid_chargewerr () {
+	echo '\_SB.PCI0.LPC0.EC0.VPC0.SBMC 0x08' | sudo tee /proc/acpi/call
+	verify_rapid_charge
+}
+}
+
+
+enable_rapid_charge () {
+sudo bash -c "echo Fast > /sys/class/power_supply/BAT0/charge_types"
+echo "Rapid Charge Enabled"
+}
+disable_rapid_charge () {
+# echo "Standard" | sudo tee /sys/class/power_supply/BAT0/charge_types
+sudo bash -c "echo Standard > /sys/class/power_supply/BAT0/charge_types"
+echo "Rapid Charge Disable"
+}
+
+
+long_life_charge () {
+# echo "Standard" | sudo tee /sys/class/power_supply/BAT0/charge_types
+sudo bash -c "echo Long_Life > /sys/class/power_supply/BAT0/charge_types"
+echo "Charge mode set to Long_Life"
+}
+
+
+
+install-kitty () {
+	curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+}
+
+install-starship () {
+	curl -sS https://starship.rs/install.sh | sh
+}
+
+install-zed () {
+	curl -f https://zed.dev/install.sh | sh
+}
+
+
+find-root-owned-dirs () {
+
+    # Check if a directory was provided, default to current directory if not
+    TARGET_DIR="${1:-.}"
+
+    if [ ! -d "$TARGET_DIR" ]; then
+        echo "Error: '$TARGET_DIR' is not a valid directory."
+        exit 1
+    fi
+
+    echo "Scanning for root-owned directories in: $TARGET_DIR"
+    echo "----------------------------------------------------"
+
+    # Use find to locate directories (-type d) owned by root (-user root)
+    # 2>/dev/null hides permission errors for directories you can't scan
+    find "$TARGET_DIR" -type d -user root 2>/dev/null
+}

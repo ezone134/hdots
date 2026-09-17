@@ -1,0 +1,41 @@
+-- helper gen_keybinds_cache
+-- ported from bash sources/helpers/gen_keybinds_cache
+local kbl = os.getenv("HOME") .. "/.config/hypr/keybinds.lua"
+if not is_file(kbl) then
+    err("gen_keybinds_cache: " .. kbl .. " missing")
+    return 1
+end
+
+local menu_options = ""
+local json_parts = {}
+local first = true
+
+for line in io.lines(kbl) do
+    if line:find("%-%- hdots", 1, true) then
+        local trimmed = line:match("^%s*(.-)%s*$")
+        if not trimmed:match("^%-%-") then
+            local part = line:match("%-%- hdots | (.*)")
+            if part and part ~= "" then
+                menu_options = menu_options .. part .. "\n"
+                local keys = part:match("^(.*)%s*→")
+                local desc = part:match("→%s*(.-)%s*$")
+                if keys then
+                    keys = keys:match("^%s*(.-)%s*$")
+                end
+                if desc then
+                    desc = desc:match("^%s*(.-)%s*$")
+                end
+                if keys and desc and keys ~= "" and desc ~= "" then
+                    if not first then json_parts[#json_parts + 1] = "," end
+                    json_parts[#json_parts + 1] = '\n  {"key":"' .. keys .. '","desc":"' .. desc .. '"}'
+                    first = false
+                end
+            end
+        end
+    end
+end
+
+write(states2 .. "/keybinds_cache", "[" .. table.concat(json_parts) .. "\n]\n")
+
+menu_options = menu_options:sub(1, -3)
+write_line(hypr_cache .. "/keybinds", menu_options)

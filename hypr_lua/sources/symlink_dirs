@@ -1,0 +1,43 @@
+#!/usr/bin/env luajit
+-- array symlink_dirs
+-- ported from bash sources/symlink_dirs
+-- dirs pairs are not exec'd in bg; only files are in bg — no worries
+
+dofile(hypr_sources .. "/symlink_dirs_themes")
+
+local home = os.getenv("HOME") or ""
+
+dirs_pairs = {}
+
+local insert = function(t)
+    for _, p in ipairs(t) do dirs_pairs[#dirs_pairs + 1] = p end
+end
+
+insert({
+    home .. "/.config/glib-2.0:" .. hdots .. "/.config/glib-2.0",
+    home .. "/.config/Thunar:" .. hdots .. "/.config/Thunar",
+    home .. "/.config/xfce4:" .. hdots .. "/.config/xfce4",
+    home .. "/.config/xarchiver:" .. hdots .. "/.config/xarchiver",
+    home .. "/.config/xsettingsd:" .. hdots .. "/.config/xsettingsd",
+    home .. "/.config/Mousepad:" .. hdots .. "/.config/Mousepad",
+    home .. "/.config/gtk-3.0:" .. hdots .. "/.config/gtk-3.0",
+    home .. "/.config/gtk-4.0:" .. hdots .. "/.config/gtk-4.0",
+    home .. "/.config/nwg-look:" .. hdots .. "/.config/nwg-look",
+    home .. "/.local/share/nwg-look:" .. hdots .. "/.local/share/nwg-look",
+    home .. "/.config/warp-terminal:" .. hdots .. "/.config/warp-terminal",
+    home .. "/.local/state/warp-terminal:" .. hdots .. "/.local/state/warp-terminal",
+    home .. "/.config/geany/colorschemes:" .. hdots .. "/.config/geany/colorschemes",
+    home .. "/.config/matugen:" .. hypr_conf .. "/matugen",
+    home .. "/Pictures/Wallpapers:" .. home .. "/Wallpapers",
+})
+
+-- ${themes_pairs[@]} spliced in here
+insert(themes_pairs)
+
+insert({
+    home .. "/.config/hypr/hyprlock:" .. hypr_conf .. "/hypr/hyprlock",
+    home .. "/.config/hypr/configs:" .. hypr_conf .. "/configs",
+    home .. "/.config/hypr/shaders:" .. hypr_conf .. "/shaders",
+    home .. "/.config/quickshell:" .. hdots .. "/.config/quickshell",
+    home .. "/.config/zen-shell:" .. hdots .. "/.config/zen-shell",
+})

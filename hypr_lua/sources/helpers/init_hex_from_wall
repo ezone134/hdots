@@ -1,0 +1,43 @@
+-- helper init_hex_from_wall
+
+local base = basename(wall)
+
+local function color_pick_logic()
+    hex = ""
+    local color_engine = hypr_sources .. "/helpers/color_engine"
+
+    local pickers = {
+        function() hex = out(color_engine .. " pick_from_wall " .. shq(wall) .. " v") end,
+        function() hex = out(color_engine .. " pick_from_wall " .. shq(wall) .. " b") end,
+        function() hex = out(color_engine .. " pick_from_wall " .. shq(wall) .. " d") end,
+        function() hex = out(color_engine .. " pick_from_wall " .. shq(wall) .. " s") end,
+        function() hex = out(color_engine .. " pick_from_wall " .. shq(wall) .. " f") end,
+    }
+
+    for _, picker in ipairs(pickers) do
+        picker()
+        if hex and hex ~= "" then
+            err("Successfully found hex: " .. hex)
+            break
+        end
+    end
+end
+
+shades_list = hypr_cache .. "/accent_files/from_wall_" .. sm .. "/" .. base .. "/shades_list"
+
+if scrim_mode == 0 then
+    if is_file(shades_list) then
+        local msg = "Shades list already exists"
+        err(msg)
+        notify("Theme extras", msg, "theme-extras")
+        halt_pipeline = "yes"
+    else
+        err("Generating hex from wallpaper, so far so good")
+        notify("Theme extras", "Generating wallpaper accent cache…", "theme-extras")
+        color_pick_logic()
+    end
+else
+    color_pick_logic()
+    scrim_hex = hex
+    state2_write("scrim_hex_" .. s, scrim_hex)
+end

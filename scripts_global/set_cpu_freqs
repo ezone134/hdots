@@ -1,0 +1,7 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts_global/set_cpu_freqs
+
+local SCRIPT_DIR = arg[0]:match("^(.*)[/\\][^/\\]*$") or "."
+
+dofile(SCRIPT_DIR .. "/main_body")
+normal_apply_function()

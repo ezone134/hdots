@@ -1,0 +1,200 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts/run_inside_loop
+
+local hypr_base     = os.getenv("hypr_base") or "/tmp"
+local hypr_conf     = os.getenv("hypr_conf") or hypr_base .. "/" .. (os.getenv("USER") or os.getenv("LOGNAME") or "user") .. "_hypr_conf"
+local hypr_sources  = os.getenv("hypr_sources") or hypr_conf .. "/sources"
+local hypr_global   = os.getenv("hypr_global") or "/tmp/hypr_global"
+local states2       = os.getenv("states2") or hypr_conf .. "/states2"
+local HOME          = os.getenv("HOME") or os.getenv("USERPROFILE") or ""
+
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long d_ino; long d_off; unsigned short d_reclen;
+                unsigned char d_type; char d_name[256]; } dirent_t;
+typedef struct { int _x; } DIR;
+typedef struct { long sec; long nsec; } timespec_t;
+typedef struct {
+  long st_dev; long st_ino; long st_nlink;
+  int st_mode; int st_uid; int st_gid; int __pad0;
+  long st_rdev; long st_size; long st_blksize; long st_blocks;
+  long st_atim_sec; long st_atim_nsec; long st_mtim_sec; long st_mtim_nsec;
+} stat_t;
+DIR *opendir(const char *path);
+dirent_t *readdir(DIR *dirp);
+int closedir(DIR *dirp);
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int stat(const char *path, stat_t *buf);
+int kill(long pid, int sig);
+]]
+
+local function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+local function read(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function write(path, content)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+local function is_file(path)
+    local f = io.open(path, "r")
+    if f then f:close() return true end
+    return false
+end
+
+local function mtime(path)
+    local st = ffi.new("stat_t")
+    if ffi.C.stat(path, st) == 0 then return st.st_mtim_sec end
+    return nil
+end
+
+local function list_dir(path)
+    local entries = {}
+    local d = ffi.C.opendir(path)
+    if d == nil then return entries end
+    local e = ffi.C.readdir(d)
+    while e ~= nil do
+        local name = ffi.string(e.d_name)
+        if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
+        e = ffi.C.readdir(d)
+    end
+    ffi.C.closedir(d)
+    return entries
+end
+
+-- clone of the bash qpid helper in /tmp/hypr_global/qpid: PIDs whose comm is name
+local function qpid(name)
+    local found = {}
+    for _, pidf in ipairs(list_dir("/proc")) do
+        if pidf:match("^%d+$") then
+            local f = io.open("/proc/" .. pidf .. "/comm", "r")
+            if f then
+                local comm = f:read("*l")
+                f:close()
+                if comm and comm == name then found[#found + 1] = pidf end
+            end
+        end
+    end
+    return found
+end
+
+local function shq(s)
+    return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+local function dispatch(cmd)
+    os.execute("hyprctl dispatch \"hl.dsp.exec_cmd('" .. cmd .. "')\"")
+end
+
+-- ------------------------------------------------------------- block modes ----
+local mode = arg[1]
+
+if mode == "hypridle" then
+    if #qpid("hypridle") == 0 then
+        dispatch("hypridle")
+    end
+    os.exit(0)
+end
+
+if mode == "thunar" then
+    if tonumber(read(states2 .. "/run_thunar_daemon")) == 0 then
+        local max_try = 10
+        while tonumber(read(states2 .. "/run_thunar_daemon")) == 0 and max_try > 0 do
+            sleep(0.5)
+            max_try = max_try - 1
+        end
+    end
+    write(states2 .. "/run_thunar_daemon", "1")
+    if #qpid("thunar") == 0 then
+        os.execute("notify-send loop calling thunar daemon run &")
+        dispatch("thunar --daemon")
+    end
+    sleep(2)
+    local thunar_pids = qpid("thunar")
+    if #thunar_pids > 1 then
+        for _, pid in ipairs(thunar_pids) do ffi.C.kill(tonumber(pid), 15) end
+        sleep(0.5)
+        dispatch("thunar --daemon")
+    end
+    os.exit(0)
+end
+
+if mode == "alacritty" then
+    if #qpid("alacritty") == 0 then
+        dispatch("alacritty --daemon")
+    end
+    os.exit(0)
+end
+
+if mode == "wl-paste" then
+    if #qpid("wl-paste") == 0 then
+        dispatch("wl-paste --type text --watch cliphist store")
+        dispatch("wl-paste --type image --watch cliphist -db-path " .. HOME .. "/.cache/cliphist_image/db store")
+    end
+    os.exit(0)
+end
+
+if mode == "zen_watch" then
+    local FILE = states2 .. "/zen_shell_watch"
+    if is_file(FILE) then
+        local SEC = 30
+        local current_time = os.time()
+        local file_mtime = mtime(FILE)
+        if file_mtime then
+            local age = current_time - file_mtime
+            if age > SEC then
+                print("File is " .. age .. " seconds old (older than " .. SEC .. " seconds). Running logic...")
+                local msgs = {}
+                local sf = read(hypr_sources .. "/msg/shell_frozen")
+                if sf then
+                    for m in sf:gmatch('"([^"]+)"') do msgs[#msgs + 1] = m end
+                end
+                math.randomseed(os.time())
+                local rnd = msgs[math.random(#msgs)] or "Shell unresponsive; restarting."
+                os.execute("notify-send 'Watch dog' " .. shq(rnd) .. " &")
+                local zs = qpid("zen-shell")
+                for _, pid in ipairs(zs) do ffi.C.kill(tonumber(pid), 15) end
+                sleep(2)
+                dispatch("zen-shell")
+            else
+                print("File is only " .. age .. " seconds old.")
+            end
+        end
+    end
+    os.exit(0)
+end
+
+if mode == "zen-shell" then
+    if #qpid("zen-shell") == 0 then
+        dispatch("zen-shell")
+    end
+    os.exit(0)
+end
+
+-- ---------------------------------------------------- main: fire bg blocks ----
+write(hypr_conf .. "/scripts/loop_is_running", "loop_is_running")
+
+local self = arg[0]
+os.execute(shq(self) .. " hypridle &")
+os.execute(shq(self) .. " thunar &")
+os.execute(shq(self) .. " alacritty &")
+os.execute(shq(self) .. " wl-paste &")
+os.execute(shq(self) .. " zen_watch &")
+os.execute(shq(self) .. " zen-shell &")
+os.exit(0)

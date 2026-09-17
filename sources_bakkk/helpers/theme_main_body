@@ -1,0 +1,271 @@
+# -*- mode: sh -*-
+# theme_body — functions for the theme_main CLI: theme
+# Sourced by theme_main (see scripts/).
+#
+## ---- theme (dark / light) -------------------------------------------------
+
+# Reads the current theme ("dark"|"light") from $states/settings.json with
+# pure bash parameter expansion (no JSON/text-munging binaries).
+. $hypr_sources/helpers/theme_body
+
+theme_cur() {
+    local cfg s v
+    cfg="${QS_THEME_CFG:-$states/settings.json}"
+    [[ -r "$cfg" ]] || cfg="$HOME/.config/hdots/settings.json"
+    [[ -r "$cfg" ]] || { printf 'dark\n'; return; }
+    s="$(<"$cfg")"
+    s="${s#*\"theme\":}"        # past the first "theme": key
+    s="${s#*\"}"                # past the opening quote
+    v="${s%%\"*}"                # up to the closing quote
+    [[ "$v" == light || "$v" == dark ]] && printf '%s\n' "$v" || printf 'dark\n'
+}
+
+# === USER HOOK ===
+# theme_main fires `theme_main <m>` every time the theme is toggled from
+# the bar, the control center or the `bar dark_mode|light_mode|theme_toggle`
+# IPC, and `theme_main dark|light|toggle` runs it from a terminal too.
+# Theme apply/toggle runs in-process: the apply/switch pipeline funcs
+# (theme_apply_dark_func, theme_switch_func, …) are defined below — merged
+# from the old $hypr_sources/helpers/theme_main_body (deleted 2026-08).
+# Those funcs `exit 0` once the switch is fired, so a dark/light/toggle run
+# ends theme_main right there. They also expect a lax shell, so set -u is
+# relaxed for the call.
+
+wait_for_theme_proc_to_stop_func () {
+        [[ -f $lock_files/theme_run_lock ]] && { # If a theme process is already running, wait for it to finish
+        notify-send -a theme-extras "Theme extras" "Waiting for previous theme process…" &
+        max_wait=10
+        sleep 0.5
+        while [[ -f $lock_files/theme_run_lock ]] && (( max_wait > 0 )); do
+            sleep 0.5
+            ((max_wait--))
+        done
+        }
+}
+# ============================================================================
+# Apply/switch pipeline (merged from $hypr_sources/helpers/theme_main_body)
+# ============================================================================
+
+# Hot-reload the GTK accent (theme-restore hook): swaps hypr-theme-* / -alt
+# when $states2/acc_changed was set by a same-mode theme/grid apply, and
+# clears the flag.
+theme_reapply_func_accent_hot_reload () {
+    # since on thunar daemon mode pidof thunar gives true so we use another method to check if window open
+    acc_changed=$(<$states2/acc_changed)
+    full_theme_reload=$(<$states2/full_theme_reload)
+    (( acc_changed == 1 || full_theme_reload == 1 )) && [[ -z $no_acc_reload ]] && {
+    m=$(<$states2/m)
+    if (( full_theme_reload == 1 )); then
+        user_msg="Full GTK theme hot reload"
+    else
+        user_msg="Hot reloading GTK accent"
+    fi
+    notify-send -a theme-extras "Theme extras" "$user_msg" &
+    echo "$user_msg"
+    if [[ $(gsettings get org.gnome.desktop.interface gtk-theme) == *"alt"* ]]; then
+        alt_flag=1
+    else
+        alt_flag=0
+    fi
+    if [[ $m == d ]]; then
+            if (( alt_flag == 1 )); then
+                    new_theme="hypr-theme-dark"
+                else
+                    new_theme="hypr-theme-dark-alt"
+                fi
+                (( full_theme_reload == 1 )) && {
+                    . $hypr_sources/helpers/theme_definitions
+                    font_vars
+                    vars_d
+                }
+    else
+                if (( alt_flag == 1 )); then
+                        new_theme="hypr-theme-light"
+                    else
+                        new_theme="hypr-theme-light-alt"
+                    fi
+                    (( full_theme_reload == 1 )) && {
+                        . $hypr_sources/helpers/theme_definitions
+                        font_vars
+                        vars_l
+                    }
+    fi
+    # make sure gtk css is generated watch that flag first
+    if [[ $(<$states2/gtk_css_generated) == 0 ]]; then
+    notify-send -a theme-extras "Theme extras" "Waiting for gtk css to be created…" &
+    max_wait=10
+    sleep 0.5
+    while (( $(<$states2/gtk_css_generated) == 0 && max_wait > 0 )); do
+        sleep 0.5
+        ((max_wait--))
+    done
+    fi
+    gsettings set org.gnome.desktop.interface gtk-theme "$new_theme"
+    echo $new_theme > $states2/cur_theme
+
+                        (( full_theme_reload == 1 )) && {
+                            full_hot_reload_func # defs already sourced
+                        }
+    }
+    echo 0 > $states2/acc_changed
+    echo 0 > $states2/full_theme_reload
+    no_acc_reload=""
+}
+
+
+save_flags_func () {
+    echo $s_String > $states2/s_String
+    echo $s_string > $states2/s_string
+    echo $m_string > $states2/m_string
+    echo $m_String > $states2/m_String
+    echo "$s_String $m_String" > $states2/s_string_long
+    echo $sm > $states2/sm
+    echo $s > $states2/s
+    echo $s > $states/s
+    echo $m > $states2/m
+    echo $m > $states2/m_dummy
+    echo $m > /tmp/mode
+}
+
+
+theme_apply_dark_func () {
+    s=$(<$states2/s) || s=n
+    if [[ $s == n ]]; then
+        s_String=Normal
+        s_string=normal
+        echo N > $states2/s_id
+        s_is=n
+        else
+        s_String=Split
+        s_string=split
+        echo d > $states2/s
+        echo SD > $states2/s_id
+        s_is=d
+        fi
+        m_String=Dark
+        m_string=dark
+        export m_string
+        export m=d
+        export s=$s_is
+        sm="${s_is}d"
+        export sm=$sm
+    save_flags_func &
+    export setting_theme=yes
+    set-dark-function
+}
+
+theme_apply_light_func () {
+    s=$(<$states2/s) || s=n
+    if [[ $s == n ]]; then
+        s_String=Normal
+        s_string=normal
+        echo N > $states2/s_id
+        s_is=n
+        else
+        s_String=Split
+        s_string=split
+        echo l > $states2/s
+        echo SL > $states2/s_id
+        s_is=l
+        fi
+        m_String=Light
+        m_string=light
+        export m_string
+        export m=l
+        export s=$s_is
+        sm="${s_is}l"
+        export sm=$sm
+    save_flags_func &
+    export setting_theme=yes
+    set-light-function
+}
+
+theme_main_restore_func () {
+    wait_for_theme_proc_to_stop_func
+    m=$(<$states2/m) || m=d
+    s=$(<$states2/s) || s=n
+    if [[ $s == n ]]; then
+        s_String=Normal
+        s_string=normal
+        echo N > $states2/s_id
+        s_is=n
+        else
+        s_String=Split
+        s_string=split
+        echo $m > $states2/s
+        echo S${m^} > $states2/s_id
+        s_is=$m
+        fi
+    if [[ $m == d ]]; then
+    export m=d
+    export s=$s_is
+    m_String=Dark
+    m_string=dark
+    else
+    export m=l
+    export s=$s_is
+    m_String=Light
+    m_string=light
+    fi
+    sm="${s_is}${m}"
+    export m_string
+    export sm=$sm
+    save_flags_func &
+    export setting_theme=""
+    restore-${m_string}-function
+    theme_reapply_func_accent_hot_reload &
+}
+
+
+# Debounce rapid dark/light toggles: only the last request wins (theme_switch
+# func sets m_dummy, this fires the real apply 0.5s later if nothing newer
+# arrived, waiting out any in-flight theme run).
+debounce_func () {
+echo $$ > $states2/theme_switch_pid
+        {
+            sleep 0.5
+        [[ $(<$states2/theme_switch_pid) == $(echo $$) ]] && {
+            m=$(<$states2/m)
+            final_dummy=$(<$states2/m_dummy)
+            [[ $m == $final_dummy ]] && exit 0
+
+        wait_for_theme_proc_to_stop_func
+        if [[ $final_dummy == l ]]; then
+            theme_apply_light_func &
+        else
+            theme_apply_dark_func &
+        fi
+        exit 0
+        }
+        } &
+}
+
+
+theme_switch_func () {
+if [[ $(<$states2/m_dummy) == d ]]; then
+    echo l > $states2/m_dummy
+else
+    echo d > $states2/m_dummy
+fi
+debounce_func &
+exit 0
+}
+
+
+theme_cmd() {
+    local m="${1:-toggle}"
+    case "$m" in
+        status|get) theme_cur;;
+        dark)        theme_apply_dark_func;;
+        light)       theme_apply_light_func;;
+        toggle|switch) theme_switch_func;;
+        restore)    theme_main_restore_func;;
+        crestore)    echo 1 > $states2/acc_changed
+            theme_main_restore_func
+            ;;
+            frestore)    echo 1 > $states2/full_theme_reload
+            theme_main_restore_func;;
+        reapply)    theme_reapply_func_accent_hot_reload;;
+        *)          echo "theme: use status|dark|light|toggle|restore|reapply";;
+    esac
+}

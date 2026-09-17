@@ -1,0 +1,4 @@
+-- restore_defaults — source gen_flags_master and glyphs/restore_defaults
+
+dofile(hypr_sources .. "/helpers/gen_flags_master")
+dofile(hypr_sources .. "/glyphs/restore_defaults")

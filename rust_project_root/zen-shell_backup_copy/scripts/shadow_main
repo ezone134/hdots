@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+. $hypr_sources/helpers/shadow_body
+
+case $1 in
+toggle)
+    shadow_toggle_func
+    ;;
+on)
+    shadow_on_func
+    ;;
+off)
+    shadow_off_func
+;;
+restore)
+    shadow_restore_func
+    ;;
+reset)
+    shadow_reset_func
+    ;;
+esac

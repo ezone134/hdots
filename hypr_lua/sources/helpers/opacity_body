@@ -1,0 +1,50 @@
+#!/usr/bin/env luajit
+-- helper opacity_body
+
+s = read_line(states2 .. "/s")
+
+function restore_logic()
+    local active_opacity = read_line(states .. "/opacity_active_" .. s)
+    local inactive_opacity = read_line(states .. "/opacity_inactive_" .. s)
+    write(os.getenv("HOME") .. "/.config/hypr/configs/opacity.lua", string.format(
+        [[hl.config({
+    decoration = {
+        rounding = 10,
+        rounding_power = 2,
+        active_opacity = %s,
+        inactive_opacity = %s,
+    },
+    })]], active_opacity or "nil", inactive_opacity or "nil"))
+end
+
+function opacity_restore_function()
+    restore_logic()
+    spawn("notify-send -a Opacity 'Opacity' 'Restored'")
+    write(states2 .. "/opacity_done", "1\n")
+end
+
+function opacity_enable_function()
+    write_line(states .. "/opacity_active_" .. s, "0.8")
+    restore_logic()
+    spawn("notify-send -a Opacity 'Opacity' 'Enabled'")
+end
+
+function opacity_disable_function()
+    write_line(states .. "/opacity_active_" .. s, "1.0")
+    restore_logic()
+    spawn("notify-send -a Opacity 'Opacity' 'Disabled'")
+end
+
+function opacity_toggle_function()
+    local opacity_active = read_line(states .. "/opacity_active_" .. s)
+    if opacity_active == "1.0" then
+        opacity_enable_function()
+    else
+        opacity_disable_function()
+    end
+end
+
+function opacity_reset_function()
+    write(os.getenv("HOME") .. "/.config/hypr/configs/opacity.lua", "")
+    spawn("notify-send -a Opacity 'Opacity' 'Reset'")
+end

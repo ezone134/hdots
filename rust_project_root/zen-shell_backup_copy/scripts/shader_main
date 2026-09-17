@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+. "$hypr_sources/helpers/shader_body"
+
+case ${1-} in
+toggle)  shader_toggle_func ;;
+on)      shader_on_func ;;
+off)     shader_reset_func ;;
+restore) shader_restore_func ;;
+terminal) shader_on_func ;;
+reset)   shader_reset_func ;;
+set|val|select) shader_set_func "${2-}" ;;
+status)
+    # "<state> <sat>" — state 0|1, saturation 0..200 (100 = default)
+    sat=$(basename "$(cat "$states/shader_val_${s}" 2>/dev/null)" .glsl)
+    printf '%s %s\n' "${state:-0}" "${sat:-100}"
+    ;;
+*)
+    printf '%s\n' "usage: shader_main {toggle|on|off|restore|reset|set N|status}" >&2
+    exit 2
+    ;;
+esac

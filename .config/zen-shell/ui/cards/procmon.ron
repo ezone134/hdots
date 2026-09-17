@@ -1,0 +1,33 @@
+(
+    // procmon card — fully declarative (zero Ink): live Header meta
+    // ("CPU {cpu}%") + one row per top process (label truncated to reserve
+    // the bar zone, right-anchored per-process meter bar — fraction of the
+    // top process's ticks, so #1 is the 100% reference exactly like the
+    // Rust drawer's implicit ordering). Row windows clip past the card
+    // bottom automatically (Rows rows-past-bottom skip).
+    items: [
+        Header(
+            title: "Processes",
+            meta: Some("CPU {cpu}%"),
+            meta_mono: true,
+            meta_color: Some(fg3),
+        ),
+        Rows(
+            name: "top_procs_rows",
+            y: 32.0,
+            row_h: 22.0,
+            pad: 14.0,
+            row_dy: 0.0,
+            cols: [
+                (x: 0.0, dy: Some(0.0), size: 9.0, truncate: Some(64.0)),
+                (
+                    x: 0.0,
+                    edge: Some(14.0),
+                    right: true,
+                    w: 80.0,
+                    bar: Some((height: 4.0, top: 14.0, radius: 2.0, fill: Some(acc))),
+                ),
+            ],
+        ),
+    ],
+)

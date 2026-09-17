@@ -1,0 +1,15 @@
+# -*- mode: sh -*-
+
+files_array=(
+    $home_dir/.bashrc:$hdots/.bashrc
+    $home_dir/.zshrc:$hdots/.zshrc
+    $home_dir/.profile:$hdots/.profile
+    $home_dir/.bash_history:$hdots/.bash_history
+    $home_dir/.zsh_history:$hdots/.zsh_history
+    /root/.bashrc:$hdots/.bashrc-root # for root user
+    /root/.bash_history:$hdots/.bash_history-root
+    /home/tmp/.bashrc:$hdots/.bashrc # for tmp user
+    /home/tmp/.profile:$hdots/.profile # for tmp user
+    /home/tmp/.bash_history:$hdots/.bash_history
+    /var/log/zypp/history:/var-p/log/zypp/history
+)

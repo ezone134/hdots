@@ -1,0 +1,15 @@
+(
+    // recent card — fully declarative (Batch 1). Open-glyph + name rows from
+    // `recent_rows`; the visible window follows `recent_scroll` (wheel
+    // scrolling), rows register `recent key_base + index` for the open-file
+    // click plumbing. Querying is gated on `recent_files_n`/`recent_status`.
+    items: [
+        Header(title: "Recent files", glyph: Some("\u{f15c}"), meta: Some("{recent_files_n}"), pad: 12.0),
+        Text(x: 0.0, y: -6.0, w: 0.0, text: "{recent_status}", font_size: 9.0,
+             center_x: true, center_y: true, color: Some(fg3)),
+        Rows(name: "recent_rows", y: 26.0, pad: 12.0, row_h: 19.0, cols: [
+            (x: 6.0, size: 9.5),
+            (x: 0.0, w: 0.0, right: true, icon: true, size: 8.0, color: Some(fg3)),
+        ], key_base: 14300, hover_surface: Some(hover), start: Some("recent_scroll")),
+    ],
+)

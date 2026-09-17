@@ -1,0 +1,13 @@
+# -*- mode: sh -*-
+# create dummies
+. ~/.config/hdots/sources/helpers/link_it_defs
+link_it_dir_func /tmp/${USER}_hypr_conf/configs $HOME/.config/hypr/configs
+> $HOME/.config/hypr/configs/primary.lua
+> $HOME/.config/hypr/configs/execs.lua
+> $HOME/.config/hypr/configs/border.lua
+> $HOME/.config/hypr/configs/blur.lua
+> $HOME/.config/hypr/configs/shadow.lua
+> $HOME/.config/hypr/configs/opacity.lua
+> $HOME/.config/hypr/configs/general.lua
+> $HOME/.config/hypr/configs/shader.lua
+> $HOME/.config/hypr/configs/monitors.lua

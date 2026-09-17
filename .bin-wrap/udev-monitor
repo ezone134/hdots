@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+
+pkill udevadm
+sleep 0.1
+
+
+check_power_source () {	
+	power_status=0  # initial set flag 0
+
+	# Check if the system is on AC power or USB-c power
+	power_adp=$(</sys/class/power_supply/ADP*/online)
+	power_usb_c=$(</sys/class/power_supply/ucsi-source-psy-*/online)
+
+	# check both flag if any of them is on set flag 1
+	[ "$power_adp" -eq 1 ] && power_status=1
+	[ "$power_usb_c" -eq 1 ] && power_status=1
+}
+check_power_source # call once when script runs to set values
+
+echo $power_status > "/tmp/charging_state_old_$USER" # also run once
+
+/tmp/set-cpu-freq.sh # also run it once when program starts
+
+
+while true; do
+udevadm monitor | while IFS= read -r line; do
+    # This blocks until a new line arrives → zero CPU while idle
+    if [[ "$line" == *"power_supply"* ]]; then
+       # echo "Power event: $line"
+        check_power_source
+        if [ $power_status = $(<"/tmp/charging_state_old_$USER") ]; then
+        :
+        else
+        echo "powersupply logic here some logic here"
+        /tmp/set-cpu-freq.sh
+        echo $power_status > "/tmp/charging_state_old_$USER" # save current state as old
+        fi
+       # do something
+    fi
+    # react to something
+    
+    
+        if [[ "$line" == *"phy"* ]]; then
+
+# flight mode logic here
+fi
+    
+    
+done
+        # THIS IS THE JUMP BACK
+        echo "udevadm monitor stopped. Restarting..."
+        sleep 0.2
+        done
+
+echo "exiting"
+exit 0

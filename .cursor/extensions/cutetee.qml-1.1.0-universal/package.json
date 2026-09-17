@@ -1,0 +1,60 @@
+{
+	"name": "qml",
+	"displayName": "QML",
+	"version": "1.1.0",
+	"publisher": "cutetee",
+	"description": "Cute IDE - QML highlighting",
+	"author": {
+		"name": "Cutetee IT"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"icon": "images/cutetee_buddy.png",
+	"galleryBanner": {
+		"color": "#FFFFFF",
+		"theme": "light"
+	},
+	"engines": {
+		"vscode": "^1.29.0"
+	},
+	"license": "Apache License 2.0",
+	"bugs": {
+		"url": "https://github.com/cutetee/qml/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cutetee/qml"
+	},
+	"homepage": "https://cutetee.it",
+	"contributes": {
+		"languages": [
+			{
+				"id": "qml",
+				"aliases": [
+					"QML",
+					"qml"
+				],
+				"extensions": [
+					".qml"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "qml",
+				"scopeName": "source.qml",
+				"path": "./syntaxes/qml.tmLanguage.json"
+			}
+		]
+	},
+	"devDependencies": {
+		"esbuild": "^0.16.17"
+	},
+	"__metadata": {
+		"installedTimestamp": 1785948824921,
+		"targetPlatform": "universal",
+		"size": 600373
+	}
+}

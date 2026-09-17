@@ -1,0 +1,13 @@
+#!/usr/bin/env luajit
+-- kill_window — enter hyprland kill mode with a notice.
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+notify("Kill Mode", "Click a window to terminate it. Right-click or Esc to cancel.", "Kill Mode", "-i edit-delete -t 3000")
+run("hyprctl kill")

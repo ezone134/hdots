@@ -1,0 +1,22 @@
+#!/usr/bin/env luajit
+-- helper center_pop
+fcs_caller = "center_pop"
+
+-- standalone: show_mode_switch fires this ~0.4s after a mode switch via
+-- bg_delay; load utils so fetch_color_scheme / the splash write resolve.
+if _G.read == nil then
+    local self_path = arg and arg[0] or ""
+    local helpers_dir = self_path:match("^(.*)[/\\][^/\\]*$") or "."
+    dofile(helpers_dir .. "/utils")
+end
+
+dofile(hypr_sources .. "/helpers/fetch_color_scheme")
+
+local big = arg[1] or "BIG"
+local small = arg[2] or "small"
+
+write(states2 .. "/splash_vars", string.format(
+    '{"w":20,"h":20,"bg":"%s","fg":"%s","b_text":"%s","b_font":"Phosphor","b_size":100,"s_text":"%s","s_font":"JetBrainsMonoNL Nerd Font","s_size":18,"duration":3,"spacing":5,"loading_id":2,"show_loading_animation":false,"center_b_text":0,"corner_rounding":20,"alpha":%s}',
+    bg or "", fg or "", big, small, tostring(bf or "100")))
+
+spawn(hdots .. "/sources/helpers/splash &")

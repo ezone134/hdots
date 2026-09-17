@@ -1,0 +1,74 @@
+#!/usr/bin/env luajit
+-- helper prelaunch_body
+
+function main_logic()
+    local dirs_to_clean = {
+        hypr_base .. "/" .. (os.getenv("USER") or "user") .. "_hypr_conf/hypr_bin",
+        hypr_base .. "/" .. (os.getenv("USER") or "user") .. "_hypr_conf/sources",
+        hypr_base .. "/hypr_misc/misc",
+        hypr_base .. "/" .. (os.getenv("USER") or "user") .. "_hypr_conf/sources/quickshell",
+    }
+    for _, d in ipairs(dirs_to_clean) do
+        for _, entry in ipairs(list_dir(d)) do
+            rm_rf(d .. "/" .. entry)
+        end
+    end
+
+    mkdir_p(hypr_bin, hypr_sources, hypr_conf .. "/scripts",
+            hypr_base .. "/hypr_misc/misc", hypr_global, hypr_cache,
+            hypr_conf .. "/quickshell")
+
+    spawn("cp -r " .. hdots .. "/source_run/* " .. hypr_global .. "/")
+    spawn("cp -r " .. hdots .. "/hypr_bin/* " .. hypr_bin .. "/")
+    spawn("cp -r " .. hdots .. "/sources/* " .. hypr_sources .. "/")
+    spawn("cp -r " .. hdots .. "/.config/quickshell/* " .. hypr_conf .. "/quickshell")
+    spawn("cp -r " .. hdots .. "/scripts/* " .. hypr_conf .. "/scripts/")
+    spawn("cp -r " .. hdots .. "/misc/* " .. hypr_base .. "/hypr_misc/misc/")
+end
+
+function splash_func()
+    dofile(hdots .. "/sources/helpers/splash_init")
+end
+
+function launch_final_func()
+    mkdir_p(states2)
+
+    s = read_line(hdots .. "/states/s") or ""
+
+    gtk_theme_name = out("gsettings get org.gnome.desktop.interface gtk-theme")
+    if gtk_theme_name:find("dark") then
+        m_init = "d"
+        theme_panic = ""
+    elseif gtk_theme_name:find("light") then
+        m_init = "l"
+        theme_panic = ""
+    else
+        m_init = "l"
+        theme_panic = "yes"
+    end
+
+    if (tonumber(s) or 1) == 1 then
+        s_init = m_init
+    else
+        s_init = "n"
+    end
+
+    sm = (s_init or "") .. (m_init or "")
+    write_line(states2 .. "/sm", sm)
+
+    do_not_relaunch_rofi = "yes_dont_relaunch"
+
+    show_splash = read_line(hdots .. "/states/show_splash_" .. s_init) or ""
+    if show_splash == "1" then
+        splash_func()
+    end
+
+    main_logic()
+
+    if not is_file((os.getenv("HOME") or "") .. "/.config/hypr/configs/shadow.lua") then
+        dofile(hypr_sources .. "/helpers/create_dummy_configs")
+        spawn("hyprctl reload")
+    end
+
+    dofile(hypr_sources .. "/helpers/hypr_init_logic")
+end

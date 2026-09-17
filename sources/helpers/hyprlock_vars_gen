@@ -1,0 +1,45 @@
+# -*- mode: sh -*-
+s=$(<$states2/s)
+m=$(<"$states2/m")
+
+s=$(<$states2/s) || s=n
+wall="$(<$states/current_wall_${s})"
+
+
+enable_shadow=1
+shadow_passes=2
+
+    bg="rgba(001122ff)"         # dark overall background
+    fg="rgba(ffffffff)"         # white text
+#    entry_color="$fg"      # white for entries
+    entry_color="$fg"      # white for entries
+    entry_bg="rgba(303030ff)"         # dark entry background
+    entry_border="$fg"     # slightly visible border
+    shadow_color="$bg"     # dark glow
+
+
+    shadow_passes=3
+
+
+(( enable_shadow != 1 )) && {
+# over ride shadow color if the flag is 0
+shadow_color="rgba(FFFFFF00)" # make it transparent so has no effect
+shadow_passes=0
+}
+
+
+echo "# generate these colors dynamically later
+\$text_color = $fg
+\$entry_background_color = $entry_bg
+\$entry_border_color = $entry_border
+\$entry_color = $entry_color
+\$bg_color = $bg
+\$font_family = Google Sans Flex Medium
+\$font_family_clock = Google Sans Flex Medium
+\$font_material_symbols = Material Symbols Rounded
+
+# shadow settings
+\$shadow_color = $shadow_color
+\$shadow_passes = $shadow_passes" > $hypr_conf/hypr/hyprlock/hyprlock_vars.conf
+
+exit 0

@@ -1,0 +1,19 @@
+[package]
+name = "zvol"
+version = "0.1.0"
+edition = "2021"
+description = "Direct PipeWire volume control for Wayland: set/get per-channel volume and mute state without wpctl."
+license = "MIT"
+
+[dependencies]
+tracing = "0.1"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "zvol"
+path = "src/bin/main.rs"
+
+[features]
+default = []

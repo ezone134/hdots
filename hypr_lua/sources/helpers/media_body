@@ -1,0 +1,31 @@
+#!/usr/bin/env luajit
+-- helper media_body
+
+function media_status()
+    local st = out("playerctl status 2>/dev/null")
+    if st == "" then print("media:  no player"); return end
+    local t = out("playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null")
+    if t == "" then t = "(no metadata)" end
+    print(string.format("media:  %-5s %s", st, t))
+end
+
+function media_cmd(action)
+    action = action or "status"
+    if action == "status" or action == "cur" then
+        media_status()
+    elseif action == "play" then
+        run("playerctl play")
+    elseif action == "pause" then
+        run("playerctl pause")
+    elseif action == "play-pause" or action == "toggle" then
+        run("playerctl play-pause")
+    elseif action == "next" or action == "n" then
+        run("playerctl next")
+    elseif action == "prev" or action == "previous" or action == "p" then
+        run("playerctl previous")
+    elseif action == "stop" then
+        run("playerctl stop")
+    else
+        err("media: use status|play|pause|next|prev|stop")
+    end
+end

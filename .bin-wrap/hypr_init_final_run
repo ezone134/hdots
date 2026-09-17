@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+
+
+touch "$HOME/.config/google-chrome/First Run"
+cat "/home/persist-link/user/Local State" > "$HOME/.config/google-chrome/Local State"
+
+flatpak-cache-link &
+appimage-extract &

@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+
+write_line(states2 .. "/pid_user_loop", tostring(os.getpid()))
+
+while true do
+    run("sleep 30")
+    run(hypr_conf .. "/scripts/run_inside_loop")
+    run("sleep 30")
+end

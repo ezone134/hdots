@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+
+[ "$(id -un)" = "root" ] && { echo "running as root not permitted"; exit 0; exit 1; }
+
+u1="$USER"
+
+
+base_name="hdots"
+
+source_dir="$HOME/.config/hdots"
+verify_dir="$source_dir"  # use this dir to verify if empty or not
+running_message="Uploading to github"
+update_message="Update zypp"
+user_name="Ezone Solutions"
+user_email="ezonesolutions22@gmail.com"
+
+
+# no need to focus below code
+
+gitrepo="https://ezone134:$pat@github.com/ezone134/$base_name.git"
+branch="main"
+min_size_mb=40  # Minimum tmpdir size to proceed
+rsync_flag_git="-caAxXHhiv --inplace --fsync --no-whole-file"
+
+
+
+echo "$running_message" # display message
+
+[ -e "$verify_dir" ] || {
+    echo "ERROR: $verify_dir does not exist!"
+    sleep 2
+    exit 1
+}
+
+func-up11 () {
+
+rm -rf /tmp/git-tmp/long-name-for-safety/* # this cleans up other repo files too
+
+
+mkdir -p /tmp/git-tmp/long-name-for-safety/$base_name
+
+
+sudo rsync $rsync_flag_git $source_dir/ /tmp/git-tmp/long-name-for-safety/$base_name
+
+# remove .git
+rm -rf /tmp/git-tmp/long-name-for-safety/$base_name/.git
+cd /tmp/git-tmp/long-name-for-safety/$base_name
+
+size_mb=$(du -sm "/tmp/git-tmp/long-name-for-safety/$base_name" | cut -f1)
+
+if [ "$size_mb" -lt "$min_size_mb" ]; then
+    echo "ERROR: $gitdir is only $size_mb MB, less than $min_size_mb MB. Halting. Try runnf zypper ref no refresh repo cache first"
+    exit 1
+    exit 0
+fi
+echo "Size check passed $gitdir: $size_mb MB >= $min_size_mb MB"
+
+
+
+git config --global user.name "$user_name"
+git config --global user.email "$user_email"
+git init || true
+git checkout -b "main" || git checkout "main"
+# ---------------- 3. Commit and push ----------------
+git add .
+git commit -m "$update_message $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+git remote remove origin 2>/dev/null || true
+git remote add origin "$gitrepo"
+git branch -M "$branch"
+git push -f origin "$branch"
+
+echo "Done! /tmp/git-tmp/long-name-for-safety/$base_name is pushed directly to GitHub."
+cd ~
+}
+
+func-up11

@@ -1,0 +1,87 @@
+-- helper gen_theme_cards
+-- ported from bash sources/helpers/gen_theme_cards
+dofile(hypr_sources .. "/helpers/theme_init")
+
+local function trim(s)
+    return tostring(s):gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+fetch_theme_names = function()
+    local names = {}
+    for line in io.lines(hypr_sources .. "/helpers/themes") do
+        if line:find("= {") then
+            local name = line:match("^%s*([%w_]+)%s*=%s*%{")
+            if name then names[#names + 1] = name end
+        end
+    end
+    return names
+end
+
+all_themes = fetch_theme_names()
+
+load_default_extras = function()
+    sfg_d = "#1a1a1e"
+    sfg_l = "#f3f4f6"
+end
+
+-- Lua 1-based: bash ref[3] -> t[4] etc (mapping in theme_init comments)
+load_first_base = function(ref)
+    sfg_mode = ref[4]
+    bg = ref[5]
+    fg = ref[8]
+    acc = ref[11]
+    border = ref[15]
+end
+
+load_first_extras = function(ref)
+    sfg_d = ref[23]
+    sfg_l = ref[24]
+end
+
+load_light_base = function(ref)
+    sfg_mode = ref[31]
+    bg = ref[32]
+    fg = ref[35]
+    acc = ref[38]
+    border = ref[42]
+end
+
+load_light_extras = function(ref)
+    sfg_d = ref[50]
+    sfg_l = ref[51]
+end
+
+local json_parts = {}
+
+for _, name in ipairs(all_themes) do
+    local ref = _G[name]
+    if not ref then goto continue end
+
+    local theme_mode = ref[2]
+
+    if theme_mode ~= "b" then
+        load_first_base(ref)
+        load_first_extras(ref)
+        local sfg_val = (sfg_mode == "d") and sfg_d or sfg_l
+        json_parts[#json_parts + 1] = string.format(
+            '{"name":"%s","dual":false,"dark":{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"},"light":null}',
+            name, bg, fg, acc, sfg_val, border)
+    else
+        load_first_base(ref)
+        load_first_extras(ref)
+        local d_sfg = (sfg_mode == "d") and sfg_d or sfg_l
+        local d_bg, d_fg, d_acc, d_border = bg, fg, acc, border
+
+        load_light_base(ref)
+        load_light_extras(ref)
+        local l_sfg = (sfg_mode == "d") and sfg_d or sfg_l
+        local l_bg, l_fg, l_acc, l_border = bg, fg, acc, border
+
+        json_parts[#json_parts + 1] = string.format(
+            '{"name":"%s","dual":true,"dark":{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"},"light":{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"}}',
+            name, d_bg, d_fg, d_acc, d_sfg, d_border, l_bg, l_fg, l_acc, l_sfg, l_border)
+    end
+    ::continue::
+end
+
+write(states2 .. "/themes", "[\n" .. table.concat(json_parts, ",\n") .. "\n]\n")

@@ -1,0 +1,206 @@
+# -*- mode: sh -*-
+. "$SCRIPT_DIR/folders"
+. "$SCRIPT_DIR/files"
+. "$SCRIPT_DIR/others"
+. "$SCRIPT_DIR/contents_point"
+
+link () {
+    mkdir -p "${2%/*}" 2>/dev/null
+    mkdir -p "$1" 2>/dev/null
+    if [[ "$1" -ef "$2" ]]; then
+        echo "Already $2 -> $1"
+    else
+        [[ -L "$2" ]] && mv "$2" "/tmp/stale_symlink_moved_deleted.$rnd" 2>/dev/null
+        mv "$2" "$2.$rnd" 2>/dev/null
+        ln -s "$1" "$2" 2>/dev/null && echo "Linked $2 -> $1"
+    fi
+}
+
+link_files () {
+    mkdir -p "${2%/*}" 2>/dev/null
+    mkdir -p "${1%/*}" 2>/dev/null
+    touch "$1" 2>/dev/null
+    if [[ "$1" -ef "$2" ]]; then
+        echo "Already $2 -> $1"
+    else
+        [[ -L "$2" ]] && mv "$2" "/tmp/stale_symlink_moved_deleted.$rnd" 2>/dev/null
+        mv "$2" "$2.$rnd" 2>/dev/null
+        ln -s "$1" "$2" 2>/dev/null && echo "Linked $2 -> $1"
+    fi
+}
+
+rel_link () {
+    mkdir -p "${2%/*}" 2>/dev/null
+    mkdir -p "$1" 2>/dev/null
+    if [[ ! "$1" -ef "$2" ]]; then
+        [[ -L "$2" ]] && mv "$2" "/tmp/stale_symlink_moved_deleted.$rnd" 2>/dev/null
+        mv "$2" "$2.$rnd" 2>/dev/null
+        ln -sr "$1" "$2" 2>/dev/null
+    fi
+}
+
+rel_link_files () {
+    mkdir -p "${2%/*}" 2>/dev/null
+    mkdir -p "${1%/*}" 2>/dev/null
+    touch "$1" 2>/dev/null
+    if [[ ! "$1" -ef "$2" ]]; then
+        [[ -L "$2" ]] && mv "$2" "/tmp/stale_symlink_moved_deleted.$rnd" 2>/dev/null
+        mv "$2" "$2.$rnd" 2>/dev/null
+        ln -sr "$1" "$2" 2>/dev/null
+    fi
+}
+
+link_bins () {
+    if [[ ! "$1" -ef "$2" ]]; then
+        [[ -L "$2" ]] && mv "$2" "/tmp/binaries_moved_deleted.$rnd" 2>/dev/null
+        ln -s "$1" "$2" 2>/dev/null && echo "Linked $2 -> $1"
+    fi
+}
+
+own_it () {
+    [[ ! -e "$1" ]] && return 0
+    owner=$(stat -c '%U' "$1")
+    [[ "$owner" == "$u1" ]] || {
+        if [[ -f "$1" ]]; then
+            chown "$u1:$u1" "$1"
+        else
+            chown -R "$u1:$u1" "$1"
+        fi
+    }
+}
+
+777_it () {
+    [[ ! -e "$1" ]] && return 0
+    perm=$(stat -c '%a' "$1")
+    [[ "$perm" == "777" ]] || {
+        if [[ -f "$1" ]]; then
+            chmod 777 "$1"
+        else
+            chmod -R 777 "$1"
+        fi
+    }
+}
+
+point_to_contents_func () {
+    mkdir -p "$2"
+    mkdir -p "$1"
+    # Use local scope for globbing to avoid global shell pollution
+    local targets=("$1"/*)
+    for target in "${targets[@]}"; do
+        [[ -e "$target" ]] || continue
+        local base="${target##*/}"
+        local point="$2/$base"
+        if [[ ! "$point" -ef "$target" ]]; then
+            [[ -L "$point" ]] && mv "$point" "/tmp/${base}.hypr_init_deleted_$rnd" 2>/dev/null
+            mv "$point" "$point.$rnd" 2>/dev/null
+            ln -s "$target" "$point" 2>/dev/null
+        fi
+    done
+}
+
+chain_symlink_function () {
+    for p in "${folders_array[@]}"; do
+        link "${p##*:}" "${p%%:*}"
+    done
+    for p in "${files_array[@]}"; do
+        link_files "${p##*:}" "${p%%:*}"
+    done
+    for p in "${contents_point_array[@]}"; do
+        point_to_contents_func "${p##*:}" "${p%%:*}"
+    done
+}
+
+fix_broken_symlink () {
+    local dirs=("/var/lib/NetworkManager" "/var/tmp" "/var/spool" "/var/adm")
+    for d in "${dirs[@]}"; do
+        if [[ ! -e "$d" ]]; then
+            rm -f "$d"
+            mkdir -p "$d"
+        fi
+    done
+    if [[ ! -f "/var/readme.txt" ]]; then
+        echo "HEY!!!, /var/tmp as symlink does not support errors. Mount tmpfs instead." > /var/readme.txt
+    fi
+}
+
+own_it_function () {
+    for i in "${chown_array[@]}"; do
+        [[ -z "$i" ]] && continue
+        own_it "$i"
+    done
+}
+
+777_it_function () {
+    for i in "${chmod_777_array[@]}"; do
+        [[ -z "$i" ]] && continue
+        777_it "$i"
+    done
+}
+
+zypper_donot_recommend_packages () {
+    if [[ ! -f "/etc/zypp/zypp.conf.bak" ]]; then
+        cp "/etc/zypp/zypp.conf" "/etc/zypp/zypp.conf.bak"
+        { echo ""; echo "# added by boot.sh "; echo "solver.onlyRequires = true"; } >> "/etc/zypp/zypp.conf"
+    fi
+}
+
+own-it-force () {
+    local items=("/@@mount/@@data/@@user/$u1-user" "/@@mount/@@data/@@persist/linuxbrew/.linuxbrew" "/@@mount/@@data/@@persist/user")
+    for i in "${items[@]}"; do
+        sudo chown -R "$u1:$u1" "$i"
+    done
+}
+
+777-it-force () {
+    sudo chmod -R 777 "/@@mount/@@common/user/.cache"
+    sudo chown -R "$u1:$u1" "/home/$u1/.cache/"*
+}
+
+link_to_bin_boss () {
+    mkdir -p "$boss_bin_dir"
+    for i in "${boss_bins_array[@]}"; do
+        if [[ -f "$i" ]]; then
+            link_bins "$i" "$boss_bin_dir/${i##*/}"
+        else
+            for target in "$i"/*; do
+                [[ -e "$target" ]] || continue
+                link_bins "$target" "$boss_bin_dir/${target##*/}"
+            done
+        fi
+    done
+}
+
+link-busybox-applets () {
+    mkdir -p "$busy_box_bin_dir"
+    for applet in $($bb_path --list); do
+        ln -sf "$bb_path" "$busy_box_bin_dir/$applet"
+    done
+}
+
+link_speedy_bins () {
+    cp -r "$home_dir/speedy-bins/"* "$boss_bin_dir/"
+    cp -r "$home_dir/.bin-wrap/"* "$boss_bin_dir/"
+    link_coreutils () {
+    for applet in $($boss_bin_dir/coreutils --list); do
+        ln -f "$boss_bin_dir/coreutils" "$boss_bin_dir/$applet" && echo "Hard Linked $boss_bin_dir/$applet -> $boss_bin_dir/coreutils"
+    done
+    }
+   link_coreutils
+}
+
+link-all () {
+    chain_symlink_function
+    link_speedy_bins
+    link_to_bin_boss
+    chmod +x $boss_bin_dir/*
+}
+
+chroot_dir () {
+    for d in proc sys dev run; do mkdir -p "$1/$d"; done
+    mount --types proc /proc "$1/proc"
+    mount --rbind /sys "$1/sys" && mount --make-rslave "$1/sys"
+    mount --rbind /dev "$1/dev" && mount --make-rslave "$1/dev"
+    mount --bind /run "$1/run" && mount --make-slave "$1/run"
+    cp /etc/resolv.conf "$1/etc/resolv.conf"
+    chroot "$1" /bin/bash -c "source /etc/profile; export PS1='(chroot) ${PS1}'; /bin/bash"
+}

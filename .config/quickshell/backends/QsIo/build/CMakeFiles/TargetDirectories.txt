@@ -1,0 +1,5 @@
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/CMakeFiles/QsIo.dir
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/CMakeFiles/edit_cache.dir
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/CMakeFiles/rebuild_cache.dir
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/CMakeFiles/QsIo_autogen_timestamp_deps.dir
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/CMakeFiles/QsIo_autogen.dir

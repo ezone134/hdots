@@ -1,0 +1,55 @@
+-- helper theme_block_init
+
+local function point_to_contents_rel_function(src_dir, dest_dir)
+    src_dir = src_dir:gsub("/$", "")
+    dest_dir = dest_dir:gsub("/$", "")
+
+    mkdir_p(src_dir)
+    mkdir_p(dest_dir)
+
+    for _, target_name in ipairs(list_dir(src_dir)) do
+        local target = src_dir .. "/" .. target_name
+        local point = dest_dir .. "/" .. target_name
+
+        if not is_same_file(point, target) then
+            if is_file(point) then
+                mv(point, "/tmp/" .. target_name .. ".hypr_init_deleted_" .. math.random(100000))
+            end
+            symlink(target, point)
+        end
+    end
+end
+
+-- copy theme tree
+run("cp -r " .. shq(hdots .. "/hypr-theme/*") .. " " .. shq(hypr_conf .. "/hypr-theme/"))
+
+-- remove stale index files
+rm(hypr_conf .. "/hypr-theme/hypr-theme-dark-alt/index.theme")
+rm(hypr_conf .. "/hypr-theme/hypr-theme-dark-alt/index*")
+rm(hypr_conf .. "/hypr-theme/hypr-theme-light-alt/index.theme")
+rm(hypr_conf .. "/hypr-theme/hypr-theme-light-alt/index*")
+
+-- symlink alt theme dirs to their base counterparts
+local alt_themes = {
+    {src = hypr_conf .. "/hypr-theme/hypr-theme-dark",   dest = hypr_conf .. "/hypr-theme/hypr-theme-dark-alt"},
+    {src = hypr_conf .. "/hypr-theme/hypr-theme-light",  dest = hypr_conf .. "/hypr-theme/hypr-theme-light-alt"},
+}
+
+for _, pair in ipairs(alt_themes) do
+    point_to_contents_rel_function(pair.src, pair.dest)
+end
+
+rm(hypr_conf .. "/hypr-theme/hypr-theme-dark-alt/index.theme")
+rm(hypr_conf .. "/hypr-theme/hypr-theme-light-alt/index.theme")
+
+write(hypr_conf .. "/hypr-theme/hypr-theme-light-alt/index.theme",
+    '[Desktop Entry]\nType=X-GNOME-Metatheme\nName=hypr-theme-light-alt\n' ..
+    'Comment=An Flat Gtk+ theme based on Elegant Design\nEncoding=UTF-8\n\n' ..
+    '[X-GNOME-Metatheme]\nGtkTheme=hypr-theme-light-alt\nMetacityTheme=hypr-theme-light-alt\n' ..
+    'IconTheme=Tela-circle-light\nCursorTheme=Graphite-cursors\nButtonLayout=close,minimize,maximize:menu\n')
+
+write(hypr_conf .. "/hypr-theme/hypr-theme-dark-alt/index.theme",
+    '[Desktop Entry]\nType=X-GNOME-Metatheme\nName=hypr-theme-dark-alt\n' ..
+    'Comment=An Flat Gtk+ theme based on Elegant Design\nEncoding=UTF-8\n\n' ..
+    '[X-GNOME-Metatheme]\nGtkTheme=hypr-theme-dark-alt\nMetacityTheme=hypr-theme-dark-alt\n' ..
+    'IconTheme=Tela-circle-dark\nCursorTheme=Graphite-cursors\nButtonLayout=close,minimize,maximize:menu\n')

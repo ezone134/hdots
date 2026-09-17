@@ -1,0 +1,263 @@
+-- helper theme_body
+-- ported from bash sources/helpers/theme_body
+
+function sfg_ec_d()
+    sfg_ec = sfg_l
+end
+
+function sfg_ec_l()
+    sfg_ec = sfg_d
+end
+
+function common_sfg_assign_func()
+    if scrim_mode == 1 then
+        local _ = _G
+        -- scrim_mode: sfg = fg
+        sfg = fg
+    else
+        if sfg_mode == "d" then
+            sfg = sfg_d
+        else
+            sfg = sfg_l
+        end
+    end
+end
+
+function backup_colors()
+    sfg_bak = sfg
+    bg_bak = bg
+    fg_bak = fg
+    local border_bak_path = states .. "/border_" .. s .. m
+    border_bak = read_line(border_bak_path) or ""
+    border8_bak = tostring(border_bak) .. tostring(border_alpha)
+    acc_bak = read_line(states .. "/acc_" .. s .. m) or ""
+end
+
+function fetch_first()
+    bg2_8 = tostring(bg2) .. "ff"
+    bg_gtk = bg
+    start_icon = fg
+    border8 = tostring(border) .. tostring(border_alpha)
+    acc_gtk = acc
+
+    if tonumber(scrim_mode or 0) == 1 then
+        -- scrim path: set_hyprland_regexfunc from cache
+        local scrim_list = hypr_cache .. "/scrim_" .. s .. "_" .. m .. ".list"
+        local f = io.open(scrim_list, "r")
+        if not f then
+            set_bri_helper(scrim_list)
+        end
+    end
+end
+
+function fetch_second()
+    if tonumber(scrim_mode or 0) == 1 then
+        local scrim_hex = state2_read("scrim_hex_" .. s) or ""
+        first_fetch()
+    else
+        dofile(hypr_sources .. "/helpers/contrast_check")
+        if is_file(shades_list) then
+            dofile(shades_list)
+        end
+        _G["theme_logic_" .. m]()
+    end
+end
+
+function color_fetch_master()
+    local bpath = states .. "/border_alpha_" .. s
+    if is_file(bpath) then
+        border_alpha = read_line(bpath)
+    else
+        border_alpha = read_line(states .. "/default_border_alpha") or "80"
+    end
+
+    if tonumber(scrim_mode or 0) == 1 then
+        local scrim_hex = state2_read("scrim_hex_" .. s) or ""
+        local hex_id = scrim_hex:gsub("^#", "")
+        shades_list = hypr_cache .. "/accent_files/scrim_shades_" .. s .. "/" .. hex_id .. "/shades_list"
+        run(hypr_sources .. "/helpers/color_engine gen_shades " .. shq(scrim_hex) .. " " .. shq(shades_list))
+    else
+        local apath = states .. "/acc_alpha_" .. s
+        if is_file(apath) then
+            acc_alpha = read_line(apath)
+        else
+            acc_alpha = "80"
+        end
+    end
+
+    backup_colors()
+
+    local acc_source = read_line(states .. "/acc_source_" .. s) or "d"
+    fetch_first()
+
+    if acc_source == "w" then
+        local wall = read_line(states .. "/current_wall_" .. s) or ""
+        dofile(hypr_sources .. "/helpers/init_hex_from_wall")
+        fetch_second()
+        accent_string = "accent from wall"
+    elseif acc_source == "c" then
+        dofile(hypr_sources .. "/helpers/init_custom_accent")
+        fetch_second()
+        local custom_name = read_line(states .. "/custom_acc_name_" .. s) or ""
+        accent_string = "custom acc (" .. custom_name .. ")"
+    else
+        common_sfg_assign_func()
+        fetch_first()
+        -- bash reads $states/scheme_${sm} (e.g. scheme_nd/nl/dd/ll)
+        local scheme_id = read_line(states .. "/scheme_" .. (sm or m)) or ""
+        accent_string = "color scheme (" .. tostring(scheme_id) .. " " .. tostring(acc) .. ")"
+    end
+    write_line(states2 .. "/acc_Source", accent_string)
+end
+
+function init_global_vars()
+    state2_write("configs_done", "0")
+
+    if not regen_colors then
+        state2_write("general_done", "0")
+        state2_write("hs_done", "0")
+        state2_write("shadow_done", "0")
+        state2_write("opacity_done", "0")
+        state2_write("shader_done", "0")
+        state2_write("blur_done", "0")
+        state2_write("awww_done", "0")
+        state2_write("gtk_css_generated", "0")
+        state2_write("all_theme_set", "0")
+        halt_pipeline = ""
+    end
+
+    err("s is " .. tostring(s) .. " m is " .. tostring(m) .. " and sm is " .. tostring(sm))
+    write_line(states2 .. "/theme_run_pid", tostring(getpid()))
+
+    local lock = lock_files .. "/theme_run_lock"
+    write(lock, "")
+
+    local rnd_val = tostring(math.random(100000,999999)) .. ".old"
+    rnd = rnd_val
+
+    local s_string_path = states2 .. "/s_string"
+    s_string = read_line(s_string_path) or ""
+
+    local start_icon_flag_path = states .. "/custom_acc_start_icon_" .. s
+    start_icon_flag = tonumber(read_line(start_icon_flag_path) or "0") or 0
+    app_border_flag = tonumber(read_line(states .. "/custom_acc_app_border_" .. s) or "0") or 0
+    hyprland_border_flag = tonumber(read_line(states .. "/custom_acc_hyprland_" .. s) or "0") or 0
+    gtk_app_bg_flag = tonumber(read_line(states .. "/custom_acc_gtk_" .. s) or "1") or 1
+    normal_app_bg_flag = tonumber(read_line(states .. "/custom_acc_normal_app_" .. s) or "1") or 1
+
+    default_border_alpha = "80"
+    default_acc_alpha = "80"
+    default_bg_alpha = "ff"
+    acc_flip_thresh_dark = 600
+    acc_target_thresh_dark = 150
+    acc_manual_override = 350
+
+    start_icon_contrast = tonumber(read_line(states .. "/start_icon_tone_" .. s) or "900") or 900
+    acc_flip_thresh_light = 150
+    acc_target_thresh_light = 600
+
+    acc_source = read_line(states .. "/acc_source_" .. s) or "d"
+
+    dofile(hypr_sources .. "/helpers/fetch_color_scheme")
+
+    acc_virgin = acc
+    t_bg = bg
+    write_line(states2 .. "/" .. m .. "bg", t_bg)
+    err("t_bg is " .. tostring(t_bg))
+
+    if read_line(states .. "/acc_scrim_" .. s) == "1" then
+        scrim_mode = 1
+    else
+        scrim_mode = 0
+    end
+
+    color_fetch_master()
+    dofile(hypr_sources .. "/helpers/theme_definitions")
+    font_vars()
+    _G["vars_" .. m]()
+    _G["sfg_ec_" .. m]()
+    dofile(hypr_sources .. "/helpers/theme_save_hex")
+    spawn("luajit " .. shq(lua_helpers .. "/gen_gtk_css"))
+    _G["useful_hex_" .. m]()
+end
+
+function init_dark_colors()
+    if setting_theme and setting_theme ~= "" then
+        dofile(hypr_sources .. "/msg/init_dark_theme")
+        local msg = theme_init_msgs[math.random(#theme_init_msgs)]
+        notify("Theme", msg, "theme")
+    end
+    init_global_vars()
+end
+
+function init_light_colors()
+    if setting_theme and setting_theme ~= "" then
+        dofile(hypr_sources .. "/msg/init_light_theme")
+        local msg = theme_init_msgs[math.random(#theme_init_msgs)]
+        notify("Theme", msg, "theme")
+    end
+    init_global_vars()
+end
+
+function show_mode_switch(icon, text)
+    run("pkill splash")
+    do_not_relaunch_rofi = "yes"
+    bg_delay(0.4, "luajit " .. shq(lua_helpers .. "/center_pop") .. " " .. shq(icon or "") .. " " .. shq(text or ""))
+end
+
+function final_apply()
+    spawn("luajit " .. shq(lua_sources .. "/helpers/hypr_config_gen"))
+    spawn("luajit " .. shq(lua_sources .. "/helpers/hyprlock_vars_gen"))
+    spawn("luajit " .. shq(lua_sources .. "/helpers/awww_final"))
+    dofile(hypr_sources .. "/helpers/theme_body_run")
+end
+
+function set_dark_function()
+    setting_theme = "yes"
+    m = "d"
+    sm = tostring(s) .. "d"
+    init_dark_colors()
+    show_mode_switch("moon", "Dark Elements Generated")
+    final_apply()
+    notify("Theme", "Switched to dark m\nMode: " .. tostring(s_string), "theme")
+end
+
+function restore_dark_function()
+    init_dark_colors()
+    final_apply()
+    notify("Theme", "Dark elements generated\nMode: " .. tostring(s_string), "theme")
+end
+
+function set_light_function()
+    setting_theme = "yes"
+    m = "l"
+    sm = tostring(s) .. "l"
+    init_light_colors()
+    show_mode_switch("sun-dim", "Light Elements Generated")
+    final_apply()
+    notify("Theme", "Switched to light m\nMode: " .. tostring(s_string), "theme")
+end
+
+function restore_light_function()
+    init_light_colors()
+    final_apply()
+    notify("Theme", "Light elements generated\nMode: " .. tostring(s_string), "theme")
+end
+
+function regen_accent_and_theme_colors()
+    regen_colors = "yes"
+    if m == "d" then
+        m_string = "dark"
+        init_dark_colors()
+    else
+        m_string = "light"
+        init_light_colors()
+    end
+    spawn("luajit " .. shq(lua_sources .. "/helpers/hypr_config_gen"))
+    spawn("luajit " .. shq(lua_sources .. "/helpers/hyprlock_vars_gen"))
+    dofile(hypr_sources .. "/helpers/theme_main_body")
+    state2_write("acc_changed", "1")
+    theme_reapply_func_accent_hot_reload()
+    regen_colors = nil
+    err("end of regen color")
+end

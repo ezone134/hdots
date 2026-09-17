@@ -1,0 +1,77 @@
+-- helper contrast_check
+
+function contrast_check_function_l(acc_tmp, bg_tmp, anchor, target_threshold, var_name, color_string)
+    acc_tmp = acc_tmp:gsub("^#", "")
+    bg_tmp = bg_tmp:gsub("^#", "")
+
+    local r_acc = tonumber(acc_tmp:sub(1, 2), 16)
+    local g_acc = tonumber(acc_tmp:sub(3, 4), 16)
+    local b_acc = tonumber(acc_tmp:sub(5, 6), 16)
+    local r_bg = tonumber(bg_tmp:sub(1, 2), 16)
+    local g_bg = tonumber(bg_tmp:sub(3, 4), 16)
+    local b_bg = tonumber(bg_tmp:sub(5, 6), 16)
+
+    local l_acc = math.floor((r_acc * 299 + g_acc * 587 + b_acc * 114) / 1000)
+    local l_bg = math.floor((r_bg * 299 + g_bg * 587 + b_bg * 114) / 1000)
+
+    local raw_diff = l_acc > l_bg and (l_acc - l_bg) or (l_bg - l_acc)
+    local s_diff = math.floor((raw_diff * anchor) / 255)
+
+    current_contrast_on_anchor = s_diff
+    scaled_diff = s_diff
+    needs_color_boost_flag = 0
+    boost_color_by = 0
+
+    err("scaled diff is " .. tostring(scaled_diff))
+
+    if s_diff < target_threshold then
+        needs_color_boost_flag = 1
+        boost_color_by = target_threshold - s_diff
+
+        err("[Contrast-light] (" .. color_string .. ") is BELOW TARGET (" .. tostring(s_diff) .. " < " .. tostring(target_threshold) .. "). Action: +" .. tostring(boost_color_by) .. ", boosted color is set at $" .. var_name)
+
+        local target_shade = "shade_" .. tostring(anchor - boost_color_by)
+        _G[var_name] = _G[target_shade] or ""
+
+        err("var_name (" .. var_name .. ") value is now " .. tostring(_G[var_name]))
+    else
+        err("[Contrast-light] (" .. color_string .. ") is ABOVE TARGET (" .. tostring(s_diff) .. " > " .. tostring(target_threshold) .. "). Action: none")
+    end
+end
+
+function contrast_check_function_d(acc_tmp, bg_tmp, anchor, target_threshold, var_name, color_string)
+    acc_tmp = acc_tmp:gsub("^#", "")
+    bg_tmp = bg_tmp:gsub("^#", "")
+
+    local r_acc = tonumber(acc_tmp:sub(1, 2), 16)
+    local g_acc = tonumber(acc_tmp:sub(3, 4), 16)
+    local b_acc = tonumber(acc_tmp:sub(5, 6), 16)
+    local r_bg = tonumber(bg_tmp:sub(1, 2), 16)
+    local g_bg = tonumber(bg_tmp:sub(3, 4), 16)
+    local b_bg = tonumber(bg_tmp:sub(5, 6), 16)
+
+    local l_acc = math.floor((r_acc * 299 + g_acc * 587 + b_acc * 114) / 1000)
+    local l_bg = math.floor((r_bg * 299 + g_bg * 587 + b_bg * 114) / 1000)
+
+    local raw_diff = l_acc > l_bg and (l_acc - l_bg) or (l_bg - l_acc)
+    local s_diff = math.floor((raw_diff * anchor) / 255)
+
+    current_contrast_on_anchor = s_diff
+    scaled_diff = s_diff
+    needs_color_boost_flag = 0
+    boost_color_by = 0
+
+    err("scaled diff is " .. tostring(scaled_diff))
+
+    if s_diff > target_threshold then
+        needs_color_boost_flag = 1
+        boost_color_by = s_diff - target_threshold
+
+        local target_shade = "shade_" .. tostring(anchor - boost_color_by)
+        _G[var_name] = _G[target_shade] or ""
+
+        err("[Contrast-Dark] (" .. color_string .. ") is ABOVE TARGET (" .. tostring(s_diff) .. " > " .. tostring(target_threshold) .. "). Action: -" .. tostring(boost_color_by) .. ", boosted color is set at " .. tostring(_G[var_name]))
+    else
+        err("[Contrast-Dark] (" .. color_string .. ") is BELOW TARGET (" .. tostring(s_diff) .. " < " .. tostring(target_threshold) .. "). Action: none")
+    end
+end

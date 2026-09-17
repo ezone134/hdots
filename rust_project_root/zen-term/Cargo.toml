@@ -1,0 +1,26 @@
+[package]
+name = "zen-term"
+version = "0.1.0"
+edition.workspace = true
+description = "Pure Wayland GPU terminal — raw GL (EGL), Vulkan next; signal hot-reload, zero idle CPU."
+license.workspace = true
+
+[[bin]]
+name = "zen-term"
+path = "src/main.rs"
+
+[dependencies]
+smithay-client-toolkit.workspace = true
+wayland-client = { workspace = true, features = ["dlopen"] }
+wayland-protocols = "0.32"
+wayland-egl = "0.32"
+egl = "0.1"
+glow = "0.16"
+xkbcommon = "0.8"
+calloop = "0.14"
+alacritty_terminal = "0.26.0"
+ab_glyph = "0.2"
+fontdb = "0.20"
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+libc.workspace = true

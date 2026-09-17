@@ -1,0 +1,15 @@
+#!/usr/bin/env luajit
+-- reboot — sync state files then reboot.
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+dofile(hypr_sources .. "/helpers/power_body")
+print()
+print("Rebooting...")
+run("sudo systemctl reboot")

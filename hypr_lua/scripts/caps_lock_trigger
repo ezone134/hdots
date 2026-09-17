@@ -1,0 +1,43 @@
+#!/usr/bin/env luajit
+-- caps_lock_trigger — caps-lock OSD toggle (mirrors the bar vol/mic/mute OSD).
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+dofile(hypr_global .. "/qpid")
+spawn("pkill splash")
+
+local state = tonumber(state2_read("caps_lock_state")) or 0
+local new_state = 1 - state
+state2_write("caps_lock_state", tostring(new_state))
+
+local on_cmd = function()
+    dofile(lua_sources .. "/helpers/center_pop")
+    spawn("center_pop 'CAPSLOCK' 'ON'")
+end
+
+local off_cmd = function()
+    dofile(lua_sources .. "/helpers/center_pop")
+    spawn("center_pop 'CAPSLOCK' 'OFF'")
+end
+
+if new_state == 1 then
+    on_cmd()
+else
+    off_cmd()
+end
+
+bg_delay(2, string.format(
+    "local f=function() "
+    .. "local p = state2_read('caps_lock_file_path') "
+    .. "local rs = tonumber(read_line(p)) or 0 "
+    .. "local ns = %d "
+    .. "if rs ~= ns then "
+    ..   "if rs == 1 then center_pop('CAPSLOCK','ON') else center_pop('CAPSLOCK','OFF') end "
+    ..   "state2_write('caps_lock_state', tostring(rs)) "
+    .. "end end; f()",
+    new_state))
+
+os.exit(0)

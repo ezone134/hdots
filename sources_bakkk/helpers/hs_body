@@ -1,0 +1,50 @@
+# -*- mode: sh -*-
+#
+
+
+on_func () {
+pkill hyprsunset
+sleep 0.3
+echo a > $states/hyprsunset_state
+hyprsunset &
+notify-send -a Hyprsunset "Hyprsunset" "Started (auto mode)" &
+exit 0
+}
+
+manual_func () {
+pkill hyprsunset
+sleep 0.3
+echo m > $states/hyprsunset_state
+val=$(<$states/hyprsunset_val) || hyprsunset_val=4000
+hyprsunset -t $val &
+notify-send -a Hyprsunset "Hyprsunset" "Manual ${val} K" &
+exit 0
+}
+
+off_func () {
+echo c > $states/hyprsunset_state
+pkill hyprsunset
+notify-send -a Hyprsunset "Hyprsunset" "Stopped and state reset" &
+exit 0
+}
+
+toggle_func () {
+state=$(<$states/hyprsunset_state)
+if [[ $state = c ]]; then
+on_func
+else
+off_func
+fi
+exit 0
+}
+
+restore_func () {
+state=$(<$states/hyprsunset_state)
+[[ $state = m ]] && {
+    manual_func &
+}
+[[ $state = a ]] && {
+on_func &
+}
+echo 1 > $states2/hs_done
+}

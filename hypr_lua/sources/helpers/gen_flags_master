@@ -1,0 +1,439 @@
+-- helper gen_flags_master
+-- ported from bash sources/helpers/gen_flags_master:
+--   [[ -f $states/<k> ]] || echo <v> > $states/<k>
+
+if not is_file(states2 .. "/s") then
+    write(states2 .. "/s", '"d"')
+end
+if not is_file(states .. "/accent_anchor") then
+    write(states .. "/accent_anchor", '"1000"')
+end
+if not is_file(states .. "/accent_caching") then
+    write(states .. "/accent_caching", '0')
+end
+if not is_file(states .. "/fav_accents_list") then
+    write(states .. "/fav_accents_list", '"opensuse_green_2 sunken_jade_8 murky_abyss_9 noir_cherry_8 indigo_28 deep_mulberry_20 moss_41 deep_sea_blue_40"')
+end
+if not is_file(states .. "/start_icon_tone_n") then
+    write(states .. "/start_icon_tone_n", '"900"')
+end
+if not is_file(states .. "/start_icon_tone_d") then
+    write(states .. "/start_icon_tone_d", '"900"')
+end
+if not is_file(states .. "/start_icon_tone_l") then
+    write(states .. "/start_icon_tone_l", '"700"')
+end
+if not is_file(states .. "/acc_alpha_n") then
+    write(states .. "/acc_alpha_n", '"ff"')
+end
+if not is_file(states .. "/acc_alpha_d") then
+    write(states .. "/acc_alpha_d", '"e5"')
+end
+if not is_file(states .. "/acc_alpha_l") then
+    write(states .. "/acc_alpha_l", '"ff"')
+end
+if not is_file(states .. "/border_alpha_n") then
+    write(states .. "/border_alpha_n", '"bf"')
+end
+if not is_file(states .. "/border_alpha_d") then
+    write(states .. "/border_alpha_d", '"bf"')
+end
+if not is_file(states .. "/border_alpha_l") then
+    write(states .. "/border_alpha_l", '"ff"')
+end
+if not is_file(states .. "/bg_alpha_n") then
+    write(states .. "/bg_alpha_n", '"bf"')
+end
+if not is_file(states .. "/bg_alpha_d") then
+    write(states .. "/bg_alpha_d", '"ff"')
+end
+if not is_file(states .. "/bg_alpha_l") then
+    write(states .. "/bg_alpha_l", '"ff"')
+end
+if not is_file(states .. "/bg_tint_strength_n") then
+    write(states .. "/bg_tint_strength_n", '"3"')
+end
+if not is_file(states .. "/bg_tint_strength_d") then
+    write(states .. "/bg_tint_strength_d", '"3"')
+end
+if not is_file(states .. "/bg_tint_strength_l") then
+    write(states .. "/bg_tint_strength_l", '"3"')
+end
+if not is_file(states .. "/param_l") then
+    write(states .. "/param_l", '"1"')
+end
+if not is_file(states .. "/param_r") then
+    write(states .. "/param_r", '"1"')
+end
+if not is_file(states .. "/opacity_active_n") then
+    write(states .. "/opacity_active_n", '"0.7"')
+end
+if not is_file(states .. "/opacity_active_d") then
+    write(states .. "/opacity_active_d", '"0.8"')
+end
+if not is_file(states .. "/opacity_active_l") then
+    write(states .. "/opacity_active_l", '"0.8"')
+end
+if not is_file(states .. "/opacity_inactive_n") then
+    write(states .. "/opacity_inactive_n", '"0.5"')
+end
+if not is_file(states .. "/opacity_inactive_d") then
+    write(states .. "/opacity_inactive_d", '"0.5"')
+end
+if not is_file(states .. "/opacity_inactive_l") then
+    write(states .. "/opacity_inactive_l", '"0.7"')
+end
+if not is_file(states .. "/opacity_state_n") then
+    write(states .. "/opacity_state_n", '"0"')
+end
+if not is_file(states .. "/opacity_state_d") then
+    write(states .. "/opacity_state_d", '"1"')
+end
+if not is_file(states .. "/opacity_state_l") then
+    write(states .. "/opacity_state_l", '"0"')
+end
+if not is_file(states .. "/hypr_blur_n") then
+    write(states .. "/hypr_blur_n", '"1"')
+end
+if not is_file(states .. "/hypr_blur_d") then
+    write(states .. "/hypr_blur_d", '"1"')
+end
+if not is_file(states .. "/hypr_blur_l") then
+    write(states .. "/hypr_blur_l", '"1"')
+end
+if not is_file(states .. "/hypr_blur_size_n") then
+    write(states .. "/hypr_blur_size_n", '"10"')
+end
+if not is_file(states .. "/hypr_blur_size_d") then
+    write(states .. "/hypr_blur_size_d", '"2"')
+end
+if not is_file(states .. "/hypr_blur_size_l") then
+    write(states .. "/hypr_blur_size_l", '"2"')
+end
+if not is_file(states .. "/hypr_blur_passes_n") then
+    write(states .. "/hypr_blur_passes_n", '"3"')
+end
+if not is_file(states .. "/hypr_blur_passes_d") then
+    write(states .. "/hypr_blur_passes_d", '"4"')
+end
+if not is_file(states .. "/hypr_blur_passes_l") then
+    write(states .. "/hypr_blur_passes_l", '"3"')
+end
+if not is_file(states .. "/hypr_blur_vibrancy_n") then
+    write(states .. "/hypr_blur_vibrancy_n", '"0.5"')
+end
+if not is_file(states .. "/hypr_blur_vibrancy_d") then
+    write(states .. "/hypr_blur_vibrancy_d", '"0.1"')
+end
+if not is_file(states .. "/hypr_blur_vibrancy_l") then
+    write(states .. "/hypr_blur_vibrancy_l", '"0.8"')
+end
+if not is_file(states .. "/shader_val_n") then
+    write(states .. "/shader_val_n", '"/home/tw/hypr/shaders/saturations/4.glsl"')
+end
+if not is_file(states .. "/shader_val_d") then
+    write(states .. "/shader_val_d", '"/home/tw/hypr/shaders/saturations/4.glsl"')
+end
+if not is_file(states .. "/shader_val_l") then
+    write(states .. "/shader_val_l", '"/home/tw/hypr/shaders/saturations/4.glsl"')
+end
+if not is_file(states .. "/shader_state_n") then
+    write(states .. "/shader_state_n", '"0"')
+end
+if not is_file(states .. "/shader_state_d") then
+    write(states .. "/shader_state_d", '"0"')
+end
+if not is_file(states .. "/shader_state_l") then
+    write(states .. "/shader_state_l", '"0"')
+end
+if not is_file(states .. "/rounding_n") then
+    write(states .. "/rounding_n", '"10"')
+end
+if not is_file(states .. "/rounding_d") then
+    write(states .. "/rounding_d", '"10"')
+end
+if not is_file(states .. "/rounding_l") then
+    write(states .. "/rounding_l", '"10"')
+end
+if not is_file(states .. "/rounding_power_n") then
+    write(states .. "/rounding_power_n", '"8"')
+end
+if not is_file(states .. "/rounding_power_d") then
+    write(states .. "/rounding_power_d", '"2"')
+end
+if not is_file(states .. "/rounding_power_l") then
+    write(states .. "/rounding_power_l", '"2"')
+end
+if not is_file(states .. "/border_size_n") then
+    write(states .. "/border_size_n", '"3"')
+end
+if not is_file(states .. "/border_size_d") then
+    write(states .. "/border_size_d", '"3"')
+end
+if not is_file(states .. "/border_size_l") then
+    write(states .. "/border_size_l", '"3"')
+end
+if not is_file(states .. "/gaps_in_n") then
+    write(states .. "/gaps_in_n", '"5"')
+end
+if not is_file(states .. "/gaps_in_d") then
+    write(states .. "/gaps_in_d", '"7"')
+end
+if not is_file(states .. "/gaps_in_l") then
+    write(states .. "/gaps_in_l", '"6"')
+end
+if not is_file(states .. "/gaps_out_n") then
+    write(states .. "/gaps_out_n", '"10"')
+end
+if not is_file(states .. "/gaps_out_d") then
+    write(states .. "/gaps_out_d", '"10"')
+end
+if not is_file(states .. "/gaps_out_l") then
+    write(states .. "/gaps_out_l", '"10"')
+end
+if not is_file(states .. "/layout_n") then
+    write(states .. "/layout_n", '"dwindle"')
+end
+if not is_file(states .. "/layout_d") then
+    write(states .. "/layout_d", '"dwindle"')
+end
+if not is_file(states .. "/layout_l") then
+    write(states .. "/layout_l", '"dwindle"')
+end
+if not is_file(states .. "/allow_tearing_n") then
+    write(states .. "/allow_tearing_n", '"1"')
+end
+if not is_file(states .. "/allow_tearing_d") then
+    write(states .. "/allow_tearing_d", '"1"')
+end
+if not is_file(states .. "/allow_tearing_l") then
+    write(states .. "/allow_tearing_l", '"1"')
+end
+if not is_file(states .. "/resize_on_border_n") then
+    write(states .. "/resize_on_border_n", '"1"')
+end
+if not is_file(states .. "/resize_on_border_d") then
+    write(states .. "/resize_on_border_d", '"1"')
+end
+if not is_file(states .. "/resize_on_border_l") then
+    write(states .. "/resize_on_border_l", '"1"')
+end
+if not is_file(states .. "/shadow_enabled_n") then
+    write(states .. "/shadow_enabled_n", '"0"')
+end
+if not is_file(states .. "/shadow_enabled_d") then
+    write(states .. "/shadow_enabled_d", '"1"')
+end
+if not is_file(states .. "/shadow_enabled_l") then
+    write(states .. "/shadow_enabled_l", '"1"')
+end
+if not is_file(states .. "/shadow_range_n") then
+    write(states .. "/shadow_range_n", '"3"')
+end
+if not is_file(states .. "/shadow_range_d") then
+    write(states .. "/shadow_range_d", '"8"')
+end
+if not is_file(states .. "/shadow_range_l") then
+    write(states .. "/shadow_range_l", '"15"')
+end
+if not is_file(states .. "/shadow_render_power_n") then
+    write(states .. "/shadow_render_power_n", '"8"')
+end
+if not is_file(states .. "/shadow_render_power_d") then
+    write(states .. "/shadow_render_power_d", '"1"')
+end
+if not is_file(states .. "/shadow_render_power_l") then
+    write(states .. "/shadow_render_power_l", '"3"')
+end
+if not is_file(states .. "/shadow_rgba_n") then
+    write(states .. "/shadow_rgba_n", '"0xee1a1a1a"')
+end
+if not is_file(states .. "/shadow_rgba_d") then
+    write(states .. "/shadow_rgba_d", '"0xee1a1a1a"')
+end
+if not is_file(states .. "/shadow_rgba_l") then
+    write(states .. "/shadow_rgba_l", '"0xee1a1a1a"')
+end
+if not is_file(states .. "/current_wall_n") then
+    write(states .. "/current_wall_n", '"/home/tw/Wallpapers/damir-babacic-7EkyXZYeYsw-unsplash.jpg"')
+end
+if not is_file(states .. "/current_wall_d") then
+    write(states .. "/current_wall_d", '"/home/tw/Wallpapers/winter-10.png"')
+end
+if not is_file(states .. "/current_wall_l") then
+    write(states .. "/current_wall_l", '"/home/tw/Wallpapers/japan-artistic-5120x2880-25406.jpg"')
+end
+if not is_file(states .. "/wall_anim_n") then
+    write(states .. "/wall_anim_n", '"simple"')
+end
+if not is_file(states .. "/wall_anim_d") then
+    write(states .. "/wall_anim_d", '"grow"')
+end
+if not is_file(states .. "/wall_anim_l") then
+    write(states .. "/wall_anim_l", '"center"')
+end
+if not is_file(states .. "/wall_anim_dur_n") then
+    write(states .. "/wall_anim_dur_n", '"5"')
+end
+if not is_file(states .. "/wall_anim_dur_d") then
+    write(states .. "/wall_anim_dur_d", '"5"')
+end
+if not is_file(states .. "/wall_anim_dur_l") then
+    write(states .. "/wall_anim_dur_l", '"5"')
+end
+if not is_file(states .. "/custom_acc_n") then
+    write(states .. "/custom_acc_n", '"ancient_azure_hdots"')
+end
+if not is_file(states .. "/custom_acc_d") then
+    write(states .. "/custom_acc_d", '"dark_terracotta_28"')
+end
+if not is_file(states .. "/custom_acc_l") then
+    write(states .. "/custom_acc_l", '"ancient_azure_hdots"')
+end
+if not is_file(states .. "/custom_acc_normal_app_n") then
+    write(states .. "/custom_acc_normal_app_n", '"0"')
+end
+if not is_file(states .. "/custom_acc_normal_app_d") then
+    write(states .. "/custom_acc_normal_app_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_normal_app_l") then
+    write(states .. "/custom_acc_normal_app_l", '"0"')
+end
+if not is_file(states .. "/custom_acc_start_icon_n") then
+    write(states .. "/custom_acc_start_icon_n", '"0"')
+end
+if not is_file(states .. "/custom_acc_start_icon_d") then
+    write(states .. "/custom_acc_start_icon_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_start_icon_l") then
+    write(states .. "/custom_acc_start_icon_l", '"1"')
+end
+if not is_file(states .. "/custom_acc_app_border_n") then
+    write(states .. "/custom_acc_app_border_n", '"1"')
+end
+if not is_file(states .. "/custom_acc_app_border_d") then
+    write(states .. "/custom_acc_app_border_d", '"1"')
+end
+if not is_file(states .. "/custom_acc_app_border_l") then
+    write(states .. "/custom_acc_app_border_l", '"1"')
+end
+if not is_file(states .. "/custom_acc_gtk_n") then
+    write(states .. "/custom_acc_gtk_n", '"0"')
+end
+if not is_file(states .. "/custom_acc_gtk_d") then
+    write(states .. "/custom_acc_gtk_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_gtk_l") then
+    write(states .. "/custom_acc_gtk_l", '"0"')
+end
+if not is_file(states .. "/custom_acc_hyprland_n") then
+    write(states .. "/custom_acc_hyprland_n", '"1"')
+end
+if not is_file(states .. "/custom_acc_hyprland_d") then
+    write(states .. "/custom_acc_hyprland_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_hyprland_l") then
+    write(states .. "/custom_acc_hyprland_l", '"0"')
+end
+if not is_file(states .. "/show_splash_d") then
+    write(states .. "/show_splash_d", '1')
+end
+if not is_file(states .. "/show_splash_n") then
+    write(states .. "/show_splash_n", '1')
+end
+if not is_file(states .. "/show_splash_l") then
+    write(states .. "/show_splash_l", '1')
+end
+if not is_file(states .. "/splash_alpha_d") then
+    write(states .. "/splash_alpha_d", '0')
+end
+if not is_file(states .. "/splash_alpha_n") then
+    write(states .. "/splash_alpha_n", '0')
+end
+if not is_file(states .. "/splash_alpha_l") then
+    write(states .. "/splash_alpha_l", '0')
+end
+if not is_file(states .. "/scheme_dd") then
+    write(states .. "/scheme_dd", 'hdots_d')
+end
+if not is_file(states .. "/scheme_ll") then
+    write(states .. "/scheme_ll", 'hdots_l')
+end
+if not is_file(states .. "/scheme_nl") then
+    write(states .. "/scheme_nl", 'hdots_l')
+end
+if not is_file(states .. "/scheme_nd") then
+    write(states .. "/scheme_nd", 'hdots_d')
+end
+if not is_file(states .. "/splash_bg_acc_d") then
+    write(states .. "/splash_bg_acc_d", '0')
+end
+if not is_file(states .. "/splash_bg_acc_n") then
+    write(states .. "/splash_bg_acc_n", '0')
+end
+if not is_file(states .. "/splash_bg_acc_l") then
+    write(states .. "/splash_bg_acc_l", '0')
+end
+if not is_file(states .. "/font_size_n") then
+    write(states .. "/font_size_n", '"16"')
+end
+if not is_file(states .. "/font_size_d") then
+    write(states .. "/font_size_d", '"16"')
+end
+if not is_file(states .. "/font_size_l") then
+    write(states .. "/font_size_l", '"16"')
+end
+if not is_file(states .. "/font_n") then
+    write(states .. "/font_n", '"SF Pro"')
+end
+if not is_file(states .. "/font_d") then
+    write(states .. "/font_d", '"SF Pro"')
+end
+if not is_file(states .. "/font_l") then
+    write(states .. "/font_l", '"SF Pro"')
+end
+if not is_file(states .. "/splash_id_n") then
+    write(states .. "/splash_id_n", '0')
+end
+if not is_file(states .. "/splash_id_d") then
+    write(states .. "/splash_id_d", '0')
+end
+if not is_file(states .. "/splash_id_l") then
+    write(states .. "/splash_id_l", '0')
+end
+if not is_file(states .. "/hyprsunset_state") then
+    write(states .. "/hyprsunset_state", 'c')
+end
+if not is_file(states .. "/hyprsunset_val") then
+    write(states .. "/hyprsunset_val", '"4500"')
+end
+if not is_file(states .. "/acc_scrim_n") then
+    write(states .. "/acc_scrim_n", '"0"')
+end
+if not is_file(states .. "/acc_scrim_d") then
+    write(states .. "/acc_scrim_d", '"0"')
+end
+if not is_file(states .. "/acc_scrim_l") then
+    write(states .. "/acc_scrim_l", '"0"')
+end
+if not is_file(states .. "/scrim_alpha_n") then
+    write(states .. "/scrim_alpha_n", '"4c"')
+end
+if not is_file(states .. "/scrim_alpha_d") then
+    write(states .. "/scrim_alpha_d", '"4c"')
+end
+if not is_file(states .. "/scrim_alpha_l") then
+    write(states .. "/scrim_alpha_l", '"59"')
+end
+if not is_file(states .. "/acc_source_d") then
+    write(states .. "/acc_source_d", 'd')
+end
+if not is_file(states .. "/acc_source_n") then
+    write(states .. "/acc_source_n", 'd')
+end
+if not is_file(states .. "/acc_source_l") then
+    write(states .. "/acc_source_l", 'd')
+end
+if not is_file(states .. "/pop_notif_delay") then
+    write(states .. "/pop_notif_delay", "0.8")
+end

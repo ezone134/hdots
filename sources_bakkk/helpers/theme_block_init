@@ -1,0 +1,46 @@
+# -*- mode: sh -*-
+
+   cp -r $hdots/hypr-theme/* $hypr_conf/hypr-theme/
+   # remove stale files from prev hypr_init
+   rm $hypr_conf/hypr-theme/hypr-theme-dark-alt/index*
+   rm $hypr_conf/hypr-theme/hypr-theme-light-alt/index*
+   # also create hypr-theme-light-alt themes
+   . $hypr_sources/helpers/point_to_contents_rel # need to source it again cause it forgets inside subshell
+   alt_theme_array=(
+       # Put multiple folders in right side and all those folders will be targeted from leftside/symlinks_pointing_to_all_those_folders
+       $hypr_conf/hypr-theme/hypr-theme-dark-alt:$hypr_conf/hypr-theme/hypr-theme-dark
+       $hypr_conf/hypr-theme/hypr-theme-light-alt:$hypr_conf/hypr-theme/hypr-theme-light
+   )
+
+   for i in ${alt_theme_array[@]}; do
+       point_to_contents_rel_function ${i##*:} ${i%%:*}
+   done
+
+   rm $hypr_conf/hypr-theme/hypr-theme-dark-alt/index.theme 2>/dev/null
+   rm $hypr_conf/hypr-theme/hypr-theme-light-alt/index.theme 2>/dev/null
+   echo "[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=hypr-theme-light-alt
+Comment=An Flat Gtk+ theme based on Elegant Design
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=hypr-theme-light-alt
+MetacityTheme=hypr-theme-light-alt
+IconTheme=Tela-circle-light
+CursorTheme=Graphite-cursors
+ButtonLayout=close,minimize,maximize:menu" > $hypr_conf/hypr-theme/hypr-theme-light-alt/index.theme &
+
+   # for dark
+   echo "[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=hypr-theme-dark-alt
+Comment=An Flat Gtk+ theme based on Elegant Design
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=hypr-theme-dark-alt
+MetacityTheme=hypr-theme-dark-alt
+IconTheme=Tela-circle-dark
+CursorTheme=Graphite-cursors
+ButtonLayout=close,minimize,maximize:menu" > $hypr_conf/hypr-theme/hypr-theme-dark-alt/index.theme &

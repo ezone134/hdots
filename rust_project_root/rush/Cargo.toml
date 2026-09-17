@@ -1,0 +1,12 @@
+[package]
+name = "rush"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "rush — a fast bash-like Rust shell. Forkless fs builtins via rsys; multithreaded background jobs."
+
+[[bin]]
+name = "rush"
+path = "src/main.rs"
+
+[dependencies]

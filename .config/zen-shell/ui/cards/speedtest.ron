@@ -1,0 +1,6 @@
+(
+    items: [
+        Header(title: "Speed test", glyph: Some("\u{f554}"), meta: Some("{speed_meta}"), pad: 12.0),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "speedtest"),
+    ],
+)

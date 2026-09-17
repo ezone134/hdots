@@ -1,0 +1,8 @@
+(
+    // accent — declarative header chrome; dynamic body drawn by the
+    // \`accent\` Ink painter (Rust).
+    items: [
+        Header(title: "Theme & Accent", glyph: Some("\u{f1fc}"), pad: 12.0),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "accent"),
+    ],
+)

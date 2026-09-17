@@ -1,0 +1,44 @@
+(
+    // SNIPPETS — fully declarative: the `Composer` field (buffer text or the
+    // "add snippet — name text to copy" placeholder, focused tint when the
+    // input owns the focus ring like the todos/expenses compositors), and
+    // the clipboard rows: copy glyph · name · dim body preview. Each row
+    // registers its clipboard region (`key_base + i` → SNIPPET_COPY_BASE) so
+    // a click snaps the body and the resident flash state (`snip_flash`, the
+    // transient 1 s scalar index) paints the translucent-accent wash + accent
+    // glyph/name. Hover lifts the row surface (`hover_surface`) and reveals
+    // the ✕ delete (SNIPPET_DEL_BASE, `del_dy` at the Rust baseline). No Ink.
+    items: [
+        Header(
+            title: "Snippets",
+            meta: Some("{snip_meta}"),
+            meta_color: Some(fg),
+        ),
+        Composer(
+            text: Some("{snip_buf}"),
+            focus: Some("snip_focus"),
+            placeholder: "add snippet — name text to copy",
+            y: 26.0, h: 22.0, pad: 12.0,
+            key: 31700,
+        ),
+        Rows(
+            name: "snip_rows",
+            y: 50.0,
+            row_h: 24.0,
+            pad: 12.0,
+            r: 6.0,
+            hover_surface: Some(hover_hl),
+            flash: Some("snip_flash"),
+            cols: [
+                (x: 2.0, dy: Some(4.0), size: 9.0, icon: true, color: Some(fg2), flash: Some(acc)),
+                (x: 18.0, dy: Some(4.0), size: 9.5, color: Some(fg), flash: Some(acc)),
+                (x: 96.0, dy: Some(5.0), size: 8.0, color: Some(fg3), truncate: Some(92.0)),
+            ],
+            key_base: 31710,
+            del_base: 31730,
+            del_pad: 20.0,
+            del_dy: 4.0,
+            del_size: 9.0,
+        ),
+    ],
+)

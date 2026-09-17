@@ -1,0 +1,3 @@
+# explicit qmldir for qs.workspace — disables the synthesizer
+module qs.workspace
+WorkspacePanel 1.0 WorkspacePanel.qml

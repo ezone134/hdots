@@ -1,0 +1,23 @@
+(
+    // disk I/O card — fully declarative (zero Ink): R/W legend dots
+    // (read = muted info blue, write = accent, right-anchored at the exact
+    // Rust insets) beside a title-only Header (no ICON_DISKIO glyph exists —
+    // title-only by design), then the dual normalized history graph
+    // (disk_r_spark / disk_w_spark, pre-normalized against the deque peak —
+    // read peak = 100%, same language as the network card).
+    items: [
+        // legend: R dot + caption, W dot + caption (dot right edge = card − 51,
+        // caption right edge = card − 14 — exact Rust insets)
+        Surface(x: 51.0, y: 16.0, w: 7.0, h: 7.0, r: 2.0, right: true, color: info),
+        Text(x: 14.0, y: 14.0, w: 30.0, right: true, text: "R", font_size: 9.0, color: Some(fg)),
+        Surface(x: 51.0, y: 34.0, w: 7.0, h: 7.0, r: 2.0, right: true, color: acc),
+        Text(x: 14.0, y: 32.0, w: 30.0, right: true, text: "W", font_size: 9.0, color: Some(fg)),
+        Header(title: "Disk I/O"),
+        // dual history graph — read first, write over it (plot from y=46,
+        // stopping 12 above the card bottom — exact Rust insets)
+        Spark(name: "disk_r_spark", x: 14.0, y: 46.0, w: 0.0, h: -12.0,
+              color: Some(info), thickness: 2.0),
+        Spark(name: "disk_w_spark", x: 14.0, y: 46.0, w: 0.0, h: -12.0,
+              color: Some(acc), thickness: 2.0),
+    ],
+)

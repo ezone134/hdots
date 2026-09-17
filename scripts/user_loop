@@ -1,0 +1,59 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts/user_loop
+
+local hypr_base = os.getenv("hypr_base") or "/tmp"
+local hypr_conf = os.getenv("hypr_conf") or hypr_base .. "/" .. (os.getenv("USER") or os.getenv("LOGNAME") or "user") .. "_hypr_conf"
+local states2   = os.getenv("states2") or hypr_conf .. "/states2"
+
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long sec; long nsec; } timespec_t;
+typedef void (*sighandler_t)(int);
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int getpid(void);
+int unlink(const char *path);
+sighandler_t signal(int signum, sighandler_t handler);
+int kill(int pid, int sig);
+]]
+
+local function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+local function write(path, content)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+local function shq(s)
+    return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+local pid_file = states2 .. "/pid_user_loop"
+
+write(pid_file, tostring(ffi.C.getpid()))
+
+-- like bash `trap "rm -f $states2/pid_user_loop" EXIT`: remove pid then die
+local pid = ffi.C.getpid()
+local handler = function(sig)
+    ffi.C.unlink(pid_file)
+    ffi.C.signal(sig, nil) -- restore default
+    ffi.C.kill(pid, sig)
+end
+ffi.C.signal(15, handler) -- SIGTERM
+ffi.C.signal(2, handler)  -- SIGINT
+ffi.C.signal(1, handler)  -- SIGHUP
+
+-- the actual loop
+while true do
+    sleep(30)
+    os.execute(shq(hypr_conf .. "/scripts/run_inside_loop"))
+    sleep(30)
+end

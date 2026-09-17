@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+
+sudo mkdir -p /p1
+sudo mount /dev/nvme0n1p1 /p1

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+
+pkill udevadm 
+
+sleep 0.2
+
+udevadm monitor

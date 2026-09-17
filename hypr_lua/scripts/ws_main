@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- ws_main — Hyprland workspace CLI.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/ws_body")
+ws_cmd(unpack(arg))

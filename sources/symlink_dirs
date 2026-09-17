@@ -1,0 +1,26 @@
+# -*- mode: sh -*-
+. $hypr_sources/symlink_dirs_themes
+# dirs pairs are not exec in bg only files are in bg no worries
+dirs_pairs=(
+           $HOME/.config/glib-2.0:$hdots/.config/glib-2.0
+           $HOME/.config/Thunar:$hdots/.config/Thunar
+           $HOME/.config/xfce4:$hdots/.config/xfce4
+           $HOME/.config/xarchiver:$hdots/.config/xarchiver
+           $HOME/.config/xsettingsd:$hdots/.config/xsettingsd
+           $HOME/.config/Mousepad:$hdots/.config/Mousepad
+           $HOME/.config/gtk-3.0:$hdots/.config/gtk-3.0
+           $HOME/.config/gtk-4.0:$hdots/.config/gtk-4.0
+           $HOME/.config/nwg-look:$hdots/.config/nwg-look
+           $HOME/.local/share/nwg-look:$hdots/.local/share/nwg-look
+           $HOME/.config/warp-terminal:$hdots/.config/warp-terminal
+           $HOME/.local/state/warp-terminal:$hdots/.local/state/warp-terminal
+           $HOME/.config/geany/colorschemes:$hdots/.config/geany/colorschemes
+           $HOME/.config/matugen:$hypr_conf/matugen
+           $HOME/Pictures/Wallpapers:$HOME/Wallpapers
+           ${themes_pairs[@]}
+           $HOME/.config/hypr/hyprlock:$hypr_conf/hypr/hyprlock
+           $HOME/.config/hypr/configs:$hypr_conf/configs
+           $HOME/.config/hypr/shaders:$hypr_conf/shaders
+           $HOME/.config/quickshell:$hdots/.config/quickshell
+           $HOME/.config/zen-shell:$hdots/.config/zen-shell
+)

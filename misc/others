@@ -1,0 +1,31 @@
+# -*- mode: sh -*-
+
+chmod_777_array=(
+	$common_dir_user
+	/acc/common/user
+	/acc/common/hdots
+	$common_dir/hdots
+	$common_dir
+	$common_dir_user/bin
+	$common_dir/scripts
+	$common_dir_user/.cache/thumbnails
+	/home/tmp
+	/tmp/user-tmp
+	$garbage
+)
+chown_array=(
+	/tmp/home-tmp
+	/home
+	/tmp/user-$u1
+	$user_dir_user
+	$user_dir_user/.config
+    $busy_box_bin_dir
+    $boss_bin_dir
+)
+boss_bins_array=( # link all these to boss bins
+	/opt/bin
+	$home_dir/.local/kitty.app/bin
+	$home_dir/standy-bins
+	$home_dir/.local/share/soar/bin
+#	$home_dir/.local/share/mise/shims
+)

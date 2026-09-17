@@ -1,0 +1,15 @@
+(
+    // currency card — fully declarative (Batch 1). Offline reference rates
+    // from `currency_rows`; the base re-base chip sits at the header right.
+    // Rows register `currency_key_base + index` for the click-to-rebase
+    // plumbing; the window follows `currency_scroll`.
+    items: [
+        Header(title: "Currency", glyph: Some("\u{f155}"), pad: 12.0),
+        Text(x: 12.0, y: 9.0, text: "{currency_chip}", font_size: 8.5, right: true, color: Some(acc)),
+        Rows(name: "currency_rows", y: 26.0, pad: 12.0, row_h: 20.0, cols: [
+            (x: 6.0, size: 10.0),
+            (x: 36.0, size: 8.0, color: Some(fg3)),
+            (x: 0.0, w: 0.0, right: true, size: 9.5),
+        ], key_base: 14400, hover_surface: Some(hover), start: Some("currency_scroll")),
+    ],
+)

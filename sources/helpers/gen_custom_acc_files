@@ -1,0 +1,43 @@
+# -*- mode: sh -*-
+# this is gen_custom_acc_files
+# Check if both files exist; if not, run the generation logic
+if [[ ! -e "$custom_acc_master_list" ]]; then
+
+    # Notification logic
+    echo "Generating Dark hex files gen_custom_acc_files"
+
+    notify-send -a theme-extras "Theme extras" "Generating accent hex files…" &
+
+SCRIPT_DIR="${0%/*}"
+    # Define internal colors
+    default_colors=(
+        "accent_amber,#ffb000"
+        "muted_lavender,#9d8cbf"
+        "stealth_graphite,#2a2a2a"
+    )
+
+    # Source external array
+    . "$hypr_sources/custom_accents_array"
+
+    # Merge into master array
+    master_array=(
+        "${default_colors[@]}"
+        "${colors_external[@]}"
+    )
+
+    # --- PARALLEL PROCESSING START ---
+
+    # Task 1: Generate Dark List in Background
+    {
+            for c in "${master_array[@]}"; do
+                IFS=',' read -r name normal_hex _ <<< "$c"
+                printf "%s=%s\n" "$name" "$normal_hex"
+            done > "$custom_acc_master_list"
+    } &
+    wait
+    # --- PARALLEL PROCESSING END ---
+
+fi
+
+# Final background tasks (Launcher Caches)
+. $hypr_sources/helpers/gen_custom_acc_shell_cache &

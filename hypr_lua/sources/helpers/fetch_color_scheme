@@ -1,0 +1,42 @@
+-- helper fetch_color_scheme
+-- ported from bash sources/helpers/fetch_color_scheme
+-- callers set global `fcs_caller` = "splash_init" | "center_pop" | nil (default $m)
+
+if not sm or sm == "" then
+    sm = state2_read("sm") or ""
+    mode_var = state2_read("m") or ""
+end
+
+local caller = fcs_caller or arg[1] or ""
+if caller == "splash_init" then
+    err("caller is splas_pop")
+    mode_var = m_init
+else
+    err("caller is not splas_pop")
+    mode_var = m
+end
+err("fetch_color mode is " .. tostring(m))
+
+theme_id = state_read("scheme_" .. sm) or ("hdots_" .. mode_var)
+err("color scheme is '" .. theme_id .. "'")
+
+dofile(hypr_sources .. "/helpers/theme_init")
+
+resolve_theme(theme_id)
+if found == 0 then
+    local msg = "Scheme " .. theme_id .. " not found at source falling back to default_nord"
+    err(msg)
+    spawn("notify-send 'Theme extras' " .. shq(msg))
+    resolve_theme("default_nord")
+end
+
+if caller == "center_pop" or arg[2] == "auto_fetch" then
+    mode_var = state2_read("m") or mode_var
+end
+
+if theme_mode == "b" then
+    err("calling func " .. mode_var .. "_side")
+    _G[mode_var .. "_side"](ACTIVE_THEME)
+end
+
+save_theme_vars()

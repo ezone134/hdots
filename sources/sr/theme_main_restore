@@ -1,0 +1,3 @@
+# -*- mode: sh -*-
+. "$hypr_sources/helpers/theme_main_body"
+theme_main_restore_func

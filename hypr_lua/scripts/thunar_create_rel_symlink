@@ -1,0 +1,41 @@
+#!/usr/bin/env luajit
+-- thunar_create_rel_symlink — create a relative symlink "<path>_" next to it.
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+local ffi = require("ffi")
+ffi.cdef[[
+struct lstat_buf { long st_dev; long st_ino; long st_nlink;
+                   unsigned int st_mode; unsigned int st_uid;
+                   unsigned int st_gid; long st_rdev; long st_size;
+                   long st_blksize; long st_blocks; };
+int lstat(const char *path, struct lstat_buf *buf);
+]]
+
+local function is_link(p)
+    local b = ffi.new("struct lstat_buf")
+    if ffi.C.lstat(p, b) ~= 0 then return false end
+    return math.floor(b.st_mode / 4096) % 16 == 10
+end
+
+local i = arg[1]
+if is_link(i .. "_") then
+    notify("Symlink", "Already exists")
+    os.exit(0)
+end
+
+local target = basename(i)
+symlink(target, i .. "_")
+
+if is_link(i .. "_") then
+    notify("Symlink", "Created")
+else
+    notify("Symlink", "Failed to create")
+end
+os.exit(0)

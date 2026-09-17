@@ -1,0 +1,5 @@
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/CMakeFiles/QsHypr.dir
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/CMakeFiles/edit_cache.dir
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/CMakeFiles/rebuild_cache.dir
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/CMakeFiles/QsHypr_autogen_timestamp_deps.dir
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/CMakeFiles/QsHypr_autogen.dir

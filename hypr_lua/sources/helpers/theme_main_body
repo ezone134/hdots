@@ -1,0 +1,282 @@
+-- helper theme_main_body
+-- ported from bash sources/helpers/theme_main_body
+
+-- standalone bootstrap: `luajit <dir>/theme_main_body <cmd>` is spawned as its
+-- own process by theme_main_restore_func, so resolve paths from arg[0] and
+-- load utils before anything references hypr_sources.
+if _G.lua_helpers == nil and arg and arg[0] then
+    local self_dir = arg[0]:match("^(.*)[/\\][^/\\]*$") or "."
+    lua_sources = self_dir:match("^(.*)[/\\]helpers$") or (self_dir .. "/..")
+    lua_helpers = lua_sources .. "/helpers"
+    dofile(lua_helpers .. "/utils")
+end
+
+dofile(hypr_sources .. "/helpers/theme_body")
+
+function theme_cur()
+    local cfg = os.getenv("QS_THEME_CFG") or (states .. "/settings.json")
+    if not is_file(cfg) then
+        cfg = states .. "/settings.json"
+    end
+    local content = read(cfg)
+    if not content then err("theme_cur: settings.json missing"); return end
+    for line in content:gmatch("[^\n]+") do
+        if line:find("theme") then
+            local val = line:match(': "([^"]*)"')
+            if val then
+                val = val:gsub("[ ,]", "")
+                print(val)
+                return val
+            end
+        end
+    end
+end
+
+function wait_for_theme_proc_to_stop_func()
+    local pid_path = states2 .. "/theme_run_pid"
+    local lock_path = lock_files .. "/theme_run_lock"
+    if not is_file(pid_path) then return end
+    local pid = read_line(pid_path)
+    if not pid or pid == "" then return end
+    pid = pid:gsub("%s+", "")
+
+    local max_wait = 30
+    while max_wait > 0 do
+        if not is_file(lock_path) then
+            break
+        end
+        -- check if pid is alive via kill -0
+        local ok = os.execute("kill -0 " .. pid .. " 2>/dev/null")
+        if not ok then break end
+        sleep(1)
+        max_wait = max_wait - 1
+    end
+    rm(lock_path)
+    err("Theme run lock cleared")
+end
+
+function theme_reapply_func_accent_hot_reload()
+    local acc_changed_path = states2 .. "/acc_changed"
+    local full_reload_path = states2 .. "/full_theme_reload"
+
+    local acc_changed = read_line(acc_changed_path) or "0"
+    local full_reload = read_line(full_reload_path) or "0"
+
+    -- bash gate: (( acc_changed == 1 || full_theme_reload == 1 )) && [[ -z $no_acc_reload ]]
+    local flags_set = (acc_changed == "1" or full_reload == "1")
+    local gate_open = (no_acc_reload == nil or no_acc_reload == "")
+
+    if flags_set and gate_open then
+        m = state2_read("m") or m
+        local alt_flag = 0
+        local gtk_theme = out("gsettings get org.gnome.desktop.interface gtk-theme")
+        if gtk_theme:find("alt") then
+            alt_flag = 1
+        end
+
+        local new_theme
+        if m == "d" then
+            if alt_flag == 1 then
+                new_theme = "hypr-theme-dark"
+            else
+                new_theme = "hypr-theme-dark-alt"
+            end
+        else
+            if alt_flag == 1 then
+                new_theme = "hypr-theme-light"
+            else
+                new_theme = "hypr-theme-light-alt"
+            end
+        end
+
+        if tonumber(full_reload) == 1 then
+            dofile(hypr_sources .. "/helpers/theme_definitions")
+            font_vars()
+            if m == "d" then vars_d() else vars_l() end
+        end
+
+        -- wait for gtk css
+        if state2_read("gtk_css_generated") == "0" then
+            notify("Theme extras", "Waiting for gtk css to be created…", "theme-extras")
+            local max_wait = 10
+            sleep(0.5)
+            while state2_read("gtk_css_generated") == "0" and max_wait > 0 do
+                sleep(0.5)
+                max_wait = max_wait - 1
+            end
+        end
+
+        run("gsettings set org.gnome.desktop.interface gtk-theme " .. shq(new_theme))
+        state2_write("cur_theme", new_theme)
+
+        if tonumber(full_reload) == 1 then
+            full_hot_reload_func()
+        end
+    end
+
+    state2_write("acc_changed", "0")
+    state2_write("full_theme_reload", "0")
+    no_acc_reload = ""
+end
+
+function save_flags_func()
+    state2_write("s_String", s_String or "")
+    state2_write("s_string", s_string or "")
+    state2_write("m_string", m_string or "")
+    state2_write("m_String", m_String or "")
+    state2_write("s_string_long", (s_String or "") .. " " .. (m_String or ""))
+    state2_write("sm", sm or "")
+    state2_write("s", s or "")
+    state_write("s", s or "")
+    state2_write("m", m or "")
+    state2_write("m_dummy", m or "")
+    write("/tmp/mode", m or "")
+end
+
+function theme_apply_dark_func()
+    s = state2_read("s") or "n"
+    if s == "n" then
+        s_String = "Normal"
+        s_string = "normal"
+        state2_write("s_id", "N")
+        s_is = "n"
+    else
+        s_String = "Split"
+        s_string = "split"
+        state2_write("s", "d")
+        state2_write("s_id", "SD")
+        s_is = "d"
+    end
+    m_String = "Dark"
+    m_string = "dark"
+    m = "d"
+    s = s_is
+    sm = s_is .. "d"
+    save_flags_func()
+    setting_theme = "yes"
+    set_dark_function()
+end
+
+function theme_apply_light_func()
+    s = state2_read("s") or "n"
+    if s == "n" then
+        s_String = "Normal"
+        s_string = "normal"
+        state2_write("s_id", "N")
+        s_is = "n"
+    else
+        s_String = "Split"
+        s_string = "split"
+        state2_write("s", "l")
+        state2_write("s_id", "SL")
+        s_is = "l"
+    end
+    m_String = "Light"
+    m_string = "light"
+    m = "l"
+    s = s_is
+    sm = s_is .. "l"
+    save_flags_func()
+    setting_theme = "yes"
+    set_light_function()
+end
+
+function theme_main_restore_func()
+    wait_for_theme_proc_to_stop_func()
+    m = state2_read("m") or "d"
+    s = state2_read("s") or "n"
+
+    if s == "n" then
+        s_String = "Normal"
+        s_string = "normal"
+        state2_write("s_id", "N")
+        s_is = "n"
+    else
+        s_String = "Split"
+        s_string = "split"
+        state2_write("s", m)
+        -- S${m^} → "SD" or "SL"
+        local s_id = "S" .. m:sub(1, 1):upper() .. m:sub(2)
+        state2_write("s_id", s_id)
+        s_is = m
+    end
+
+    if m == "d" then
+        m_String = "Dark"
+        m_string = "dark"
+    else
+        m_String = "Light"
+        m_string = "light"
+    end
+
+    s = s_is
+    sm = s_is .. m
+    save_flags_func()
+    setting_theme = ""
+    _G["restore_" .. m_string .. "_function"]()
+    bg_delay(0.1, "luajit " .. shq(lua_helpers .. "/theme_main_body") .. " reapply")
+end
+
+function debounce_func()
+    -- bash debounce: echo $$ > theme_switch_pid, then background a wait that
+    -- sleeps 0.5s and only applies if this request is still the newest one and
+    -- the desired mode actually differs from the current mode.
+    local mypid = getpid()
+    write_line(states2 .. "/theme_switch_pid", tostring(mypid))
+    local code = string.format(
+        "local uh = %q "
+        .. "dofile(uh .. '/utils') dofile(uh .. '/theme_main_body') "
+        .. "sleep(0.5) "
+        .. "if read_line(states2 .. '/theme_switch_pid') ~= tostring(%d) then return end "
+        .. "local mcur = read_line(states2 .. '/m') "
+        .. "local final = read_line(states2 .. '/m_dummy') "
+        .. "if mcur == final then return end "
+        .. "wait_for_theme_proc_to_stop_func() "
+        .. "if final == 'l' then theme_apply_light_func() else theme_apply_dark_func() end",
+        lua_helpers, mypid)
+    spawn("luajit -e " .. shq(code))
+end
+
+function theme_switch_func()
+    local cur = state2_read("m_dummy") or "d"
+    if cur == "d" then
+        state2_write("m_dummy", "l")
+    else
+        state2_write("m_dummy", "d")
+    end
+    debounce_func()
+end
+
+function theme_cmd(m_arg)
+    m_arg = m_arg or "toggle"
+    if m_arg == "status" or m_arg == "get" then
+        theme_cur()
+    elseif m_arg == "dark" then
+        theme_apply_dark_func()
+    elseif m_arg == "light" then
+        theme_apply_light_func()
+    elseif m_arg == "toggle" or m_arg == "switch" then
+        theme_switch_func()
+    elseif m_arg == "restore" then
+        theme_main_restore_func()
+    elseif m_arg == "crestore" then
+        state2_write("acc_changed", "1")
+        theme_main_restore_func()
+    elseif m_arg == "frestore" then
+        state2_write("full_theme_reload", "1")
+        theme_main_restore_func()
+    elseif m_arg == "reapply" then
+        theme_reapply_func_accent_hot_reload()
+    else
+        print("theme: use status|dark|light|toggle|restore|reapply")
+    end
+end
+
+-- standalone dispatch: `luajit <dir>/theme_main_body reapply` is spawned after
+-- a restore (bash backgrounded theme_reapply_func_accent_hot_reload) and needs
+-- to actually run the reload instead of merely defining the functions.
+if arg and arg[0] and (arg[0]:match("[^/\\]+$") or "") == "theme_main_body" then
+    if arg[1] == "reapply" then
+        theme_reapply_func_accent_hot_reload()
+    end
+end

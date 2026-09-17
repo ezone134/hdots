@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+(
+    rsync -cr --inplace --no-whole-file "$HOME/.config/google-chrome/Local State" /home/persist-link/user/
+) &

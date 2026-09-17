@@ -1,0 +1,3 @@
+# explicit qmldir for qs.command — disables the synthesizer
+module qs.command
+CommandPanel 1.0 CommandPanel.qml

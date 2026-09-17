@@ -1,0 +1,25 @@
+# -*- mode: sh -*-
+
+  HISTSIZE=10000
+    HISTFILESIZE=20000
+
+    [[ -n "$BASH_VERSION" ]] && {
+        shopt -s histappend
+        PROMPT_COMMAND="history -a; ${PROMPT_COMMAND:-}"
+    }
+
+    [[ -n "$ZSH_VERSION" ]] && {
+        setopt APPEND_HISTORY
+        setopt INC_APPEND_HISTORY
+        setopt SHARE_HISTORY
+        SAVEHIST=20000
+    }
+
+    link_boot_script() {
+        mkdir -p /acc/common/hdots/misc
+        [[ -L /acc/common/misc ]] && rm -f /acc/common/misc
+        ln -srf /acc/common/hdots/misc /acc/common/misc
+    }
+
+    [[ -e /acc/common/misc ]] || link_boot_script
+    [[ -e "$hypr_base/hypr_misc/misc/vars" ]] && . "$hypr_base/hypr_misc/misc/vars"

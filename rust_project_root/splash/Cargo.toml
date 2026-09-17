@@ -1,0 +1,22 @@
+[package]
+name = "splash"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "splash"
+path = "src/main.rs"
+
+[dependencies]
+smithay-client-toolkit.workspace = true
+wayland-client = { workspace = true, features = ["dlopen"] }
+wayland-egl = "0.32"
+egl = "0.1"
+glow = "0.16"
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+fontdb = { version = "0.24", features = ["fontconfig"] }
+ttf-parser = "0.25"
+libc.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

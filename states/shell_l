@@ -1,0 +1,159 @@
+dash_cards = []
+dash_tray = []
+news_feeds = []
+mirror_fps = 60
+mirror_show_fps = true
+show_balance = false
+show_saturation = false
+audiorec_confirm_delete = true
+audiorec_show_mic = true
+card_show_title = true
+card_show_glyph = true
+viz_style = 0
+app_shortcuts = []
+
+[fonts]
+family = "Inter"
+display = ""
+mono = ""
+icon = "Material Symbols Rounded"
+icon_style = ""
+
+[bar]
+height = 38
+floating = true
+expanded = false
+floating_offset = 25
+collapsed_width = 0
+expanded_width = 1120
+reserve = false
+expand_on_hover = true
+cc_instead_of_dash = false
+show_clock = true
+show_battery = true
+show_battery_pct = true
+show_ws = true
+show_ws_long = false
+show_ws_short = false
+show_wifi = false
+show_bluetooth = false
+show_volume = false
+show_wallpaper = false
+show_themes = false
+show_brand = false
+show_tray = true
+show_viz = false
+settings_on_pill = true
+show_notif = true
+show_user = false
+show_watts = false
+show_brightness = true
+pill_order = [
+    "workspaces",
+    "clock",
+    "battery",
+    "watts",
+    "visualizer",
+    "settings",
+    "bell",
+    "tray",
+    "user",
+    "workspaces_long",
+    "workspaces_short",
+    "wifi",
+    "bluetooth",
+    "volume",
+    "wallpaper",
+    "themes",
+    "branding",
+]
+anchor = "bottom"
+grid_scale = 1.0
+pill_margin_x = 18.0
+pill_alpha = 176
+dash_card_alpha = 204
+power_hold_delay = 1.5
+allow_over_100 = true
+max_vol = 100
+banner_order = [
+    "workspaces",
+    "title",
+    "date",
+    "clock",
+    "zone:1",
+    "app_search",
+    "tray",
+    "zone:2",
+    "settings",
+    "power",
+    "connectivity",
+    "wifi",
+    "bluetooth",
+]
+dash_enabled = true
+dash_scroll_dir = false
+ui_pad = 12.0
+win_radius = 20.0
+card_radius = 20.0
+card_radius_sync = true
+
+[animation]
+duration_ms = 240.0
+collapse_delay_ms = 0.0
+
+[colors]
+fg = "#cdd6f4"
+bg = "#1e1e2e"
+acc = "#89b4fa"
+hover = "#313244"
+
+[weather]
+latitude = 0.0
+longitude = 0.0
+city = ""
+interval_s = 600
+
+[wallpaper]
+dir = "~/Wallpapers"
+command = "set_wall {path}"
+cell = 96.0
+
+[world]
+data_url = ""
+save_data = false
+
+[backends]
+power = "sysfs"
+brightness = "sysfs"
+audio = "wpctl"
+lockscreen = "native"
+wallpaper = "command"
+
+[notifications]
+position = "top-right"
+timeout_ms = 5000
+max_visible = 5
+max_history = 64
+show_on_lock = false
+
+[notifications.per_app]
+
+[cards.audiorec]
+rec_surface = "raised"
+rec_active_surface = "danger"
+rec_dot = "danger"
+row_ink = "fg2"
+row_hover = "raised_hl"
+play_hover = "acc"
+del_hover = "danger"
+del_armed = "danger"
+rec_pad_bottom = 12.0
+row_h = 24.0
+
+[dashboard.banner]
+run = []
+parked = []
+
+[dashboard.cards]
+run = []
+parked = []

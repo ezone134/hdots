@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+base_dir=/tmp/xyz
+extract_dir=$base_dir/appimage-extract
+copy_dir=$base_dir/appimages
+mkdir -p $copy_dir
+
+[ -d $extract_dir ] && {
+	echo "Appimages already extracted"
+#	notify-send "Appimages already extracted" &
+	exit 0
+}
+
+
+
+appimage_array=(
+/home/appimages/warp
+/home/appimages/chrome
+/home/appimages/ghostty
+)
+
+loop_logic_func () {
+appimg="$1"
+base=$(basename $appimg)
+cp $appimg $copy_dir/$base
+mkdir -p $extract_dir/$base
+cd $extract_dir/$base || exit 1 # exit if not created
+$copy_dir/$base --appimage-extract
+# /tmp/xyz/warp -> /tmp/xyz/appimage-extract/warp/squashfs-root/AppRun
+
+# ln -sr "$extract_dir/$base/squashfs-root/AppRun" "/tmp/boss-bins/$base"
+#
+cat << EOF > /tmp/boss-bins/$base
+#!/usr/bin/env bash
+$extract_dir/$base/squashfs-root/AppRun "\$@"
+EOF
+chmod +x /tmp/boss-bins/$base
+}
+
+for i in "${appimage_array[@]}"; do
+echo "Handling this Appimage -> $appimg"
+loop_logic_func "$i" &
+done
+
+cp /tmp/boss-bins/chrome /tmp/boss-bins/google-chrome
+chmod +x /tmp/boss-bins/google-chrome
+cd ~ # change to home dir
+echo "All appimage extracted"
+notify-send "Appimages extracted ready to launch" &

@@ -1,0 +1,34 @@
+#!/usr/bin/env luajit
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/shader_body")
+local cmd = arg[1]
+if cmd == "toggle" then
+    shader_toggle_func()
+elseif cmd == "on" then
+    shader_on_func()
+elseif cmd == "off" then
+    shader_reset_func()
+elseif cmd == "restore" then
+    shader_restore_func()
+elseif cmd == "terminal" then
+    shader_on_func()
+elseif cmd == "reset" then
+    shader_reset_func()
+elseif cmd == "set" or cmd == "val" or cmd == "select" then
+    shader_set_func(arg[2])
+elseif cmd == "status" then
+    -- "<state> <sat>" — state 0|1, saturation 0..200 (100 = default)
+    local sval = ""
+    if s ~= nil and s ~= "" and is_file(states .. "/shader_val_" .. s) then
+        sval = read_line(states .. "/shader_val_" .. s)
+    end
+    local sat = basename(sval):gsub("%.glsl$", "")
+    print((state or "0") .. " " .. (sat ~= "" and sat or "100"))
+else
+    print("usage: shader_main {toggle|on|off|restore|reset|set N|status}")
+    os.exit(2)
+end

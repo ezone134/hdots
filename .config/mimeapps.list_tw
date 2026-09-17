@@ -1,0 +1,28 @@
+[Default Applications]
+text/plain=zed.desktop
+application/x-zerosize=sublime_text.desktop
+image/jpeg=imv-dir.desktop
+image/png=swayimg.desktop
+application/pdf=com.github.jeromerobert.pdfarranger.desktop
+video/mp4=io.mpv.Mpv.desktop
+text/html=google-chrome.desktop
+x-scheme-handler/http=google-chrome.desktop
+x-scheme-handler/https=google-chrome.desktop
+text/x-qml=zed.desktop
+application/octet-stream=zed.desktop
+
+[Added Associations]
+text/plain=lapce.desktop;sublime_text.desktop;zed.desktop;
+application/x-zerosize=lapce.desktop;zed.desktop;sublime_text.desktop;
+image/jpeg=swayimg.desktop;imv-dir.desktop;
+image/png=zen-image-dir.desktop;imv-dir.desktop;swayimg.desktop;
+image/svg+xml=swayimg.desktop;imv-dir.desktop;
+application/pdf=com.github.jeromerobert.pdfarranger.desktop;
+video/mp4=io.mpv.Mpv.desktop;
+text/x-qml=zed.desktop;sublime_text.desktop;lapce.desktop;lite-xl_for_root.desktop;cursor.desktop;
+application/x-shellscript=zed.desktop;sublime_text.desktop;lapce.desktop;
+text/x-devicetree-source=zed.desktop;lapce.desktop;
+application/json=zed.desktop;
+application/octet-stream=zed.desktop;
+text/markdown=zed.desktop;sublime_text.desktop;lapce.desktop;
+application/toml=sublime_text.desktop;

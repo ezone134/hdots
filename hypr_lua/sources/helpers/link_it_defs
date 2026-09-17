@@ -1,0 +1,38 @@
+-- link_it_defs — pure-lua symlinking functions
+-- ln -s via mv + symlink (no ln binary)
+
+function link_it_file_func(src, dst)
+    local dn1 = dirname(src)
+    local dn2 = dirname(dst)
+    if not (is_file(src) or is_dir(src)) or not (is_file(dst) or is_dir(dn2)) then
+        mkdir_p(dn1)
+        mkdir_p(dn2)
+    end
+    touch(src) -- [[ -f $1 ]] || > $1
+    -- check if src and dst refer to the same inode
+    -- Lua: just compare readlink targets or skip the -ef check; if dst exists and is symlink, move aside
+    if is_file(dst) then
+        mv(dst, "/tmp/moved_deleted." .. rnd)
+    end
+    if is_file(dst .. ".bak." .. rnd) then
+        mv(dst, dst .. ".bak." .. rnd)
+    end
+    symlink(src, dst)
+end
+
+function link_it_dir_func(src, dst)
+    mkdir_p(src)
+    local dn2 = dirname(dst)
+    if not (is_dir(src)) or not (is_dir(dn2)) then
+        mkdir_p(src)
+        mkdir_p(dn2)
+    end
+    -- check -ef: if dst already points to src, nothing to do
+    if is_file(dst) then
+        mv(dst, "/tmp/moved_deleted." .. rnd)
+    end
+    if is_file(dst .. "." .. rnd) then
+        mv(dst, dst .. "." .. rnd)
+    end
+    symlink(src, dst)
+end

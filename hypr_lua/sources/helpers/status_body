@@ -1,0 +1,16 @@
+#!/usr/bin/env luajit
+-- helper status_body
+
+function status()
+    dofile(hypr_sources .. "/helpers/audio_body")
+    dofile(hypr_sources .. "/helpers/brightness_body")
+    dofile(hypr_sources .. "/helpers/media_body")
+    dofile(hypr_sources .. "/helpers/network_body")
+    dofile(hypr_sources .. "/helpers/power_body")
+    vol_status()
+    mic_status()
+    print(string.format("brightness: %s%%", bri_get()))
+    net_cmd("status")
+    power_cmd("status")
+    media_status()
+end

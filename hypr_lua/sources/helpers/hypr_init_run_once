@@ -1,0 +1,37 @@
+-- hypr_init_run_once — run one-time initialization functions
+
+function run_one_time_function()
+    touch(lock_files .. "/run_one_time_function_marker")
+    if not is_file(states2 .. "/gamma") then
+        write_line(states2 .. "/gamma", "0")
+    end
+
+    -- Read /etc/os-release (bash: . /etc/os-release)
+    local osrelease = read("/etc/os-release") or ""
+    local name_match = osrelease:match('NAME="([^"]*)"') or osrelease:match("NAME=(.+)")
+    if name_match then name_match = name_match:gsub('"', ''):gsub("\n$", "") end
+    write_line(states2 .. "/distro_name", name_match or "")
+
+    local id_match = osrelease:match('ID="([^"]*)"') or osrelease:match("^ID=(.+)")
+    if id_match then id_match = id_match:gsub('"', ''):gsub("\n$", "") end
+
+    local distro, d
+    if id_match and id_match:match("arch") then
+        distro = "arch"; d = "a"
+    elseif id_match and id_match:match("fedora") then
+        distro = "fedora"; d = "f"
+    elseif id_match and id_match:match("tumbleweed") then
+        distro = "tumbleweed"; d = "o"
+    elseif id_match and id_match:match("leap") then
+        distro = "leap"; d = "o"
+    else
+        distro = "generic"; d = "g"
+    end
+    write_line(states2 .. "/distro", distro)
+    write_line(states2 .. "/d", d)
+    write_line(states2 .. "/branding_font", "opensuse")
+end
+
+if not is_file(lock_files .. "/run_one_time_function_marker") then
+    run_one_time_function()
+end

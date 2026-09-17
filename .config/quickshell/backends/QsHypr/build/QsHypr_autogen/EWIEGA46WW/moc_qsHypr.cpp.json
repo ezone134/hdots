@@ -1,0 +1,122 @@
+{
+    "classes": [
+        {
+            "className": "QsHypr",
+            "lineNumber": 22,
+            "methods": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "command",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "json",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "callback",
+                            "type": "QJSValue"
+                        }
+                    ],
+                    "index": 0,
+                    "lineNumber": 29,
+                    "name": "request",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "command",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "json",
+                            "type": "bool"
+                        }
+                    ],
+                    "index": 1,
+                    "isCloned": true,
+                    "lineNumber": 29,
+                    "name": "request",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "command",
+                            "type": "QString"
+                        }
+                    ],
+                    "index": 2,
+                    "isCloned": true,
+                    "lineNumber": 29,
+                    "name": "request",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "action",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "callback",
+                            "type": "QJSValue"
+                        }
+                    ],
+                    "index": 3,
+                    "lineNumber": 33,
+                    "name": "dispatch",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "action",
+                            "type": "QString"
+                        }
+                    ],
+                    "index": 4,
+                    "isCloned": true,
+                    "lineNumber": 33,
+                    "name": "dispatch",
+                    "returnType": "void"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "lineNumber": 35,
+                    "name": "socketPath",
+                    "override": false,
+                    "read": "socketPath",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QString",
+                    "user": false,
+                    "virtual": false
+                }
+            ],
+            "qualifiedClassName": "QsHypr",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "qsHypr.hpp",
+    "outputRevision": 69
+}

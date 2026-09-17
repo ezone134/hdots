@@ -1,0 +1,22 @@
+#!/usr/bin/env luajit
+-- audio_main — vol/mic/audio (wpctl/pactl) standalone CLI.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/audio_body")
+local cmd = arg[1] or "vol"
+if cmd == "vol" then
+    table.remove(arg, 1)
+    vol_cmd(unpack(arg))
+elseif cmd == "mic" then
+    table.remove(arg, 1)
+    mic_cmd(unpack(arg))
+elseif cmd == "audio" then
+    table.remove(arg, 1)
+    audio_cmd(unpack(arg))
+else
+    err("audio_main: use vol|mic|audio")
+    os.exit(1)
+end

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# network_main — wifi / bluetooth (nmcli/bluetoothctl) CLI. Was: qs-ctl net.
+set -u
+. "$hypr_sources/helpers/network_body"
+net_cmd "$@"

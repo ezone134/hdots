@@ -1,0 +1,125 @@
+#!/usr/bin/env luajit
+-- helper network_body
+
+function wifi_status()
+    local o = out("nmcli radio wifi 2>/dev/null")
+    if o == "enabled" then return "on"
+    elseif o == "disabled" then return "off"
+    else return "unknown"
+    end
+end
+
+function wifi_scan()
+    run("nmcli dev wifi rescan 2>/dev/null || true")
+end
+
+function wifi_list()
+    local raw = out("nmcli -m multiline -f SSID,SIGNAL,SECURITY,IN-USE dev wifi list --rescan no 2>/dev/null")
+    local ssid, sig, sec, inuse = "", "", "", ""
+    for line in raw:gmatch("[^\n]+") do
+        if line:match("^SSID:") then ssid = line:match("^SSID:%s*(.-)%s*$") or "" end
+        if line:match("^SIGNAL:") then sig = line:match("^SIGNAL:%s*(.-)%s*$") or "" end
+        if line:match("^SECURITY:") then sec = line:match("^SECURITY:%s*(.-)%s*$") or "" end
+        if line:match("^IN%-USE:") then inuse = line:match("^IN%-USE:%s*(.-)%s*$") or "" end
+        if line:match("^IN%-USE:") then
+            if ssid ~= "" and ssid ~= "--" then
+                print(ssid .. "\t" .. sig .. "\t" .. sec .. "\t" .. inuse)
+            end
+        end
+    end
+end
+
+function wifi_connect(ssid)
+    if not ssid or ssid == "" then err("net wifi connect: need SSID"); return false end
+    local r = run("nmcli dev wifi connect " .. shq(ssid) .. " 2>/dev/null")
+    if not r then run("nmcli --ask dev wifi connect " .. shq(ssid)) end
+end
+
+function wifi_disconnect()
+    local dev = ""
+    local raw = out("nmcli -t -f DEVICE,TYPE dev status 2>/dev/null")
+    for line in raw:gmatch("[^\n]+") do
+        if line:match(":wifi:") then
+            dev = line:match("^(.-):")
+            break
+        end
+    end
+    if dev ~= "" then run("nmcli dev disconnect " .. shq(dev)) end
+end
+
+function wifi_cmd(action, arg2)
+    action = action or "status"
+    arg2 = arg2 or ""
+    if action == "on" then run("nmcli radio wifi on")
+    elseif action == "off" then run("nmcli radio wifi off")
+    elseif action == "toggle" then
+        if wifi_status() == "on" then run("nmcli radio wifi off") else run("nmcli radio wifi on") end
+    elseif action == "scan" then wifi_scan()
+    elseif action == "list" then wifi_list()
+    elseif action == "connect" then wifi_connect(arg2)
+    elseif action == "disconnect" then wifi_disconnect()
+    elseif action == "status" then print("wifi: " .. wifi_status())
+    else err("net wifi: use status|on|off|toggle|scan|list|connect SSID|disconnect")
+    end
+end
+
+function bt_status()
+    local o = out("bluetoothctl show 2>/dev/null")
+    if o:find("Powered: yes") then return "on"
+    elseif o:find("Powered: no") then return "off"
+    else return "unknown"
+    end
+end
+
+function bt_devices()
+    local conn_list = out("timeout 2 bluetoothctl devices Connected 2>/dev/null")
+    local raw = out("timeout 2 bluetoothctl devices 2>/dev/null")
+    for line in raw:gmatch("[^\n]+") do
+        if line:match("^Device%s+") then
+            local parts = {}
+            for w in line:gmatch("%S+") do parts[#parts+1] = w end
+            if #parts >= 2 then
+                local mac = parts[2]
+                local name = table.concat(parts, " ", 3)
+                local conn = conn_list:find(" Device " .. mac .. " ") and "*" or " "
+                print(mac .. "\t" .. name .. "\t" .. conn)
+            end
+        end
+    end
+end
+
+function bt_connect(mac)
+    if not mac or mac == "" then err("net bt connect: need MAC"); return false end
+    run("bluetoothctl connect " .. shq(mac))
+end
+
+function bt_disconnect(mac)
+    if not mac or mac == "" then err("net bt disconnect: need MAC"); return false end
+    run("bluetoothctl disconnect " .. shq(mac))
+end
+
+function bt_cmd(action, arg2)
+    action = action or "status"
+    arg2 = arg2 or ""
+    if action == "on" then run("bluetoothctl power on")
+    elseif action == "off" then run("bluetoothctl power off")
+    elseif action == "toggle" then
+        if bt_status() == "on" then run("bluetoothctl power off") else run("bluetoothctl power on") end
+    elseif action == "devices" then bt_devices()
+    elseif action == "connect" then bt_connect(arg2)
+    elseif action == "disconnect" then bt_disconnect(arg2)
+    elseif action == "status" then print("bluetooth: " .. bt_status())
+    else err("net bt: use status|on|off|toggle|devices|connect MAC|disconnect MAC")
+    end
+end
+
+function net_cmd(action, arg2, arg3)
+    action = action or "status"
+    arg2 = arg2 or "status"
+    arg3 = arg3 or ""
+    if action == "wifi" then wifi_cmd(arg2, arg3)
+    elseif action == "bt" or action == "bluetooth" then bt_cmd(arg2, arg3)
+    elseif action == "status" then print("wifi: " .. wifi_status() .. "  bluetooth: " .. bt_status())
+    else err("net: use wifi|bt|status")
+    end
+end

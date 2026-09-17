@@ -1,0 +1,46 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts_global/before_loop
+
+local SCRIPT_DIR = arg[0]:match("^(.*)[/\\][^/\\]*$") or "."
+
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long sec; long nsec; } timespec_t;
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int chmod(const char *path, unsigned int mode);
+]]
+
+local function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+local function read(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function write(path, content)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+sleep(1)
+
+local sysrq = read("/proc/sys/kernel/sysrq")
+if tonumber(sysrq) ~= 1 then
+    write("/proc/sys/kernel/sysrq", "1")
+end
+
+ffi.C.chmod(SCRIPT_DIR .. "/states/fire_delay", 0x1FF) -- 0777
+ffi.C.chmod(SCRIPT_DIR .. "/fire_count", 0x1FF)
+write(SCRIPT_DIR .. "/unmounter_status", "1")

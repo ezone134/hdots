@@ -1,0 +1,8 @@
+(
+    // PKGUPDATES — hero card: conditional glyph + count + caption, all
+    // drawn by the `pkgupdates` Ink painter reading live state. No static
+    // chrome — the whole card is the dynamic figure.
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "pkgupdates"),
+    ],
+)

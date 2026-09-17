@@ -1,0 +1,42 @@
+(
+    // LYRICS — fully declarative: `Header` (accent note glyph, title), the
+    // dynamic state chip (exclusively toggled: synced/acc · none/danger ·
+    // fetching…/plain/—/fg3), the track caption, the centered fallback
+    // message when no lines are loaded (`lyr_empty`), and the karaoke body.
+    //
+    // The `Rows` list (`lyr_rows`) carries the full line set; `karaoke:
+    // "lyr_karaoke"` switches it into word-highlight mode (only bound while
+    // the loaded lines carry LRC timestamps). The ACTIVE row paints the
+    // accent wash and walks its words left-to-right — the playhead word is
+    // white with an underline, the rest near-black, auto-fitted and broken
+    // at the card edge like the Rust drawer. Non-active rows render the
+    // joined line (hover → accent). Plain (untimed) lyrics unbind karaoke
+    // and fall back to the single-column cell. `start: "lyr_scroll"` keeps
+    // the window following the sung line (`lyrics_follow` is driven from
+    // `draw_card_scene`); regions key `LYRICS_KEY_BASE + visible index`.
+    items: [
+        Header(
+            title: "Lyrics",
+            glyph: Some("\u{f001}"),
+            glyph_color: Some(acc),
+        ),
+        Text(x: 0.0, y: 10.0, font_size: 8.5, color: Some(acc), text: "synced", right: true, visible: Some("lyr_status_synced")),
+        Text(x: 0.0, y: 10.0, font_size: 8.5, color: Some(danger), text: "none", right: true, visible: Some("lyr_status_none")),
+        Text(x: 0.0, y: 10.0, font_size: 8.5, color: Some(fg3), text: "{lyr_status_other}", right: true, visible: Some("lyr_status_other_on")),
+        Text(x: 0.0, y: 28.0, font_size: 8.5, color: Some(fg3), text: "{lyr_track}"),
+        Text(x: 0.0, y: -6.0, center_x: true, center_y: true, font_size: 9.0, color: Some(fg3), text: "{lyr_msg}", visible: Some("lyr_empty")),
+        Rows(
+            name: "lyr_rows",
+            y: 33.0,
+            row_h: 21.0,
+            r: 4.0,
+            hover_surface: Some(hover),
+            karaoke: Some("lyr_karaoke"),
+            start: Some("lyr_scroll"),
+            key_base: 33500,
+            cols: [
+                (x: 6.0, dy: Some(0.5), size: 10.5, color: Some(fg), hover: Some(acc)),
+            ],
+        ),
+    ],
+)

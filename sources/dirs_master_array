@@ -1,0 +1,35 @@
+# -*- mode: sh -*-
+
+# this is master dirs array put ur dirs here hypr-init will create it
+dirs_array=(
+    $states
+    $HOME/Downloads
+    $hypr_conf
+    $hypr_log
+    $hypr_scripts
+    $hypr_global
+    $hypr_global/icons
+    $hypr_global/states
+    $hypr_conf/rofi
+    $hypr_conf/desktop_launchers
+    $lock_files
+    $hypr_conf/hypr
+    $hypr_conf/hypr_cache
+    $theme_elements
+    $HOME/.config/hypr
+    $hypr_conf/matugen
+    $hypr_conf/hypr-theme
+    $hypr_conf/alpha-refs
+    $hypr_conf/hypr/hyprlock
+    ${light_color_list%/*}
+    ${dark_color_list%/*}
+    $hypr_temp
+    $hdots/hypr_cache/accent_files
+    $hypr_cache/accent_files
+    $hdots/states_global
+    $HOME/.config/rofi
+    $hypr_conf/mako
+    $hypr_conf/hex_to_alpha
+    $hypr_conf/shaders/saturations
+    $hypr_conf/shaders/gamma
+)

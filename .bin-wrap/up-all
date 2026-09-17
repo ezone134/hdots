@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+up-hdots
+up-doc
+up-config
+up-themes
+up-icons
+up-wall

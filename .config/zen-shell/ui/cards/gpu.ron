@@ -1,0 +1,6 @@
+(
+    items: [
+        Header(title: "GPU", glyph: Some("\u{f013}"), pad: 12.0),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "gpu"),
+    ],
+)

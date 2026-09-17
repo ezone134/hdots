@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# exit if root
+[ "$(id -un)" = "root" ] && {
+    echo "running as root not permitted";
+    exit 0;
+    exit 1;
+}
+
+u1="$USER"
+zyppcache="/var/cache/zypp"
+gitdir="/tmp/zypp-git/opensuse_repo"
+gitrepo="https://ezone134:$pat@github.com/ezone134/zypp.git"
+branch="main"
+min_size_mb=40  # Minimum tmpdir size to proceed
+rsync_flag_git="-caAxXHhiv --inplace --fsync --no-whole-file"
+echo "git repo is $gitrepo"
+
+zypp-down11 () {
+[ -e "/var/cache/zypp" ] || {
+    echo "/var/cache/zypp does not exist.. creating new, needs sudo"
+    sudo mkdir -p "/var/cache/zypp"
+}
+rm -rf /tmp/zypp-git/opensuse_repo
+mkdir -p "/tmp/zypp-git/opensuse_repo"
+cd "/tmp/zypp-git/opensuse_repo"
+
+git clone $gitrepo
+
+size_mb=$(du -sm "/tmp/zypp-git/opensuse_repo/zypp" | cut -f1)
+if [ "$size_mb" -lt "$min_size_mb" ]; then
+    echo "ERROR: /tmp/zypp-git/opensuse_repo/zypp is only $size_mb MB, less than $min_size_mb MB. Halting."
+    exit 1
+    exit 0
+fi
+
+
+echo "Size check passed $tmpdir: $size_mb MB >= $min_size_mb MB"
+
+sudo rsync -caxXhHiv --exclude=.git /tmp/zypp-git/opensuse_repo/zypp/ /var/cache/zypp/
+}
+
+
+zypp-down11

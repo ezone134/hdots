@@ -1,0 +1,24 @@
+#!/usr/bin/env luajit
+-- array configs_array
+-- ported from bash sources/configs_array
+
+configs_array_1 = {
+    hypr_sources .. "/mako",
+    hypr_sources .. "/dunst",
+    hypr_sources .. "/branding",
+}
+
+configs_array_2 = {
+    hypr_sources .. "/sublime-text/Packages/User",
+    hypr_sources .. "/zed",
+    hypr_sources .. "/swayimg",
+    hypr_sources .. "/kitty",
+    hypr_sources .. "/lapce-stable",
+    hypr_sources .. "/lite-xl",
+    hypr_sources .. "/wofi",
+    hypr_sources .. "/foot",
+    hypr_sources .. "/alacritty",
+    hypr_sources .. "/geany",
+    hypr_sources .. "/quickshell",
+    hypr_sources .. "/qml",
+}

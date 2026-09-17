@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+echo loop_is_running > $hypr_conf/scripts/loop_is_running
+
+# notify-send "hi from loop" &
+
+{
+    . $hypr_global/qpid hypridle || {
+    hyprctl dispatch "hl.dsp.exec_cmd('hypridle')"
+}
+} &
+
+{
+        (( $(<$states2/run_thunar_daemon) == 0 )) && {
+        max_try=10
+        while (( $(<$states2/run_thunar_daemon) == 0 && max_try > 0 )); do
+            sleep 0.5
+            ((max_try--))
+        done
+        }
+        echo 1 > $states2/run_thunar_daemon
+            . $hypr_global/qpid thunar || {
+                notify-send "loop calling thunar daemon run" &
+                hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+}
+        sleep 2
+        pid_array=($(. $hypr_global/qpid thunar))
+        (( ${#pid_array[@]} > 1 )) && {
+            pkill thunar
+            sleep 0.5
+            hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+        }
+} &
+
+{
+    . $hypr_global/qpid alacritty || {
+    hyprctl dispatch "hl.dsp.exec_cmd('alacritty --daemon')"
+}
+} &
+
+{
+    . $hypr_global/qpid wl-paste || {
+    hyprctl dispatch "hl.dsp.exec_cmd('wl-paste --type text --watch cliphist store')"
+    hyprctl dispatch "hl.dsp.exec_cmd('wl-paste --type image --watch cliphist -db-path $HOME/.cache/cliphist_image/db store')"
+}
+} &
+
+{
+    FILE="$states2/zen_shell_watch"
+    [[ -f $FILE ]] && {
+        SEC=30
+        printf -v current_time '%(%s)T' -1
+        file_mtime=$(stat -c %Y "$FILE" 2>/dev/null)
+        if [ -n "$file_mtime" ]; then
+            age=$((current_time - file_mtime))
+            if [ "$age" -gt "$SEC" ]; then
+                echo "File is $age seconds old (older than $SEC seconds). Running logic..."
+                . $hypr_sources/msg/shell_frozen
+                notify-send "Watch dog" "$rnd_msg" &
+                {
+                    pkill zen-shell
+                    sleep 2
+                    hyprctl dispatch "hl.dsp.exec_cmd('zen-shell')"
+                }
+            else
+                echo "File is only $age seconds old."
+            fi
+        fi
+    }
+} &
+
+
+
+
+{
+    . $hypr_global/qpid zen-shell || {
+    hyprctl dispatch "hl.dsp.exec_cmd('zen-shell')"
+}
+} &

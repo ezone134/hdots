@@ -1,0 +1,153 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts_global/main_body (dofile'd by on_udev_trigger /
+-- set_cpu_freqs; defines global *_function and a local state/SCRIPT_DIR)
+
+local self_src = debug.getinfo(1, "S").source or ""
+local SCRIPT_DIR = self_src:match("^@(.*)[/\\][^/\\]*$") or "."
+
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long d_ino; long d_off; unsigned short d_reclen;
+                unsigned char d_type; char d_name[256]; } dirent_t;
+typedef struct { int _x; } DIR;
+typedef struct { long sec; long nsec; } timespec_t;
+DIR *opendir(const char *path);
+dirent_t *readdir(DIR *dirp);
+int closedir(DIR *dirp);
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int getpid(void);
+]]
+
+local function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+local function read(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function write(path, content)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+local function list_dir(path)
+    local entries = {}
+    local d = ffi.C.opendir(path)
+    if d == nil then return entries end
+    local e = ffi.C.readdir(d)
+    while e ~= nil do
+        local name = ffi.string(e.d_name)
+        if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
+        e = ffi.C.readdir(d)
+    end
+    ffi.C.closedir(d)
+    return entries
+end
+
+-- bash `$(< /path/GLOB*)`: read the first existing match
+local function read_first(dir, prefix)
+    for _, ent in ipairs(list_dir(dir)) do
+        if ent:match(prefix) then
+            local v = read(dir .. "/" .. ent)
+            if v then return v end
+        end
+    end
+    return nil
+end
+
+-- bash `echo X | sudo tee /dir/<glob>/subfile`: write X to every match
+local function write_glob(dir, prefix, subpath, content)
+    for _, ent in ipairs(list_dir(dir)) do
+        if ent:match(prefix) then
+            write(dir .. "/" .. ent .. subpath, content)
+        end
+    end
+end
+
+-- parse a bash `key=value` state file (like `. $SCRIPT_DIR/states/<plan>`)
+local plan_vars = {}
+local function load_plan(file)
+    plan_vars = {}
+    local s = read(file)
+    if not s then return end
+    for line in s:gmatch("[^\n]+") do
+        local key, val = line:match("^%s*([%w_]+)%s*=%s*(%S+)")
+        if key and not key:match("^#") then plan_vars[key] = val end
+    end
+end
+
+local state = tonumber(read(SCRIPT_DIR .. "/states/enable_power_script")) or 0
+
+function main_logic_function()
+    print(os.date() .. ": Checking power source")
+    local power_status = 0 -- initial set flag 0
+    local power_adp = read_first("/sys/class/power_supply", "^ADP") -- /online file
+    local power_usb_c = read_first("/sys/class/power_supply", "^ucsi%-source%-psy%-")
+    if tonumber(power_adp) == 1 then power_status = 1 end
+    if tonumber(power_usb_c) == 1 then power_status = 1 end
+
+    local freq_file = nil
+    local freq_val = nil
+    local plan_file = nil
+
+    if power_status == 1 then
+        local power_plan_ac = (read(SCRIPT_DIR .. "/states/power_plan_ac") or ""):gsub("%s+$", "")
+        if power_plan_ac == "" then power_plan_ac = "powersave" end
+        load_plan(SCRIPT_DIR .. "/states/" .. power_plan_ac)
+        local max_freq_mhz = tonumber((read(SCRIPT_DIR .. "/states/max_ac_freq_mhz") or ""):gsub("%s+$", "")) or 0
+        freq_file = "/sys/devices/system/cpu"
+        freq_val = tostring(max_freq_mhz * 1000)
+        print("On AC")
+    else
+        local power_plan_bat = (read(SCRIPT_DIR .. "/states/power_plan_bat") or ""):gsub("%s+$", "")
+        if power_plan_bat == "" then power_plan_bat = "powersave" end
+        load_plan(SCRIPT_DIR .. "/states/" .. power_plan_bat)
+        local max_freq_mhz = tonumber((read(SCRIPT_DIR .. "/states/max_bat_freq_mhz") or ""):gsub("%s+$", "")) or 0
+        freq_file = "/sys/devices/system/cpu"
+        freq_val = tostring(max_freq_mhz * 1000)
+        print("On Battery")
+    end
+
+    write_glob(freq_file, "^cpu%D?", "/cpufreq/scaling_max_freq", freq_val)
+    write_glob(freq_file, "^cpu%D?", "/cpufreq/scaling_governor", plan_vars.scaling_governor or "")
+    write_glob("/sys/class/drm", "^card%D?", "/device/power_dpm_force_performance_level",
+               plan_vars.power_dpm_force_performance_level or "")
+    write_glob("/sys/class/drm", "^card%D?", "/device/power_dpm_state", plan_vars.power_dpm_state or "")
+    if plan_vars.power_dpm_force_performance_level ~= "auto" then
+        write_glob("/sys/class/drm", "^card%D?", "/device/pp_dpm_sclk", plan_vars.pp_dpm_sclk or "")
+    end
+end
+
+function init_func_2()
+    local state_file = SCRIPT_DIR .. "/last_trigger"
+    write(state_file, tostring(ffi.C.getpid()))
+    sleep(2)
+    local last_pid = tonumber((read(state_file) or ""):gsub("%s+$", ""))
+    if last_pid == ffi.C.getpid() then
+        main_logic_function()
+    end
+end
+
+function normal_apply_function()
+    if state == 1 then -- skip whole block if disabled
+        main_logic_function()
+    end
+end
+
+function on_udev_trigger_function() -- udev fires it 2 times, debounce to exec once
+    if state == 1 then
+        init_func_2()
+    end
+end

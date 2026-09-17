@@ -1,0 +1,75 @@
+#!/usr/bin/env luajit
+
+write(hypr_conf .. "/scripts/loop_is_running", "loop_is_running\n")
+
+local QPID = shq(hypr_global .. "/qpid")
+
+spawn(string.format(
+    '%s hypridle || hyprctl dispatch "hl.dsp.exec_cmd(\'hypridle\')"',
+    QPID
+))
+
+spawn(string.format([[
+    run_thunar=$(cat %s/run_thunar_daemon 2>/dev/null || echo 1)
+    if [ "$run_thunar" = "0" ]; then
+        max_try=10
+        while [ "$max_try" -gt 0 ]; do
+            run_thunar=$(cat %s/run_thunar_daemon 2>/dev/null || echo 1)
+            [ "$run_thunar" != "0" ] && break
+            sleep 0.5
+            max_try=$((max_try - 1))
+        done
+    fi
+    echo 1 > %s/run_thunar_daemon
+    %s thunar || {
+        notify-send "loop calling thunar daemon run" &
+        hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+    }
+    sleep 2
+    pids=$(%s thunar)
+    n=0; for p in $pids; do n=$((n+1)); done
+    if [ "$n" -gt 1 ]; then
+        pkill thunar
+        sleep 0.5
+        hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+    fi
+]], states2, states2, states2, QPID, QPID))
+
+spawn(string.format(
+    '%s alacritty || hyprctl dispatch "hl.dsp.exec_cmd(\'alacritty --daemon\')"',
+    QPID
+))
+
+spawn(string.format([[
+    %s wl-paste || {
+        hyprctl dispatch "hl.dsp.exec_cmd('wl-paste --type text --watch cliphist store')"
+        hyprctl dispatch "hl.dsp.exec_cmd('wl-paste --type image --watch cliphist -db-path %s/.cache/cliphist_image/db store')"
+    }
+]], QPID, os.getenv("HOME")))
+
+spawn(string.format([[
+    FILE="%s/zen_shell_watch"
+    if [ -f "$FILE" ]; then
+        SEC=30
+        current_time=$(date +%%s)
+        file_mtime=$(stat -c %%Y "$FILE" 2>/dev/null)
+        if [ -n "$file_mtime" ]; then
+            age=$((current_time - file_mtime))
+            if [ "$age" -gt "$SEC" ]; then
+                echo "File is $age seconds old (older than $SEC seconds). Running logic..."
+                . %s/msg/shell_frozen
+                notify-send "Watch dog" "$rnd_msg" &
+                pkill zen-shell
+                sleep 2
+                hyprctl dispatch "hl.dsp.exec_cmd('zen-shell')"
+            else
+                echo "File is only $age seconds old."
+            fi
+        fi
+    fi
+]], states2, hypr_sources))
+
+spawn(string.format(
+    '%s zen-shell || hyprctl dispatch "hl.dsp.exec_cmd(\'zen-shell\')"',
+    QPID
+))

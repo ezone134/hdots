@@ -1,0 +1,8 @@
+#!/usr/bin/env luajit
+-- helper sync_to_hypr_conf
+
+if hdots and hdots ~= "" then
+    dofile(hdots .. "/sources/helpers/prelaunch_body")
+    main_logic()
+    spawn("notify-send -a System 'System' 'Synced bins and sources to " .. hypr_conf .. "'")
+end

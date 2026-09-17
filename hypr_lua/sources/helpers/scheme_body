@@ -1,0 +1,139 @@
+#!/usr/bin/env luajit
+-- helper scheme_body
+
+function theme_apply(theme_id_arg)
+    print("to apply theme_id is " .. theme_id_arg)
+    local ch = read_line(states2 .. "/s") or "n"
+    local m = read_line(states2 .. "/m") or "d"
+    dofile(hypr_sources .. "/helpers/theme_init")
+    resolve_theme(theme_id_arg)
+    if not theme_mode or theme_mode == "" then
+        spawn("notify-send 'Error scheme_main_body'")
+        return
+    end
+    print("scheme_body line 15 theme_mode is " .. theme_mode)
+    if theme_mode == "b" then
+        print("scheme_body line 17")
+        local old_theme = read_line(states .. "/scheme_" .. ch .. m)
+        if old_theme == theme_id_arg then return end
+        if ch == "n" then
+            write_line(states .. "/scheme_nd", theme_id_arg)
+            write_line(states .. "/scheme_nl", theme_id_arg)
+        else
+            write_line(states .. "/scheme_dd", theme_id_arg)
+            write_line(states .. "/scheme_ll", theme_id_arg)
+        end
+        write_line(states .. "/acc_source_" .. ch, "0")
+        write_line(states2 .. "/acc_changed", "1")
+        theme_main_restore_func()
+    else
+        print("scheme_body line 31")
+        local tmp_string
+        if ch == "n" then
+            tmp_string = "n"
+        else
+            tmp_string = theme_mode
+        end
+        local old_theme = read_line(states .. "/scheme_" .. tmp_string .. theme_mode)
+        print("old theme is " .. (old_theme or "nil") .. " and new is " .. theme_id_arg)
+        if old_theme == theme_id_arg then
+            spawn("notify-send 'Theme' '" .. theme_id_arg .. "' is already applied try different theme")
+            return
+        end
+        print("scheme_body line 39")
+        write_line(states .. "/acc_source_" .. tmp_string, "0")
+        write_line(states .. "/scheme_" .. tmp_string .. theme_mode, theme_id_arg)
+        print("scheme_body line 39")
+        if m == theme_mode then
+            write_line(states2 .. "/acc_changed", "1")
+            theme_main_restore_func()
+        else
+            if theme_mode == "d" then
+                theme_apply_dark_func()
+            else
+                theme_apply_light_func()
+            end
+        end
+    end
+    print("scheme_body line 54")
+end
+
+function theme_accent_func(key, payload)
+    key = key or ""
+    payload = payload or ""
+    local ch = read_line(states2 .. "/s") or "n"
+    local want = ""
+    local src = ""
+
+    if key == "theme_default" then src = "d"
+    elseif key == "acc_from_wall" then src = "w"
+    elseif key == "custom_acc" then src = "c"
+    elseif key == "define_hex" then src = "h"
+    else return end
+
+    if key == "custom_acc" then
+        want = payload
+    elseif key == "define_hex" then
+        if payload ~= "" then want = payload end
+        if want == "" and is_file(os.getenv("HOME") .. "/documents/defined_hex") then
+            want = read_line(os.getenv("HOME") .. "/documents/defined_hex") or ""
+        end
+    end
+
+    if src == "" then return end
+
+    if key == "acc_from_wall" and payload == "all" then
+        local any = false
+        for _, c in ipairs({"d", "n", "l"}) do
+            local cc = read_line(states .. "/acc_source_" .. c) or ""
+            if cc ~= "w" then
+                write_line(states .. "/acc_source_" .. c, "w")
+                any = true
+            end
+        end
+        if any then
+            write_line(states2 .. "/acc_changed", "1")
+            theme_main_restore_func()
+        end
+        return
+    end
+
+    local cur = read_line(states .. "/acc_source_" .. ch) or ""
+    local curname = ""
+    if key == "custom_acc" then
+        curname = read_line(states .. "/custom_acc_name_" .. ch) or ""
+    elseif key == "define_hex" then
+        curname = read_line(states .. "/defined_hex_" .. ch) or ""
+    end
+    if cur == src then
+        if key == "custom_acc" or key == "define_hex" then
+            if curname == want then return end
+        else
+            return
+        end
+    end
+
+    write_line(states .. "/acc_source_" .. ch, src)
+    if key == "custom_acc" and want ~= "" then
+        write_line(states .. "/custom_acc_name_" .. ch, want)
+    elseif key == "define_hex" and want ~= "" then
+        write_line(states .. "/defined_hex_" .. ch, want)
+    end
+
+    write_line(states2 .. "/acc_changed", "1")
+    theme_main_restore_func()
+end
+
+function scheme_cmd(action, arg2, arg3)
+    action = action or "list"
+    arg2 = arg2 or ""
+    arg3 = arg3 or ""
+    dofile(hypr_sources .. "/helpers/theme_main_body")
+    if action == "apply" and arg2 ~= "" then
+        theme_apply(arg2)
+    elseif action == "accent" then
+        theme_accent_func(arg2, arg3)
+    else
+        print("scheme: use apply <id>|accent <key> [hex]")
+    end
+end

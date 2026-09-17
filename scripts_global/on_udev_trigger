@@ -1,0 +1,15 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts_global/on_udev_trigger
+
+local SCRIPT_DIR = arg[0]:match("^(.*)[/\\][^/\\]*$") or "."
+
+if arg[1] == "run" then
+    dofile(SCRIPT_DIR .. "/main_body")
+    on_udev_trigger_function()
+    os.exit(0)
+end
+
+-- run in bg (udev must not block); echo /tmp hypr pattern of bash "{ ... } &"
+local shq = function(s) return "'" .. tostring(s):gsub("'", "'\\''") .. "'" end
+os.execute(shq(arg[0]) .. " run >> " .. shq(SCRIPT_DIR .. "/power_script.log") .. " 2>&1 &")
+os.exit(0)

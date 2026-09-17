@@ -1,0 +1,26 @@
+-- helper pull_colors_val
+-- this script will only be called by theme body, not hypr-init
+
+m = state2_read("m") or ""
+s = state2_read("s") or ""
+bg = state2_read("bg") or ""
+fg = state2_read("fg") or ""
+bg8 = state2_read("bg8") or ""
+fg8 = state2_read("fg8") or ""
+border8 = state2_read("border8") or ""
+border = state2_read("border") or ""
+acc8 = state2_read("acc8") or ""
+acc = state2_read("acc") or ""
+acc_ec = state2_read("acc_ec") or ""
+sfg = state2_read("sfg") or ""
+bg2 = state2_read("bg2") or ""
+useful_red = state2_read("ured") or ""
+
+rofi_font_size = state_read("rofi_font_size_" .. s) or "13"
+rofi_font = state_read("rofi_font_" .. s) or "Roboto"
+
+-- this does not contain hash #
+bg_1 = bg:gsub("^#", "")
+fg_1 = fg:gsub("^#", "")
+
+bg_alpha = state_read("bg_alpha_" .. s) or ""

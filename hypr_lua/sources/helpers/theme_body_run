@@ -1,0 +1,47 @@
+-- helper theme_body_run
+-- ported from bash sources/helpers/theme_body_run
+-- pure Lua: no external binaries (FFI sleep + in-process file reads)
+m = state2_read("m")
+err("THIS IS THEME BODY RUN.........................")
+
+if qpid("thunar") == "" then
+    spawn("hyprctl dispatch \"hl.dsp.exec_cmd('thunar --daemon')\"")
+end
+
+bg(hypr_bin .. "/blur_main restore")
+bg(hypr_bin .. "/shadow_main restore")
+bg(hypr_bin .. "/opacity_main restore")
+bg(hypr_bin .. "/general_main restore")
+bg(hypr_bin .. "/hs_main restore")
+bg(hypr_bin .. "/shader_main restore")
+
+-- Wait for all *_done flags to become 1 (max 30 x sleep 0.1), then hyprctl reload
+local done_flags = { "general_done", "hs_done", "shadow_done", "opacity_done", "shader_done", "blur_done" }
+local all_done = false
+local max_wait = 30
+while max_wait > 0 do
+    all_done = true
+    for _, flag in ipairs(done_flags) do
+        if state2_read(flag) ~= "1" then
+            all_done = false
+            break
+        end
+    end
+    if all_done then
+        break
+    end
+    sleep(0.1)
+    max_wait = max_wait - 1
+end
+err("firing_hyprctl_reload")
+spawn("hyprctl reload")
+
+local kitty_pid = qpid("kitty")
+if kitty_pid ~= "" then
+    spawn("kill -SIGUSR1 " .. kitty_pid .. " 2>/dev/null")
+end
+
+local boot = "dofile('" .. lua_helpers .. "/utils'); dofile('" .. lua_helpers .. "/remove_theme_lock_file')"
+bg("luajit -e " .. string.format("%q", boot))
+
+err("this is end of theme body run")

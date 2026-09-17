@@ -1,0 +1,21 @@
+[package]
+name = "zen-overview"
+version = "0.1.0"
+edition.workspace = true
+description = "Niri-like scrollable workspace overview for Hyprland. Standalone layer-shell window."
+license.workspace = true
+
+[[bin]]
+name = "zen-overview"
+path = "src/main.rs"
+
+[dependencies]
+smithay-client-toolkit = { workspace = true, default-features = false, features = ["calloop", "xkbcommon", "system"] }
+wayland-client.workspace = true
+wayland-protocols-wlr = { version = "0.3", features = ["client"] }
+tiny-skia = { workspace = true }
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+fontdb = { version = "0.24", features = ["fontconfig"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+libc.workspace = true

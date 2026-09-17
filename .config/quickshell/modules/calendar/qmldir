@@ -1,0 +1,3 @@
+# explicit qmldir for qs.calendar — disables the synthesizer
+module qs.calendar
+CalendarPanel 1.0 CalendarPanel.qml

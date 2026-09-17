@@ -1,0 +1,27 @@
+-- splash_init — resolve color scheme, build splash vars, launch splash binary
+fcs_caller = "splash_init"
+
+dofile(hdots .. "/sources/helpers/fetch_color_scheme")
+-- bash: . $hdots/sources/helpers/fetch_color_scheme splash_init
+
+dofile(hdots .. "/sources/msg/splash_loading_texts")
+-- random_msg is computed at load time in splash_loading_texts
+
+local s = state2_read("s") or "n"
+-- bg/fg are set by fetch_color_scheme -> resolve_theme (exported to _G)
+-- bg_alpha is read from states file
+local bg_alpha = read_line(states .. "/bg_alpha_" .. s) or "100"
+local bf_val = _G.bf or "100"
+
+local splash_json = string.format(
+    '{"w":100,"h":100,"bg":"%s","fg":"%s","b_text":"p","b_font":"distro_splash","b_size":600,"s_text":"%s","s_font":"JetBrainsMonoNL Nerd Font","s_size":18,"duration":3,"spacing":50,"loading_id":2,"show_loading_animation":true,"center_b_text":1,"corner_rounding":0,"alpha":%s}',
+    (bg or "") .. bg_alpha,
+    fg or "",
+    random_msg,
+    tostring(bf_val)
+)
+
+write(states2 .. "/splash_vars", splash_json)
+
+-- run the binary splash helper (NOT ported — call the bash binary path exactly)
+spawn(hdots .. "/sources/helpers/splash")

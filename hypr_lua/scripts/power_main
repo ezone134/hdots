@@ -1,0 +1,14 @@
+#!/usr/bin/env luajit
+-- power_main — battery/AC + session control CLI.
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/power_main_body")
+if arg[1] == "session" then
+    table.remove(arg, 1)
+    session_cmd(unpack(arg))
+else
+    power_cmd(unpack(arg))
+end

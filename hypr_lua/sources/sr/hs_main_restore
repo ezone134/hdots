@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- sr/hs_main_restore — source hs_body and call restore_func
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_sources = dir .. "/.."
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+dofile(lua_helpers .. "/hs_body")
+restore_func()

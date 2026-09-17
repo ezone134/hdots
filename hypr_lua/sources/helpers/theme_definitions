@@ -1,0 +1,64 @@
+-- helper theme_definitions
+
+function font_vars()
+    font_size = state_read("font_size_" .. s) or "17"
+    font = state_read("font_" .. s) or "SF Pro Text"
+    font_name = font .. " " .. font_size
+end
+
+function save_useful_colors()
+    state2_write("ugreen", useful_green)
+    state2_write("uamber", useful_amber)
+    state2_write("ured", useful_red)
+
+    local h2r = dofile(lua_helpers .. "/hex_to_rgba")
+    -- hex_to_rgba is defined as a global function by that file
+    useful_green_rgba = hex_to_rgba(useful_green)
+    useful_amber_rgba = hex_to_rgba(useful_amber)
+    useful_red_rgba = hex_to_rgba(useful_red)
+end
+
+function useful_hex_d()
+    useful_green = "#99FF99"
+    useful_amber = "#FFCC66"
+    useful_red = "#FF6666"
+    save_useful_colors()
+end
+
+function useful_hex_l()
+    useful_green = "#007800"
+    useful_amber = "#7D4A00"
+    useful_red = "#8B0000"
+    save_useful_colors()
+end
+
+function vars_d()
+    theme_name = "hypr-theme-dark"
+    icon_name = "Tela-black-dark"
+    cursor_name = "Bibata-Modern-Ice"
+end
+
+function vars_l()
+    theme_name = "hypr-theme-light"
+    icon_name = "Tela-black-light"
+    cursor_name = "Hypr-Ice"
+end
+
+function common_setter_for_all()
+    run("gsettings set org.gnome.desktop.interface font-name " .. shq(font_name))
+    run("gsettings set org.gnome.desktop.interface icon-theme " .. shq(icon_name))
+    local cursor_check = out("gsettings get org.gnome.desktop.interface cursor-theme")
+    if not cursor_check:find(cursor_name, 1, true) then
+        run("gsettings set org.gnome.desktop.interface cursor-theme " .. shq(cursor_name))
+    end
+end
+
+function set_theme_elements()
+    run("gsettings set org.gnome.desktop.interface gtk-theme " .. shq(theme_name))
+    common_setter_for_all()
+    no_acc_reload = "yes"
+end
+
+function full_hot_reload_func()
+    common_setter_for_all()
+end

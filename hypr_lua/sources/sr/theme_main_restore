@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- sr/theme_main_restore — source theme_main_body and call theme_main_restore_func
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_sources = dir .. "/.."
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+dofile(lua_helpers .. "/theme_main_body")
+theme_main_restore_func()

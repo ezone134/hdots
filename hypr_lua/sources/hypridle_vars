@@ -1,0 +1,26 @@
+#!/usr/bin/env luajit
+-- hypridle_vars
+-- ported from bash sources/hypridle_vars
+-- runs every time hypr_init is run; resolves keyboard_id
+
+function hypridle_vars()
+    if is_file(states2 .. "/keyboard_id") then
+        keyboard_id = read_line(states2 .. "/keyboard_id")
+    else
+        -- bash used: brightnessctl -l | grep kbd | cut -d"'" -f2
+        -- pure-Lua fallback: scan sysfs for a keyboard backlight device
+        local found
+        for _, led in ipairs(list_dir("/sys/class/leds")) do
+            if led:find("kbd", 1, true) then found = "/sys/class/leds/" .. led break end
+        end
+        if not found then
+            for _, dev in ipairs(list_dir("/sys/class/input")) do
+                if dev:find("kbd", 1, true) then found = "/sys/class/input/" .. dev break end
+            end
+        end
+        keyboard_id = found or ""
+        write_line(states2 .. "/keyboard_id", keyboard_id)
+    end
+end
+
+hypridle_vars()

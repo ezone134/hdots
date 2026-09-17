@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# exit if root
+
+[ $(id -un) = root ] && { echo "running as root not permitted"; exit 0; exit 1; }
+
+
+base_name="hdots"
+source_dir="/home/@@common/hdots"
+verify_dir="$source_dir"  # use this dir to verify if empty or not
+running_message="Running download from github"
+update_message="download hdots dots"
+user_name="Ezone Solutions"
+user_email="ezonesolutions22@gmail.com"
+
+
+# no need to focus below code
+
+gitrepo="https://ezone134:$pat@github.com/ezone134/$base_name.git"
+branch="main"
+min_size_mb=40  # Minimum tmpdir size to proceed
+rsync_flag_git="-caAxXHhiv --inplace --fsync --no-whole-file"
+
+
+mkdir -p $source_dir
+
+
+echo "$running_message" # display message
+
+useless () {
+[ -e "$verify_dir" ] || {
+    echo "ERROR: $verify_dir does not exist!"
+    sleep 2
+    exit 1
+}
+} # for now this is useless
+
+
+
+
+[ ! -d "$source_dir" ] && echo "$source_dir does not exist.. creating new"
+
+mkdir -p $source_dir
+
+
+
+rm -rf /tmp/git-tmp/long-name-for-safety/* # this cleans up other repo files too
+
+
+mkdir -p /tmp/git-tmp/long-name-for-safety
+
+cd "/tmp/git-tmp/long-name-for-safety"
+
+
+git clone "$gitrepo"  # clone the repo
+
+
+# check size if not then exit immediately
+size_mb=$(du -sm "/tmp/git-tmp/long-name-for-safety/$base_name" | cut -f1)
+
+if [ "$size_mb" -lt "$min_size_mb" ]; then
+    echo "ERROR: $gitdir is only $size_mb MB, less than $min_size_mb MB. Halting. Try runnf zypper ref no refresh repo cache first"
+    exit 1
+    exit 0
+fi
+echo "Size check passed $gitdir: $size_mb MB >= $min_size_mb MB"
+
+
+rm -rf "/tmp/git-tmp/long-name-for-safety/$base_name/.git"
+# final rsync
+sudo rsync $rsync_flag_git /tmp/git-tmp/long-name-for-safety/$base_name/ $source_dir/

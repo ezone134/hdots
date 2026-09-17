@@ -1,0 +1,44 @@
+#!/usr/bin/env luajit
+-- helper hs_body
+
+function on_func()
+    run("pkill hyprsunset")
+    run("sleep 0.3")
+    write_line(states .. "/hyprsunset_state", "a")
+    spawn("hyprsunset")
+    spawn("notify-send -a Hyprsunset 'Hyprsunset' 'Started (auto mode)'")
+end
+
+function manual_func()
+    run("pkill hyprsunset")
+    run("sleep 0.3")
+    write_line(states .. "/hyprsunset_state", "m")
+    local val = read_line(states .. "/hyprsunset_val") or "4000"
+    spawn("hyprsunset -t " .. val)
+    spawn("notify-send -a Hyprsunset 'Hyprsunset' 'Manual " .. val .. " K'")
+end
+
+function off_func()
+    write_line(states .. "/hyprsunset_state", "c")
+    run("pkill hyprsunset")
+    spawn("notify-send -a Hyprsunset 'Hyprsunset' 'Stopped and state reset'")
+end
+
+function toggle_func()
+    local state = read_line(states .. "/hyprsunset_state")
+    if state == "c" then
+        on_func()
+    else
+        off_func()
+    end
+end
+
+function restore_func()
+    local state = read_line(states .. "/hyprsunset_state")
+    if state == "m" then
+        spawn("sleep 0.3 && pkill hyprsunset; sleep 0.3; echo m > " .. states .. "/hyprsunset_state; hyprsunset -t " .. (read_line(states .. "/hyprsunset_val") or "4000") .. " & notify-send -a Hyprsunset 'Hyprsunset' 'Manual " .. (read_line(states .. "/hyprsunset_val") or "4000") .. " K' &")
+    elseif state == "a" then
+        spawn("sleep 0.3 && pkill hyprsunset; sleep 0.3; echo a > " .. states .. "/hyprsunset_state; hyprsunset & notify-send -a Hyprsunset 'Hyprsunset' 'Started (auto mode)' &")
+    end
+    write_line(states2 .. "/hs_done", "1")
+end

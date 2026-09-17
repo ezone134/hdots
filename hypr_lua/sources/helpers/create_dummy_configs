@@ -1,0 +1,14 @@
+-- create_dummy_configs — create dummy hypr config files via symlink
+
+dofile(hdots .. "/sources/helpers/link_it_defs")
+link_it_dir_func(hypr_base .. "/" .. (os.getenv("USER") or "user") .. "_hypr_conf/configs",
+                 os.getenv("HOME") .. "/.config/hypr/configs")
+
+local configs_dir = os.getenv("HOME") .. "/.config/hypr/configs"
+local dummies = {
+    "primary.lua", "execs.lua", "border.lua", "blur.lua",
+    "shadow.lua", "opacity.lua", "general.lua", "shader.lua", "monitors.lua"
+}
+for _, name in ipairs(dummies) do
+    touch(configs_dir .. "/" .. name)
+end

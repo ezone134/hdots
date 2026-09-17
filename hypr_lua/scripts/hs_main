@@ -1,0 +1,30 @@
+#!/usr/bin/env luajit
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/hs_body")
+local cmd = arg[1]
+if cmd == "restore" then
+    restore_func()
+elseif cmd == "manual" then
+    manual_func()
+elseif cmd == "toggle" then
+    toggle_func()
+elseif cmd == "on" then
+    on_func()
+elseif cmd == "off" then
+    off_func()
+elseif cmd == "set" then
+    -- set a manual color temperature (Kelvin) and activate it
+    write_line(states .. "/hyprsunset_val", arg[2] or "4000")
+    manual_func()
+elseif cmd == "status" then
+    -- "<state> <kelvin>" — state c(off) | a(auto) | m(manual)
+    local st = "c"
+    if is_file(states .. "/hyprsunset_state") then st = read_line(states .. "/hyprsunset_state") end
+    local kv = "4000"
+    if is_file(states .. "/hyprsunset_val") then kv = read_line(states .. "/hyprsunset_val") end
+    print(st .. " " .. kv)
+end

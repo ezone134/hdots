@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+
+
+# Define the root paths
+FLATPAK_VAR="$HOME/.var/app"
+RAM_DISK_ROOT="/tmp/flatpak-cache-${USER}"
+
+# 1. Create the main container in /tmp
+mkdir -p "$RAM_DISK_ROOT"
+
+# 2. Iterate through every installed Flatpak app
+for app_path in "$FLATPAK_VAR"/*; do
+    # Get the App ID (e.g., com.github.tchx84.Flatseal)
+    app_id=$(basename "$app_path")
+
+    # Define the local path and the unique target path
+    local_cache="$app_path/cache"
+    unique_tmp_target="$RAM_DISK_ROOT/$app_id"
+
+    # Ensure the unique sub-folder exists in /tmp
+    mkdir -p "$unique_tmp_target"
+
+    # Check if the cache is already a symlink to avoid redundant work
+
+        current_link=$(readlink "$local_cache")
+
+        if [ "$current_link" = "$unique_tmp_target" ]; then
+            :
+            # echo "Already $local_cache -> $unique_tmp_target"
+            else
+			mv "$local_cache" "$local_cache".$RANDOM.delme
+            ln -s "$unique_tmp_target" "$local_cache"
+            echo "Successfully linked: $local_cache -> $unique_tmp_target"
+        fi
+done

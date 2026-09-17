@@ -1,0 +1,4 @@
+#!/usr/bin/env luajit
+-- helper sync_back_call
+
+dofile(hypr_sources .. "/helpers/power_body")

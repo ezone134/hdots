@@ -1,0 +1,8 @@
+[build]
+target-dir = "/acc/data/persist/user/.cargo/target"
+
+[registries.crates-io]
+protocol = "sparse"
+
+[net]
+git-fetch-with-cli = true

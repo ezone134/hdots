@@ -1,0 +1,3 @@
+# explicit qmldir for qs.control — disables the synthesizer
+module qs.control
+ControlPanel 1.0 ControlPanel.qml

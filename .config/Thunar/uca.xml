@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Open Terminal Here</name>
+	<submenu></submenu>
+	<unique-id>1764683647716415-1</unique-id>
+	<command>alacritty --working-directory .</command>
+	<description>Example for a custom action</description>
+	<range></range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+</action>
+<action>
+	<icon>com.github.maoschanz.DynamicWallpaperEditor</icon>
+	<name>Set Wallpaper (Hyprland)</name>
+	<submenu></submenu>
+	<unique-id>1764729058449033-1</unique-id>
+	<command>set_wall %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<image-files/>
+</action>
+<action>
+	<icon>edit-select-text</icon>
+	<name>Copy Location (Full path)</name>
+	<submenu></submenu>
+	<unique-id>1765125680255037-1</unique-id>
+	<command>wl-copy %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>filename-initial-amarok</icon>
+	<name>Copy Base Name</name>
+	<submenu></submenu>
+	<unique-id>1773500640291436-1</unique-id>
+	<command>wl-copy $(basename %f)</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>application-x-zip</icon>
+	<name>Extract archive here</name>
+	<submenu></submenu>
+	<unique-id>1767795978891111-1</unique-id>
+	<command>extract_here %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*.zip;*.tar.gz;*.tgz;*.tar.xz;*.tar.bz2;*.7z;*.rar;*.AppImage;*</patterns>
+	<other-files/>
+</action>
+<action>
+	<icon>terminix</icon>
+	<name>Run in Warp Terminal</name>
+	<submenu></submenu>
+	<unique-id>1773499871800054-1</unique-id>
+	<command>run-in-warp %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<other-files/>
+</action>
+<action>
+	<icon>terminal</icon>
+	<name>Run in Terminal</name>
+	<submenu></submenu>
+	<unique-id>1773331385476499-1</unique-id>
+	<command>alacritty -e bash -c &quot;source ~/.bashrc; &apos;%f&apos;; exec bash&quot;</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<other-files/>
+</action>
+<action>
+	<icon>emblem-symbolic-link</icon>
+	<name>Create symlink</name>
+	<submenu></submenu>
+	<unique-id>1775224662325121-1</unique-id>
+	<command>thunar-create-symlink %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>link</icon>
+	<name>Open Target (only for symlink)</name>
+	<submenu></submenu>
+	<unique-id>1775280542760758-1</unique-id>
+	<command>[ -L %f ] &amp;&amp; thunar &quot;$(readlink -f %f)&quot;</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>emblem-symbolic-link</icon>
+	<name>Create Symlink (Relative)</name>
+	<submenu></submenu>
+	<unique-id>1777049010704820-1</unique-id>
+	<command>thunar_create_rel_symlink %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon></icon>
+	<name>Add to zip</name>
+	<submenu></submenu>
+	<unique-id>1789131609559735-1</unique-id>
+	<command>add_to_zip %F</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+</actions>

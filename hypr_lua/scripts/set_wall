@@ -1,0 +1,12 @@
+#!/usr/bin/env luajit
+-- set_wall — apply a wallpaper (args forwarded to the body).
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+dofile(hypr_sources .. "/helpers/set_wall_body")

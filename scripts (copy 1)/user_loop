@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Write the current Process ID ($$) to the file
+echo $$ > $states2/pid_user_loop
+
+# Clean up the PID file if the script exits normally
+trap "rm -f $states2/pid_user_loop" EXIT
+
+# Your actual loop
+while true; do
+    # Doing high-speed tasks...
+    sleep 30
+    $hypr_conf/scripts/run_inside_loop
+    sleep 30
+done

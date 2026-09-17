@@ -1,0 +1,19 @@
+-- point_to_contents — loop dir entries, move aside, symlink
+
+function point_to_contents_function(src_dir, dest_dir)
+    mkdir_p(src_dir)
+    mkdir_p(dest_dir)
+    local entries = list_dir(src_dir)
+    for _, base in ipairs(entries) do
+        local target = src_dir .. "/" .. base
+        local point = dest_dir .. "/" .. base
+        -- if point and target are not the same file
+        if is_file(point) or is_dir(point) then
+            mv(point, "/tmp/" .. base .. ".hypr_init_deleted_" .. tostring(math.random(0, 999999)))
+        end
+        if is_file(point .. "." .. tostring(math.random(0, 999999))) then
+            mv(point, point .. "." .. tostring(math.random(0, 999999)))
+        end
+        symlink(target, point)
+    end
+end

@@ -1,0 +1,28 @@
+#!/usr/bin/env luajit
+-- helper pp_body
+
+function pp_cycle()
+    local cur = out("powerprofilesctl get 2>/dev/null")
+    if cur == "" then err("power-profiles-daemon unavailable"); return false end
+    if cur == "power-saver" then run("powerprofilesctl set balanced")
+    elseif cur == "balanced" then run("powerprofilesctl set performance")
+    elseif cur == "performance" then run("powerprofilesctl set power-saver")
+    else run("powerprofilesctl set balanced")
+    end
+end
+
+function pp_cmd(action, arg2)
+    action = action or "get"
+    arg2 = arg2 or ""
+    if action == "get" or action == "cur" then
+        local v = out("powerprofilesctl get 2>/dev/null")
+        if v == "" then err("power-profiles-daemon unavailable") else print(v) end
+    elseif action == "set" then
+        local r = run("powerprofilesctl set " .. shq(arg2) .. " 2>/dev/null")
+        if not r then err("pp set: unknown profile '" .. arg2 .. "'") end
+    elseif action == "cycle" or action == "toggle" then
+        pp_cycle()
+    else
+        err("pp: use get|set PROFILE|cycle")
+    end
+end

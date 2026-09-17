@@ -1,0 +1,34 @@
+(
+    // todo card — the checklist body is a `Rows` scene item (checkbox cells,
+    // hover ✕, row/del regions) with the title/meta/count/empty-state left to
+    // the resident `todo` Ink painter; the bottom composer strip (field +
+    // caret + placeholder + ⊕) is a `Composer` item, bottom-anchored so it
+    // stays pinned as the card resizes.
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "todo"),
+        Rows(
+            name: "todo_rows",
+            y: 36.0,
+            row_h: 24.0,
+            pad: 12.0,
+            cols: [(x: 20.0, size: 9.5)],
+            key_base: 60,
+            max_rows: 8,
+            start: Some("todo_scroll"),
+            check: Some("todo_checks"),
+            del_base: 70,
+            del_pad: 20.0,
+        ),
+        Composer(
+            pad: 12.0,
+            y: 12.0,
+            bottom: true,
+            text: Some("{todo_buf}"),
+            focus: Some("todo_focus"),
+            placeholder: "Add a task…",
+            key: 78,
+            add: true,
+            add_key: 79,
+        ),
+    ],
+)

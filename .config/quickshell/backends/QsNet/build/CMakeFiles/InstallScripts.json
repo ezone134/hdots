@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/tw/.config/quickshell/backends/QsNet/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- sr/link_it_dir — source link_it_defs and call link_it_dir_func with args
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_sources = dir .. "/.."
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+
+dofile(lua_helpers .. "/link_it_defs")
+link_it_dir_func(arg[1], arg[2])

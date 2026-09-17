@@ -1,0 +1,3 @@
+#!/usr/bin/env luajit
+-- do_not_modify
+-- intentionally empty in bash (0 bytes); kept as a marker

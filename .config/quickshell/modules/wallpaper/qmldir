@@ -1,0 +1,3 @@
+# explicit qmldir for qs.wallpaper — disables the synthesizer
+module qs.wallpaper
+WallpaperPanel 1.0 WallpaperPanel.qml

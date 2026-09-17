@@ -1,0 +1,38 @@
+-- hyprlock_vars_gen — generate hyprlock_vars.conf from state
+
+local s = state2_read("s") or "n"
+local m = state2_read("m") or "n"
+local wall = read_line(states .. "/current_wall_" .. s) or ""
+
+local enable_shadow = 1
+local shadow_passes = 2
+
+local bg = "rgba(001122ff)"
+local fg = "rgba(ffffffff)"
+local entry_color = fg
+local entry_bg = "rgba(303030ff)"
+local entry_border = fg
+local shadow_color = bg
+
+shadow_passes = 3
+
+if enable_shadow ~= 1 then
+    shadow_color = "rgba(FFFFFF00)"
+    shadow_passes = 0
+end
+
+local content = string.format([[# generate these colors dynamically later
+$text_color = %s
+$entry_background_color = %s
+$entry_border_color = %s
+$entry_color = %s
+$bg_color = %s
+$font_family = Google Sans Flex Medium
+$font_family_clock = Google Sans Flex Medium
+$font_material_symbols = Material Symbols Rounded
+
+# shadow settings
+$shadow_color = %s
+$shadow_passes = %s]], fg, entry_bg, entry_border, entry_color, bg, shadow_color, tostring(shadow_passes))
+
+write(hypr_conf .. "/hypr/hyprlock/hyprlock_vars.conf", content)

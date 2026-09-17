@@ -1,0 +1,14 @@
+#!/usr/bin/env luajit
+-- array target_point
+-- ported from bash sources/target_point
+-- put multiple folders on the right side and all those folders will be
+-- targeted from the left side / symlinks pointing to all those folders
+
+local home = os.getenv("HOME") or ""
+
+target_contents_of_second_pairs_array = {
+    home .. "/.icons:" .. hdots .. "/.icons",
+    home .. "/.themes:" .. hdots .. "/.themes",
+    home .. "/.fonts:" .. hdots .. "/.fonts",
+    home .. "/.local/share/applications:" .. hypr_conf .. "/desktop_launchers",
+}

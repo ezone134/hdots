@@ -1,0 +1,26 @@
+(
+    // topproc card — fully declarative (zero Ink): one row per top process
+    // (name · full-width quiet track bar under the label). The bar parses
+    // the per-process tick fraction (of the top process) but `fill` binds
+    // the TRACK token (hover) so it reads as a neutral meter — the Rust
+    // drawer drew track-only bars here. 26px rows, labels capped at 18
+    // chars (Rust parity).
+    items: [
+        Header(title: "Top Processes"),
+        Rows(
+            name: "top_procs_rows",
+            y: 32.0,
+            row_h: 26.0,
+            pad: 14.0,
+            row_dy: 0.0,
+            cols: [
+                (x: 0.0, dy: Some(0.0), size: 9.5, truncate: Some(46.0)),
+                (
+                    x: 0.0,
+                    w: 0.0,
+                    bar: Some((height: 4.0, top: 14.0, radius: 2.0, fill: Some(hover), track: Some(hover))),
+                ),
+            ],
+        ),
+    ],
+)

@@ -1,0 +1,67 @@
+# -*- mode: sh -*-
+
+SCRIPT_DIR=${BASH_SOURCE[0]%/*}
+state=$(<$SCRIPT_DIR/states/enable_power_script) || state=0
+
+
+
+main_logic_function () {
+    echo "$(date): Checking power source"
+    power_status=0  # initial set flag 0
+    power_adp=$(</sys/class/power_supply/ADP*/online)
+    power_usb_c=$(</sys/class/power_supply/ucsi-source-psy-*/online)
+    [ $power_adp -eq 1 ] && power_status=1
+    [ $power_usb_c -eq 1 ] && power_status=1
+
+    if [ $power_status -eq 1 ]; then
+        power_plan_ac=$(<$SCRIPT_DIR/states/power_plan_ac) || power_plan_ac=powersave
+        . $SCRIPT_DIR/states/${power_plan_ac}
+        max_ac_freq_mhz=$(<$SCRIPT_DIR/states/max_ac_freq_mhz)
+	echo "On AC"
+	echo $(( max_ac_freq_mhz * 1000 )) | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+	echo ${scaling_governor} | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+	echo ${power_dpm_force_performance_level} | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
+	echo ${power_dpm_state} | sudo tee /sys/class/drm/card*/device/power_dpm_state
+	[ $power_dpm_force_performance_level = auto ] || {
+    echo ${pp_dpm_sclk} | sudo tee /sys/class/drm/card*/device/pp_dpm_sclk
+	}
+    else
+        power_plan_bat=$(<$SCRIPT_DIR/states/power_plan_bat) || power_plan_bat=powersave
+        . $SCRIPT_DIR/states/${power_plan_bat}
+        max_bat_freq_mhz=$(<$SCRIPT_DIR/states/max_bat_freq_mhz)
+	echo "On Battery"
+	echo $(( max_bat_freq_mhz * 1000 )) | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+	echo ${scaling_governor} | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+	echo ${power_dpm_force_performance_level} | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
+	echo ${power_dpm_state} | sudo tee /sys/class/drm/card*/device/power_dpm_state
+	[ $power_dpm_force_performance_level = auto ] || {
+    echo ${pp_dpm_sclk} | sudo tee /sys/class/drm/card*/device/pp_dpm_sclk
+	}
+    fi
+}
+
+
+init_func_2() {
+    STATE_FILE=$SCRIPT_DIR/last_trigger
+    echo $(echo $$) > $STATE_FILE
+    sleep 2
+    last_pid=$(<$STATE_FILE)
+    if [ $last_pid -eq $(echo $$) ]; then
+        main_logic_function
+    fi
+}
+
+
+
+normal_apply_function () {
+[ $state -eq 1 ] && {  # skipp whole block if disabled
+main_logic_function
+}
+}
+
+
+on_udev_trigger_function () {   # since udev fires it 2 times we use debounce to exec only once
+[ $state -eq 1 ] && {  # skipp whole block if disabled
+init_func_2
+}
+}

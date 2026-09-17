@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- scheme_main — theme grid CLI: list/apply <id>
+local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+lua_bin     = dir
+lua_sources = dir .. "/../sources"
+lua_helpers = lua_sources .. "/helpers"
+dofile(lua_helpers .. "/utils")
+dofile(lua_helpers .. "/scheme_body")
+scheme_cmd(unpack(arg))

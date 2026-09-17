@@ -1,0 +1,12 @@
+#!/usr/bin/env luajit
+-- hypr_init — run the one-time hypr init logic.
+local hs = os.getenv("hypr_sources")
+if not hs then
+    local dir = ((arg[0]):match("^(.*)[/\\][^/\\]*$")) or "."
+    hs = dir .. "/../sources"
+end
+hypr_sources = hs
+dofile(hypr_sources .. "/helpers/utils")
+hypr_sources = hs
+
+dofile(hypr_sources .. "/helpers/hypr_init_logic")

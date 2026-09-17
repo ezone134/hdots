@@ -1,0 +1,283 @@
+#!/usr/bin/env luajit
+-- helper hypr_init_logic
+
+if not hypr_base or hypr_base == "" then
+    err("$hypr_base=" .. tostring(hypr_base) .. ", it is not defined, setting default values")
+    local _user = os.getenv("USER") or "user"
+    local _home = os.getenv("HOME") or "/root"
+    rnd = tostring(math.random(100000)) .. "." .. tostring(math.random(100000)) .. ".delme"
+    hypr_base = "/tmp"
+    hypr_conf = hypr_base .. "/" .. _user .. "_hypr_conf"
+    hypr_bin = hypr_conf .. "/hypr_bin"
+    hdots = _home .. "/.config/hdots"
+    hdots_sources = _home .. "/.config/hdots/sources"
+    hypr_log = hypr_conf .. "/log"
+    lock_files = hypr_conf .. "/lock_hold_files"
+    hypr_scripts = hypr_conf .. "/scripts"
+    hypr_global = "/tmp/hypr_global"
+    hypr_cache = hypr_conf .. "/hypr_cache"
+    states = hypr_conf .. "/states"
+    states2 = hypr_conf .. "/states2"
+    hypr_temp = hypr_conf .. "/hypr_temp"
+    hypr_sources = hypr_conf .. "/sources"
+    hypr_bin = hypr_conf .. "/hypr_bin"
+    dark_color_list = hypr_cache .. "/accent_files/custom_acc/dark_variant/colors_list"
+    light_color_list = hypr_cache .. "/accent_files/custom_acc/light_variant/colors_list"
+    theme_elements = hypr_conf .. "/theme_elements_states"
+    unusual_var = "aalu_pyaz_323232323232323"
+else
+    err("$hypr_base=" .. tostring(hypr_base) .. ", it is defined")
+end
+
+if not hypr_base or hypr_base == "" then os.exit(1) end
+
+-- rm -rf $HOME/.config/sublime-text &
+spawn("rm -rf " .. (os.getenv("HOME") or "") .. "/.config/sublime-text")
+-- chmod +x $hypr_sources/helpers/* &
+spawn("chmod +x " .. hypr_sources .. "/helpers/* 2>/dev/null")
+
+dofile(hypr_sources .. "/helpers/setup_dirs_master")
+dofile(hypr_sources .. "/helpers/gen_primary")
+
+if not is_file(lock_files .. "/hypr_first_run") then
+    write(lock_files .. "/hypr_first_run", "")
+    dofile(hypr_sources .. "/helpers/mako_dummy_conf_gen")
+end
+
+-- . alphas_helper &
+dofile(hypr_sources .. "/helpers/alphas_helper")
+-- . gen_flags_master "from_hypr_init"
+dofile(hypr_sources .. "/helpers/gen_flags_master")
+dofile(hypr_sources .. "/helpers/sync_first")
+
+spawn("cp -r " .. hdots .. "/scripts_global/* " .. hypr_global .. "/")
+spawn("chmod +x " .. hypr_global .. "/* 2>/dev/null")
+spawn("cp -r " .. hdots .. "/hypr_cache/* " .. hypr_cache .. "/ 2>/dev/null")
+dofile(hypr_sources .. "/helpers/hex_to_alpha")
+
+spawn("rm -f " .. (os.getenv("HOME") or "") .. "/.config/google-chrome/SingletonLock 2>/dev/null")
+
+-- generate fallback colors block
+write_line(states2 .. "/fallback_colors_ready", "0")
+acc = "#2e3440"
+border = "#2e3440"
+dofile(hypr_sources .. "/helpers/theme_init")
+resolve_theme("default_nord")
+d_side()
+err("fetch_color_final border is " .. tostring(border) .. " acc is " .. tostring(acc) .. " acc_ec is " .. tostring(acc_ec) .. " and acc_hc is " .. tostring(acc_hc))
+write_line(states2 .. "/acc_dd", acc)
+write_line(states2 .. "/acc_nd", acc)
+write_line(states2 .. "/border_dd", border)
+write_line(states2 .. "/border_nd", border)
+write_line(states2 .. "/acc_hc_d", acc_hc)
+write_line(states2 .. "/acc_ec_d", acc_ec)
+acc = "#88c0d0"
+border = "#88c0d0"
+l_side()
+err("fetch_color_final border is " .. tostring(border) .. " acc is " .. tostring(acc) .. " acc_ec is " .. tostring(acc_ec) .. " and acc_hc is " .. tostring(acc_hc))
+write_line(states2 .. "/acc_ll", acc)
+write_line(states2 .. "/acc_nl", acc)
+write_line(states2 .. "/border_ll", border)
+write_line(states2 .. "/border_nl", border)
+write_line(states2 .. "/acc_hc_l", acc_hc)
+write_line(states2 .. "/acc_ec_l", acc_ec)
+write_line(states2 .. "/fallback_colors_ready", "1")
+
+-- caps lock path block
+caps_lock_file_path = ""
+for _, entry in ipairs(list_dir("/sys/class/leds")) do
+    if entry:match("input.*::capslock/brightness") then
+        caps_lock_file_path = "/sys/class/leds/" .. entry
+        break
+    end
+end
+write_line(states2 .. "/caps_lock_file_path", caps_lock_file_path)
+write_line(states2 .. "/caps_lock_state", read_line(caps_lock_file_path) or "0")
+
+-- set default browser block
+if out("xdg-settings get default-web-browser") == "" then
+    run("xdg-settings set default-web-browser google-chrome.desktop")
+end
+
+-- audio init block
+max_vol = 500
+max_mic = 200
+local vol_string = out("wpctl get-volume @DEFAULT_AUDIO_SINK@")
+local mic_string = out("wpctl get-volume @DEFAULT_AUDIO_SOURCE@")
+local vol_muted = vol_string:find("MUTED") and "1" or "0"
+local mic_muted = mic_string:find("MUTED") and "1" or "0"
+write_line(states2 .. "/vol_muted", vol_muted)
+write_line(states2 .. "/mic_muted", mic_muted)
+write_line(states .. "/max_vol", tostring(max_vol))
+write_line(states .. "/max_mic", tostring(max_mic))
+local vol_f = vol_string:match("Volume: ([%d%.]+)") or "0.00"
+local mic_f = mic_string:match("Volume: ([%d%.]+)") or "0.00"
+local vol = tonumber(vol_f:gsub("%.", "")) or 0
+local mic = tonumber(mic_f:gsub("%.", "")) or 0
+write_line(states2 .. "/vol", tostring(vol))
+write_line(states2 .. "/vol_f", vol_f)
+write_line(states2 .. "/mic", tostring(mic))
+write_line(states2 .. "/mic_f", mic_f)
+-- wpctl status | awk '/Sinks:/,/Sources:/{ if ($2=="*") print $3 }' | tr -d '.'
+local pw_master_id = ""
+local in_sinks = false
+for _, line in ipairs(out_lines("wpctl status")) do
+    if line:find("Sinks:") then
+        in_sinks = true
+    elseif line:find("Sources:") then
+        in_sinks = false
+    elseif in_sinks then
+        local id = line:match("%*%s+(%d+)%.")
+        if id then pw_master_id = id end
+    end
+end
+write_line(states2 .. "/audio_id", pw_master_id)
+
+function create_hex_individual_files()
+    if not is_file(hypr_conf .. "/alpha-refs/bf") then
+        for dec = 0, 255 do
+            local hex = string.format("%02x", dec)
+            local percent = math.floor((dec * 100 + 254) / 255)
+            write_line(hypr_conf .. "/alpha-refs/" .. hex, tostring(percent) .. "%")
+        end
+    end
+end
+create_hex_individual_files()
+
+spawn("cp -r " .. hdots .. "/global_icons/* " .. hypr_global .. "/icons/ 2>/dev/null")
+
+dofile(hypr_sources .. "/helpers/hypr_init_run_once")
+dofile(hypr_sources .. "/helpers/expand_gen_body")
+
+-- desktop launchers / symlinks / theme-inits block
+for _, entry in ipairs(list_dir(hypr_sources .. "/desktop_launchers/entries")) do
+    expand_gen(hypr_sources .. "/desktop_launchers/entries/" .. entry, hypr_conf .. "/desktop_launchers/" .. entry .. ".desktop")
+end
+dofile(hypr_sources .. "/symlink_dirs")
+dofile(hypr_sources .. "/symlink_files")
+dofile(hypr_sources .. "/target_point")
+dofile(hypr_sources .. "/helpers/point_to_contents")
+dofile(hypr_sources .. "/helpers/link_it_defs")
+for _, d in ipairs(dirs_pairs) do
+    local p = {}
+    for part in d:gmatch("[^:]+") do p[#p + 1] = part end
+    link_it_dir_func(p[2], p[1])
+end
+for _, f in ipairs(files_pairs) do
+    local p = {}
+    for part in f:gmatch("[^:]+") do p[#p + 1] = part end
+    link_it_file_func(p[2], p[1])
+end
+for _, i in ipairs(target_contents_of_second_pairs_array) do
+    local p = {}
+    for part in i:gmatch("[^:]+") do p[#p + 1] = part end
+    point_to_contents_function(p[2], p[1])
+end
+dofile(hypr_sources .. "/hypr_init_gen_array")
+for _, d in ipairs(hypr_init_run_array) do
+    local col = d:find(":")
+    if col then expand_gen(d:sub(1, col - 1), d:sub(col + 1)) end
+end
+dofile(hypr_sources .. "/helpers/shaders_gen")
+for _, entry in ipairs(list_dir(hypr_sources .. "/rofi")) do
+    expand_gen(hypr_sources .. "/rofi/" .. entry, hypr_conf .. "/rofi/" .. entry)
+end
+
+-- gnome-keyring block
+if qpid("gnome-keyring-daemon") == "" then
+    run("gnome-keyring-daemon --start --components=secrets")
+end
+run("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP GNOME_KEYRING_CONTROL GNOME_KEYRING_SOCK")
+
+-- battery found block
+local battery_found = "0"
+for _, entry in ipairs(list_dir("/sys/class/power_supply")) do
+    if entry:match("^BAT") then battery_found = "1" break end
+end
+write_line(states2 .. "/battery_found", battery_found)
+
+dofile(hypr_sources .. "/helpers/gen_alpha_sample")
+dofile(hypr_sources .. "/helpers/hypr_idle_lock_conf_gen")
+
+-- theme block
+dofile(hypr_sources .. "/helpers/theme_block_init")
+dofile(hypr_sources .. "/helpers/gen_custom_acc_files")
+
+if not m_init or m_init == "" then
+    local gtk_theme = out("gsettings get org.gnome.desktop.interface gtk-theme")
+    if gtk_theme:find("dark") then m_init = "d" else m_init = "l" end
+    s = state_read("s") or ""
+    if s == "1" then s_init = m_init end
+    sm = (s_init or "") .. (m_init or "")
+    write_line(states2 .. "/sm", sm)
+end
+
+write_line(states2 .. "/m", m_init or "")
+write_line(states2 .. "/m_dummy", m_init or "")
+write_line(states2 .. "/s", s_init or "")
+write_line(states2 .. "/s_dummy", s_init or "")
+
+dofile(hypr_sources .. "/helpers/gen_theme_cards")
+
+write_line(hypr_global .. "/fire_count", "1")
+if not is_file(hypr_global .. "/flag_cpu") then write_line(hypr_global .. "/flag_cpu", "1") end
+write_line(hypr_global .. "/flag_disk_umount", "0")
+write(hypr_global .. "/disk_to_umount", "")
+
+write(hypr_conf .. "/geany/geany-session.conf", "")
+
+-- hyprctl plugin load "$hdots/scrolloverview.so" &
+spawn("hyprctl plugin load " .. hdots .. "/scrolloverview.so")
+
+if state2_read("fallback_colors_ready") == "0" then
+    local max_try = 10
+    while state2_read("fallback_colors_ready") == "0" and max_try > 0 do
+        run("sleep 1")
+        max_try = max_try - 1
+    end
+end
+
+write_line(states2 .. "/acc_changed", "0")
+if theme_panic and theme_panic ~= "" then
+    write_line(states2 .. "/full_theme_reload", "1")
+else
+    write_line(states2 .. "/full_theme_reload", "0")
+end
+
+write_line(states2 .. "/run_thunar_daemon", "0")
+if qpid("thunar") == "" then
+    run("hyprctl dispatch \"hl.dsp.exec_cmd('thunar --daemon')\"")
+    run("sleep 2")
+    write_line(states2 .. "/run_thunar_daemon", "1")
+end
+
+dofile(hypr_sources .. "/sr/theme_main_restore")
+
+if (tonumber(state2_read("all_theme_set")) or 0) ~= 1 then
+    local max_try = 10
+    while (tonumber(state2_read("all_theme_set")) or 0) ~= 1 and max_try > 0 do
+        run("sleep 0.5")
+        max_try = max_try - 1
+    end
+end
+
+spawn("chmod +x " .. hypr_conf .. "/scripts/* 2>/dev/null")
+run(hypr_conf .. "/scripts/run_inside_loop")
+run(hypr_conf .. "/scripts/watch_dog")
+
+if hypr_init_final_run ~= nil then hypr_init_final_run() end
+write_line(hypr_global .. "/user", os.getenv("USER") or "")
+dofile(hypr_sources .. "/sr/hs_main_restore")
+
+dofile(hypr_sources .. "/helpers/gen_keybinds_cache")
+
+spawn("chmod -R 700 " .. shq(hypr_conf) .. " " .. shq(garbage or (hypr_conf .. "/garbage")) .. " " .. shq(hypr_base .. "/hypr_misc") .. " " .. shq(hypr_global))
+
+-- extra flags
+write_line(states2 .. "/screen_recorder", "wf-recorder")
+
+err("End of hypr-init")
+
+spawn("sleep 5 && rm -f " .. lock_files .. "/dirs_setup")
+
+spawn("chmod +x " .. hdots .. "/sources/helpers/splash 2>/dev/null")

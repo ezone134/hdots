@@ -1,0 +1,135 @@
+#!/usr/bin/env luajit
+-- pure-lua port of scripts/watch_dog
+
+local hypr_base = os.getenv("hypr_base") or "/tmp"
+local hypr_conf = os.getenv("hypr_conf") or hypr_base .. "/" .. (os.getenv("USER") or os.getenv("LOGNAME") or "user") .. "_hypr_conf"
+local states2   = os.getenv("states2") or hypr_conf .. "/states2"
+
+local WATCHDOG_PID = states2 .. "/pid_watchdog"
+local LOOP_PID     = states2 .. "/pid_user_loop"
+local LOOP_PATH    = hypr_conf .. "/scripts/user_loop"
+local LOG_FILE     = hypr_conf .. "/log/watchdog.log"
+
+local ffi = require("ffi")
+ffi.cdef[[
+typedef struct { long sec; long nsec; } timespec_t;
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int getpid(void);
+int unlink(const char *path);
+int kill(int pid, int sig);
+]]
+
+local function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+local function read(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function write(path, content)
+    local f = io.open(path, "w")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+local function append(path, content)
+    local f = io.open(path, "a")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+local function is_file(path)
+    local f = io.open(path, "r")
+    if f then f:close() return true end
+    return false
+end
+
+local function shq(s)
+    return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+local function log_line(msg)
+    append(LOG_FILE, os.date() .. ": " .. msg .. "\n")
+end
+
+local function alive(pid)
+    return ffi.C.kill(tonumber(pid), 0) == 0
+end
+
+local function launch_loop()
+    os.execute(shq(LOOP_PATH) .. " >/dev/null 2>&1 &")
+end
+
+-- ==========================================================
+-- 1. THE SELF-RESTART CHECK (Kill old watchdog if running)
+-- ==========================================================
+if is_file(WATCHDOG_PID) then
+    local old_pid = (read(WATCHDOG_PID) or ""):gsub("%s+$", "")
+    if old_pid ~= "" and alive(old_pid) then
+        log_line("Old watchdog (PID " .. old_pid .. ") detected. Killing it...")
+        ffi.C.kill(tonumber(old_pid), 9)
+        sleep(1)
+    end
+    ffi.C.unlink(WATCHDOG_PID)
+end
+
+write(WATCHDOG_PID, tostring(ffi.C.getpid()))
+
+log_line("Watchdog started fresh with PID " .. ffi.C.getpid())
+
+-- ==========================================================
+-- 2. INITIALIZATION: FORCE RESTART USER LOOP ONCE ON BOOT
+-- ==========================================================
+log_line("Watchdog entering loop - forcing initial restart of user loop...")
+
+if is_file(LOOP_PID) then
+    local old_pid = (read(LOOP_PID) or ""):gsub("%s+$", "")
+    if old_pid ~= "" and alive(old_pid) then
+        ffi.C.kill(tonumber(old_pid), 15)
+        sleep(1) -- Give the old loop a full second to exit and delete its PID file
+    end
+    ffi.C.unlink(LOOP_PID) -- Force clear it just in case
+end
+
+launch_loop()
+sleep(0.5) -- Give the new loop a moment to write its new PID file
+
+-- ==========================================================
+-- 3. THE MAIN MONITORING LOOP
+-- ==========================================================
+while true do
+    local should_restart = false
+
+    if is_file(LOOP_PID) then
+        local pid = (read(LOOP_PID) or ""):gsub("%s+$", "")
+        if pid == "" or not alive(pid) then
+            log_line("User loop PID " .. pid .. " is dead.")
+            should_restart = true
+        end
+    else
+        log_line("User loop PID file missing.")
+        should_restart = true
+    end
+
+    if should_restart then
+        log_line("Launching " .. LOOP_PATH .. "...")
+        ffi.C.unlink(LOOP_PID)
+        launch_loop()
+        sleep(0.5)
+    end
+
+    sleep(120) -- Check every 120 seconds
+end
