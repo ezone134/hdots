@@ -1,0 +1,11 @@
+[Desktop Entry]
+        Name=lite-xl_for_root
+        Comment=portable lite-xl binary
+#        Exec=lite-xl %f
+        Exec=/opt/lite-xl/lite-xl %f
+        Icon=$r_daemon/icons/lite-xl.png
+        Terminal=false
+        Type=Application
+        Categories=Utility;
+        StartupNotify=true
+        Keywords=test;dummy;example;

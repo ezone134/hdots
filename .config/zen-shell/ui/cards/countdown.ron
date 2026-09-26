@@ -1,0 +1,36 @@
+(
+    // countdown card — the event list (label · date caption · right
+    // `Nd`/`today!`/`passed` chip) is a `Rows` item. The label column
+    // `truncate: 120` reserves the chip zone (Rust-parity), the chip is a
+    // `pill` cell auto-fit to its text whose per-row ink token (from
+    // `countdown_rows` col_colors) drives the derived fill (acc → tint,
+    // else hover), and `del_anchor` moves the hover ✕ left of the chip.
+    // Title/meta + the add-event composer row stay the resident `countdown`
+    // Ink (Rust, stateful keyboard path).
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "countdown"),
+        Rows(
+            name: "countdown_rows",
+            y: 50.0,
+            row_h: 24.0,
+            pad: 12.0,
+            row_dy: 0.0,
+            cols: [
+                (x: 0.0, dy: Some(3.0), size: 9.5, truncate: Some(120.0)),
+                (x: 0.0, dy: Some(13.0), size: 7.5, color: Some(fg3)),
+                (
+                    x: 0.0,
+                    edge: Some(12.0),
+                    right: true,
+                    dy: Some(6.0),
+                    size: 8.5,
+                    pill: Some((height: 16.0, radius: 8.0)),
+                    del_anchor: true,
+                ),
+            ],
+            del_base: 31510,
+            del_pad: 20.0,
+            del_dy: 4.0,
+        ),
+    ],
+)

@@ -1,0 +1,35 @@
+# -*- mode: sh -*-
+
+set_brightness() {
+    local percent="$2"
+
+    # Extract RGB hex pairs and convert to decimal natively via Bash
+    local r=$((16#${1:0:2}))
+    local g=$((16#${1:2:2}))
+    local b=$((16#${1:4:2}))
+
+    # Calculate new values based on the 0-100 percentage scale
+    r=$(( (r * percent) / 100 ))
+    g=$(( (g * percent) / 100 ))
+    b=$(( (b * percent) / 100 ))
+
+    # Clamp values between 0 and 255
+    (( r < 0 )) && r=0; (( r > 255 )) && r=255
+    (( g < 0 )) && g=0; (( g > 255 )) && g=255
+    (( b < 0 )) && b=0; (( b > 255 )) && b=255
+
+    # Format back to hex using the shell's built-in printf
+    printf "#%02x%02x%02x\n" "$r" "$g" "$b"
+}
+
+    if [[ $2 == d ]]; then # if dark mode
+    acc=$(set_brightness $1 40)
+    acc_us=$(set_brightness $1 60)
+    acc_hc=$(set_brightness $1 40)
+    acc_ec=$(set_brightness $1 20)
+    else # light mode
+        acc=$(set_brightness $1 60)
+        acc_us=$(set_brightness $1 30)
+        acc_hc=$(set_brightness $1 70)
+        acc_ec=$(set_brightness $1 85)
+    fi

@@ -1,0 +1,29 @@
+-- helper gen_custom_acc_files
+-- ported from bash sources/gen_custom_acc_files
+if not is_file(custom_acc_master_list) then
+    run_bg("notify-send -a theme-extras 'Theme extras' 'Generating accent hex files…'")
+
+    local default_colors = {
+        "accent_amber,#ffb000",
+        "muted_lavender,#9d8cbf",
+        "stealth_graphite,#2a2a2a",
+    }
+
+    dofile(sources .. "/ca_array")
+
+    local master_array = {}
+    for _, c in ipairs(default_colors) do master_array[#master_array + 1] = c end
+    for _, c in ipairs(colors_external or {}) do master_array[#master_array + 1] = c end
+
+    local out_lines = {}
+    for _, c in ipairs(master_array) do
+        local name, normal_hex = c:match("^([^,]+),([^,]+)")
+        if name and normal_hex then
+            -- Format as a valid Lua global/local assignment with quoted hex values
+            out_lines[#out_lines + 1] = name .. ' = "' .. normal_hex .. '"'
+        end
+    end
+    tf(custom_acc_master_list, table.concat(out_lines, "\n"))
+end
+
+bg_fn(function() dofile(sources .. "/gen_custom_acc_shell_cache") end)

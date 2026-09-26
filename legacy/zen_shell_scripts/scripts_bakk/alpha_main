@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# alpha_main — set channel-scoped alpha flags (acc_alpha, border_alpha, ...).
+#   alpha_main acc_alpha 80
+#   alpha_main border_alpha bf
+# Writes the hex byte to $states/<flag>_<ch> for the ACTIVE channel, marks
+# the accent dirty and regenerates (theme_main restore).
+set -u
+. "$hypr_sources/helpers/alpha_body"
+alpha_cmd "$@"

@@ -1,0 +1,8 @@
+#!/usr/bin/env luajit
+-- custom-sleep — system suspend; disabled by default due to overheating.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+
+-- I have overheating issue so I normally disable it.
+-- just uncomment below line.
+-- run("systemctl suspend")

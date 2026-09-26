@@ -1,0 +1,134 @@
+# -*- mode: sh -*-
+
+export PATH="$SCRIPT_DIR:$PATH"
+
+first_link () {
+    for p in "/home:/tmp/home-tmp" "$c_ur:/acc/common/c-user"; do
+        link -s "${p##*:}" "${p%%:*}"
+    done
+}
+
+[[ -e $c_ur ]] || first_link
+
+(( EUID == 0 )) && {
+    path=($c_ur/*/sources)
+    d_id="${path[0]#$c_ur/}"
+    d_id="${d_id%/sources}"
+    dots="/home/$u/.config/${d_id}"
+}
+
+. "$SCRIPT_DIR/folders"
+. "$SCRIPT_DIR/files"
+. "$SCRIPT_DIR/others"
+. "$SCRIPT_DIR/contents_point"
+
+fix_broken_symlink () {
+    local dirs=("/var/lib/NetworkManager" "/var/tmp" "/var/spool" "/var/adm")
+    for d in "${dirs[@]}"; do
+        if [[ ! -e "$d" ]]; then
+            rm -f "$d"
+        fi
+    done
+    mkdir -p "${dirs[@]}"
+    if [[ ! -f "/var/readme.txt" ]]; then
+        echo "HEY!!!, /var/tmp as symlink does not support errors. Mount tmpfs instead." > /var/readme.txt
+    fi
+}
+
+own_it_function () {
+    for i in "${chown_array[@]}"; do
+        [[ -z "$i" ]] && continue
+        own_it "$i"
+    done
+}
+
+777_it_function () {
+    for i in "${chmod_777_array[@]}"; do
+        [[ -z "$i" ]] && continue
+        777_it "$i"
+    done
+}
+
+zypper_donot_recommend_packages () {
+    if [[ ! -f "/etc/zypp/zypp.conf.bak" ]]; then
+        cp "/etc/zypp/zypp.conf" "/etc/zypp/zypp.conf.bak"
+        { echo ""; echo "# added by boot.sh "; echo "solver.onlyRequires = true"; } >> "/etc/zypp/zypp.conf"
+    fi
+}
+
+
+link_to_bossbin () {
+    for i in "${boss_a[@]}"; do
+        if [[ -f "$i" ]]; then
+            link_file -s "$i" "$boss_bin/${i##*/}"
+        else
+            for target in "$i"/*; do
+                [[ -e "$target" ]] || continue
+                link_file -s "$target" "$boss_bin/${target##*/}"
+            done
+        fi
+    done
+    chmod +x $boss_bin/*
+}
+
+link-busybox-applets () {
+    local bb_bin=$(command -v busybox)
+    for applet in $($bb_bin --list); do
+        link_file -sf "$bb_bin" "$busy_box/$applet"
+    done
+}
+
+chroot_dir () {
+    for d in proc sys dev run; do mkdir -p "$1/$d"; done
+    mount --types proc /proc "$1/proc"
+    mount --rbind /sys "$1/sys" && mount --make-rslave "$1/sys"
+    mount --rbind /dev "$1/dev" && mount --make-rslave "$1/dev"
+    mount --bind /run "$1/run" && mount --make-slave "$1/run"
+    cp /etc/resolv.conf "$1/etc/resolv.conf"
+    chroot "$1" /bin/bash -c "source /etc/profile; export PS1='(chroot) ${PS1}'; /bin/bash"
+}
+
+link-all () {
+    # mind the order do not mess up
+    [[ -e $c_ur ]] || first_link
+    for p in "${folders_array[@]}"; do
+        link -s "${p##*:}" "${p%%:*}"
+    done
+    for p in "${files_array[@]}"; do
+        link_file -s "${p##*:}" "${p%%:*}"
+    done
+    for p in "${ptc_array[@]}"; do
+        ptc "${p##*:}" "${p%%:*}"
+    done
+    link_to_bossbin &
+    cp -r $home_dir/speedy-bins/* $boss_bin/
+}
+boot_logic () {
+export PATH="$SCRIPT_DIR:$PATH"
+enable_log=1
+save_log_func () {
+    log_file=/tmp/boot.log
+    > $log_file
+    exec >> "$log_file" 2>&1
+}
+[[ $enable_log == 1 ]] && save_log_func
+link-all
+own_it_function &
+777_it_function &
+rfkill unblock bluetooth &
+zypper_donot_recommend_packages &
+{
+    timedatectl set-timezone Asia/Kathmandu
+    timedatectl set-ntp true
+} &
+{
+chown -R tmp:tmp /home/tmp
+chmod 1755 /tmp/home-tmp
+chown "$u:$u" $log_file
+} &
+wait
+
+chown -R $u:$u /tmp/user-$u
+
+exit 0
+}

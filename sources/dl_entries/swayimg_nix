@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=swayimg_nix
+Comment=Custom nix application launcher
+Exec=swayimg %F
+Icon=$r_daemon/icons/wayland.svg
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true
+Keywords=test;dummy;example;

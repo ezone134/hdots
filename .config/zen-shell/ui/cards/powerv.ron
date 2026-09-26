@@ -1,0 +1,57 @@
+(
+    // powerv card — the same five power actions as a narrow vertical stack,
+    // one button per row, each centered in the card width. The danger
+    // actions (logout / restart / shutdown) keep the shell's hold-to-confirm
+    // flow through their own hit regions (keys 12000..12004).
+    //
+    // Every button is a Stack: the declared background + hairline, the
+    // hold-to-confirm liquid (a bottom-anchored `Bar`, gated on the shell's
+    // own 1.5 px sliver threshold), the glyph, and the region. The column's
+    // `halign: center` centers each fixed-width button in the card and
+    // `valign: middle` centers the stack in the body below the header —
+    // the drawer's exact math.
+    items: [
+        Header(title: "Power", glyph: Some("\u{f0e7}"), pad: 12.0),
+        Column(
+            x: 0.0, y: 30.0, w: 0.0, h: -30.0,
+            spacing: 9.0, valign: middle, halign: center,
+            items: [
+                // lock
+                Stack(x: 0.0, y: 0.0, w: 32.0, h: 32.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 10.0, color: value("power_bg_0"), stroke: 1.0, stroke_color: Some(hairline)),
+                    Bar(x: 2.0, y: -2.0, w: 28.0, h: 32.0, r: 8.0, vertical: true, max: 1.0, value: "{power_hold_0}", fill: value("power_hold_fill"), track: value("clear"), visible: Some("power_hold_on_0")),
+                    Text(x: 0.0, y: 16.0, w: 0.0, h: 0.0, text: "\u{f023}", font_size: 14.0, icon: true, center: true, color: Some(value("power_ink_0"))),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 12000),
+                ]),
+                // logout (danger)
+                Stack(x: 0.0, y: 0.0, w: 32.0, h: 32.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 10.0, color: value("power_bg_1"), stroke: 1.0, stroke_color: Some(hairline)),
+                    Bar(x: 2.0, y: -2.0, w: 28.0, h: 32.0, r: 8.0, vertical: true, max: 1.0, value: "{power_hold_1}", fill: value("power_hold_fill"), track: value("clear"), visible: Some("power_hold_on_1")),
+                    Text(x: 0.0, y: 16.0, w: 0.0, h: 0.0, text: "\u{f08b}", font_size: 14.0, icon: true, center: true, color: Some(value("power_ink_1"))),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 12001),
+                ]),
+                // sleep
+                Stack(x: 0.0, y: 0.0, w: 32.0, h: 32.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 10.0, color: value("power_bg_2"), stroke: 1.0, stroke_color: Some(hairline)),
+                    Bar(x: 2.0, y: -2.0, w: 28.0, h: 32.0, r: 8.0, vertical: true, max: 1.0, value: "{power_hold_2}", fill: value("power_hold_fill"), track: value("clear"), visible: Some("power_hold_on_2")),
+                    Text(x: 0.0, y: 16.0, w: 0.0, h: 0.0, text: "\u{f186}", font_size: 14.0, icon: true, center: true, color: Some(value("power_ink_2"))),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 12002),
+                ]),
+                // restart (danger)
+                Stack(x: 0.0, y: 0.0, w: 32.0, h: 32.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 10.0, color: value("power_bg_3"), stroke: 1.0, stroke_color: Some(hairline)),
+                    Bar(x: 2.0, y: -2.0, w: 28.0, h: 32.0, r: 8.0, vertical: true, max: 1.0, value: "{power_hold_3}", fill: value("power_hold_fill"), track: value("clear"), visible: Some("power_hold_on_3")),
+                    Text(x: 0.0, y: 16.0, w: 0.0, h: 0.0, text: "\u{f021}", font_size: 14.0, icon: true, center: true, color: Some(value("power_ink_3"))),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 12003),
+                ]),
+                // shutdown (danger)
+                Stack(x: 0.0, y: 0.0, w: 32.0, h: 32.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 10.0, color: value("power_bg_4"), stroke: 1.0, stroke_color: Some(hairline)),
+                    Bar(x: 2.0, y: -2.0, w: 28.0, h: 32.0, r: 8.0, vertical: true, max: 1.0, value: "{power_hold_4}", fill: value("power_hold_fill"), track: value("clear"), visible: Some("power_hold_on_4")),
+                    Text(x: 0.0, y: 16.0, w: 0.0, h: 0.0, text: "\u{f011}", font_size: 14.0, icon: true, center: true, color: Some(value("power_ink_4"))),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 12004),
+                ]),
+            ],
+        ),
+    ],
+)

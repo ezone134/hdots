@@ -1,0 +1,121 @@
+#!/usr/bin/env luajit
+
+local ffi = require("ffi")
+local bit = require("bit")
+
+-- Safe stat definition using a padded buffer to prevent FFI layout size mismatches and segfaults
+ffi.cdef[[
+    int symlink(const char *path1, const char *path2);
+    int mkdir(const char *pathname, int mode);
+    int rename(const char *oldpath, const char *newpath);
+
+    struct stat {
+        char __pad[256];
+    };
+
+    int stat(const char *pathname, struct stat *buf);
+    int lstat(const char *pathname, struct stat *buf);
+]]
+
+-- Helper to safely extract st_dev, st_ino, st_mode from raw stat buffer on Linux x86_64
+local function get_stat_fields(path, is_lstat)
+    local s = ffi.new("struct stat")
+    local res = (is_lstat and ffi.C.lstat(path, s) or ffi.C.stat(path, s))
+    if res ~= 0 then return nil, nil, nil end
+
+    local ptr = ffi.cast("unsigned long*", s.__pad)
+    local st_dev = ptr[0]
+    local st_ino = ptr[1]
+
+    local mode_ptr = ffi.cast("unsigned int*", s.__pad + 24)
+    local st_mode = mode_ptr[0]
+
+    return st_dev, st_ino, st_mode
+end
+
+local function mkdir_p(path)
+    local curr = ""
+    if path:sub(1, 1) == "/" then curr = "/" end
+    for part in path:gmatch("[^/]+") do
+        curr = (curr == "" or curr == "/") and (curr .. part) or (curr .. "/" .. part)
+        ffi.C.mkdir(curr, 511)
+    end
+end
+
+local function path_exists(path)
+    local s = ffi.new("struct stat")
+    return ffi.C.stat(path, s) == 0 or ffi.C.lstat(path, s) == 0
+end
+
+local function is_symlink(path)
+    local _, _, mode = get_stat_fields(path, true)
+    if mode then
+        return bit.band(mode, 0170000) == 0120000 -- S_IFLNK
+    end
+    return false
+end
+
+local function are_same_file(path1, path2)
+    local dev1, ino1 = get_stat_fields(path1, false)
+    local dev2, ino2 = get_stat_fields(path2, false)
+    if not dev1 or not dev2 then return false end
+    return dev1 == dev2 and ino1 == ino2
+end
+
+local function parse_args(args)
+    local flags = { quiet = false }
+    local positional = {}
+
+    for _, arg in ipairs(args) do
+        if arg:sub(1, 1) == "-" and arg:sub(2, 2) ~= "-" then
+            for i = 2, #arg do
+                local char = arg:sub(i, i)
+                if char == "q" then flags.quiet = true end
+            end
+        elseif arg == "--quiet" then
+            flags.quiet = true
+        else
+            table.insert(positional, arg)
+        end
+    end
+    return flags, positional
+end
+
+local function main()
+    local flags, pos = parse_args(arg)
+    local src_dir, dst_dir = pos[1], pos[2]
+
+    if not src_dir or not dst_dir or src_dir == "" or dst_dir == "" then
+        if not flags.quiet then
+            print("Usage: ptc [-q] <src_dir> <dst_dir>")
+        end
+        return
+    end
+
+    mkdir_p(dst_dir)
+    mkdir_p(src_dir)
+
+    local p = io.popen(string.format("ls -A %q 2>/dev/null", src_dir))
+    if p then
+        for filename in p:lines() do
+            local target = src_dir .. "/" .. filename
+            local point = dst_dir .. "/" .. filename
+
+            if path_exists(target) then
+                if not (path_exists(point) and are_same_file(point, target)) then
+                    local pid = os.time()
+                    if is_symlink(point) then
+                        os.rename(point, string.format("/tmp/%s.point_to_contents_%d", filename, pid))
+                    else
+                        pcall(os.rename, point, string.format("%s.%d", point, pid))
+                    end
+                    -- Strictly force creation of a soft/symbolic link
+                    ffi.C.symlink(target, point)
+                end
+            end
+        end
+        p:close()
+    end
+end
+
+main()

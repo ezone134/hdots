@@ -1,0 +1,4 @@
+#!/usr/bin/env luajit
+-- helper sync_back_call
+sources = os.getenv("sources")
+dofile(sources .. "/sb_body")

@@ -1,0 +1,24 @@
+(
+    // alarms card — title/meta/count + the add-input row stay the resident
+    // `alarms` Ink; the alarm list (mono time · label, hover ✕ keys) is a
+    // `Rows` item: `del_base` = ALARM_DEL_BASE so ✕ reveals/registers like
+    // the Rust drawer (parity: only while the ✕ itself is hovered, since
+    // these rows carry no row-level key).
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "alarms"),
+        Rows(
+            name: "alarm_rows",
+            y: 50.0,
+            row_h: 24.0,
+            pad: 12.0,
+            row_dy: 3.0,
+            cols: [
+                (x: 0.0, font: mono, size: 10.0, color: Some(acc)),
+                (x: 50.0, size: 9.5),
+            ],
+            del_base: 31_610,
+            del_pad: 26.0,
+            del_dy: 4.0,
+        ),
+    ],
+)

@@ -1,0 +1,48 @@
+#!/usr/bin/env luajit
+-- helper dash_body
+
+function dash_cmd()
+    local function num(s)
+        return s:gsub("%D", "")
+    end
+
+    local bri  = num(out("brightness_main get"))
+    local vl   = out("audio_main vol get")
+    local ml   = out("audio_main mic get")
+    local vol  = num(vl:match("(%d+%%)"))
+    local mic  = num(ml:match("(%d+%%)"))
+    local mmut = 0
+    if ml:match("muted: yes") then mmut = 1 end
+
+    local sh = out("shader_main status")
+    local shst, shsat = sh:match("^(%S*)%s*(.-)$")
+    if shst == nil then shst = "0" end
+    if shsat == nil or shsat == "" then shsat = sh end
+    if shsat == nil or shsat == "" or shsat:match("%D") then shsat = "100" end
+    -- mode 0 = nothing applied, g = gamma, s = saturation, m = master
+    -- saturation id 0 (or 100) is normal, so the dash never shows it
+    if shst == "0" or shst == "g" or shsat == "0" or shsat == "100" then shsat = "100" end
+
+    local su = out("hs_main status")
+    local sust, sukv = su:match("^(%S*)%s*(.-)$")
+    if sukv == "" then sukv = su end
+
+    local caff = out("caffeine_main status")
+
+    -- compositor effect states — read the same state files the helpers toggle.
+    s = flagf_get(states2 .. "/s")
+    local blur_on = 0
+    if ff(states .. "/hypr_blur_" .. s) == "1" then blur_on = 1 end
+    local shadow_on = 0
+    if ff(states .. "/shadow_enabled_" .. s) == "1" then shadow_on = 1 end
+    -- opacity: active_opacity 1.0 = normal (off), <1.0 = dimming applied (on)
+    local opac_on = 0
+    local opac_act = ff(states .. "/opacity_active_" .. s)
+    if opac_act ~= "1.0" and opac_act ~= "" then opac_on = 1 end
+
+    print(string.format("%s %s %s %s %s %s %s %s %s %s %s %s",
+        bri, vol, mic, mmut,
+        shsat, (shst ~= "0" and "1" or "0"),
+        sust, sukv, caff,
+        blur_on, shadow_on, opac_on))
+end

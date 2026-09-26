@@ -1,0 +1,23 @@
+-- helper gen_custom_acc_shell_cache
+-- ported from bash sources/gen_custom_acc_shell_cache
+-- reads $custom_acc_master_list (name=hex lines) and emits custom_acc.json
+if not is_file(custom_acc_master_list) then return end
+
+local names, hexes = {}, {}
+for line in io.lines(custom_acc_master_list) do
+    local name, hex = line:match("^([^=]+)=(.*)$")
+    if name and hex and hex ~= "" then
+        names[#names + 1] = name
+        hexes[name] = hex
+    end
+end
+
+local parts = {}
+for _, name in ipairs(names) do
+    local hex = hexes[name]
+    if hex and hex ~= "" then
+        parts[#parts + 1] = '{"name":"' .. name .. '","hex":"' .. hex .. '"}'
+    end
+end
+local json = "[" .. table.concat(parts, ",") .. "]"
+tf(states2 .. "/custom_acc.json", json)

@@ -1,0 +1,31 @@
+(
+    // journaltail card — fully declarative (zero Ink): live "{n} lines" meta,
+    // the newest-first warning+ tail as severity-colored rows (err red /
+    // warning amber / notice muted — per-row color from `jr_tail_rows`),
+    // truncated to reserve the right gutter, and the bottom-right refresh
+    // Hit (raised well, acc glyph while hovered — exact Rust insets). The
+    // centered "journal empty" caption replaces the list when empty.
+    items: [
+        Header(title: "System log", glyph: Some("\u{f2d0}"), meta: Some("{jr_meta}"), pad: 12.0),
+        Text(x: 0.0, y: 0.0, center_x: true, center_y: true, text: "journal empty", font_size: 9.0, color: Some(fg3), visible: Some("jr_empty")),
+        Rows(
+            name: "jr_tail_rows",
+            y: 26.0,
+            row_h: 17.0,
+            pad: 12.0,
+            row_dy: 1.0,
+            bottom: 28.0,
+            visible: Some("jr_live"),
+            cols: [
+                (x: 0.0, dy: Some(0.0), size: 8.5, truncate: Some(16.0)),
+            ],
+        ),
+        Hit(
+            x: 15.0, y: 28.0, w: 30.0, h: 20.0, r: 6.0, right: true,
+            surface: Some(raised), surface_hover: Some(raised_hl),
+            icon: true, center: true, dy: 1.5,
+            text: "\u{f021}", font_size: 9.0, color: Some(fg3), color_hover: Some(acc),
+            key: 31995,
+        ),
+    ],
+)

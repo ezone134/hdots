@@ -1,0 +1,869 @@
+-- sources/utils — shared Lua utilities for the LuaJIT port
+-- Mirrors the common bash idioms: err/notify-send, file read/write (ff/tf),
+-- external command capture + fire-and-forget. Loaded by every main script.
+
+local base_env = {}
+
+math.randomseed(os.time() + math.floor(os.clock() * 1000))
+
+-- unique per-run suffix; used by link_it_defs / rconfig_gen file names.
+-- Generated here in utils (bash used `$RANDOM.delme` in misc/vars).
+rnd = tostring(math.random(100000, 999999)) .. tostring(math.random(10, 99))
+
+-- exported dirs — ALL exported by ~/.config/hypr/env.lua; mirror them into
+-- globals here (no re-derivation, no fallbacks, no setting env vars).
+-- pull env vars only if $USER is not root
+user = os.getenv("USER")
+if user ~= "root" then
+    garbage                = os.getenv("garbage")
+    rbase              = os.getenv("rbase")
+    rconf              = os.getenv("rconf")
+    sources                = os.getenv("sources")
+    r_daemon               = os.getenv("r_daemon")
+    rcache             = os.getenv("rcache")
+    hypr_scripts           = os.getenv("hypr_scripts")
+    hypr_temp              = os.getenv("hypr_temp")
+    states                 = os.getenv("states")
+    states2                = os.getenv("states2")
+    dots                   = os.getenv("dots")
+    rconfig                  = os.getenv("rconfig")
+    templates                  = os.getenv("templates")
+    custom_acc_master_list = os.getenv("custom_acc_master_list")
+end
+-- ---------------------------------------------------------------- stderr ----
+function err(...)
+    local parts = {}
+    for i = 1, select("#", ...) do
+        parts[#parts + 1] = tostring(select(i, ...))
+    end
+    io.stderr:write(table.concat(parts, " ") .. "\n")
+    return nil
+end
+
+-- ---------------------------------------------------------- file helpers ----
+-- Two primitives; every other file access is one of these.
+--   ff(path, s)  from-file   = bash $(<path) : read, trailing newlines stripped
+--   tf(path, s)  to-file     = bash `>`      : write content verbatim
+-- States are plain paths: tf(states2 .. "/s", ...) / ff(states2 .. "/s").
+
+-- from file: nil if missing, trailing newlines stripped (bash semantics)
+function ff(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    s = s:gsub("\n+$", "")
+    return s
+end
+
+-- to file: exact bytes; returns success (error printed on failure)
+function tf(path, content)
+    local f = io.open(path, "w")
+    if not f then err("cannot write: " .. path); return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+-- bash `>>`
+function append(path, content)
+    local f = io.open(path, "a")
+    if not f then return false end
+    f:write(content)
+    f:close()
+    return true
+end
+
+-- ------------------------------------------------------------- execute ----
+-- run/run_bg exec the binary DIRECTLY (FFI fork+execvp) — no middle shell
+-- wrapper (os.execute's `/bin/sh -c` is gone). Commands that genuinely need a
+-- shell (pipes, redirects, &&/;, $VAR, globs, subshells) fall back to
+-- `/bin/sh -c` for exactly that one command.
+
+-- capture stdout of a command (strip trailing newline)
+function out(cmd)
+    local f = io.popen(cmd .. " 2>/dev/null")
+    if not f then return "" end
+    local s = f:read("*a")
+    f:close()
+    s = s:gsub("\n$", "")
+    return s
+end
+
+-- capture stdout as list of lines
+function out_lines(cmd)
+    local s = out(cmd)
+    local t = {}
+    for line in s:gmatch("[^\n]+") do t[#t + 1] = line end
+    return t
+end
+
+-- clone of the bash qpid (pidof) helper in /tmp/hypr_global/qpid: returns the
+-- PIDs of processes whose /proc/<pid>/comm equals name, as one space-y string
+function qpid(name)
+    name = tostring(name)
+    local found = {}
+    for _, pidf in ipairs(list_dir("/proc")) do
+        if pidf:match("%d+") then
+            local f = io.open("/proc/" .. pidf .. "/comm", "r")
+            if f then
+                local comm = f:read("*l")
+                f:close()
+                if comm == name then found[#found + 1] = pidf end
+            end
+        end
+    end
+    return table.concat(found, " ")
+end
+
+-- -------------------------------------------------------------- FFI posix ----
+-- Pure-Lua filesystem layer (no external binaries): mkdir/rm/mv/ln/ls/touch
+-- are implemented in-process via libc through LuaJIT FFI.
+-- NOTE: the cdef is guarded — a second dofile(utils) in the SAME process must
+-- not re-declare the named structs (`struct inotify_event`, `struct pollfd`):
+-- LuaJIT rejects redefinition (identical typedefs/functions merge, structs
+-- don't), and the launch pipeline loads utils twice (persist pre-sync in
+-- bin/launch, then tmpfs via a standalone-bootstrap helper like
+-- gen_flags_master after the sync). Only the cdef calls are guarded below;
+-- the constants and function REdefinitions below run on every dofile.
+local ffi = require("ffi")
+local PROT_READ, PROT_WRITE, MAP_SHARED, MS_SYNC = 1, 2, 1, 4
+if not _G.utils_ffi_cdef then
+ffi.cdef[[
+typedef struct { long d_ino; long d_off; unsigned short d_reclen;
+                unsigned char d_type; char d_name[256]; } dirent_t;
+typedef struct { int _x; } DIR;
+typedef struct { long sec; long nsec; } timespec_t;
+DIR *opendir(const char *path);
+dirent_t *readdir(DIR *dirp);
+int closedir(DIR *dirp);
+int readlink(const char *path, char *buf, long bufsiz);
+int mkdir(const char *path, unsigned int mode);
+int rmdir(const char *path);
+int unlink(const char *path);
+int symlink(const char *target, const char *linkpath);
+int rename(const char *oldpath, const char *newpath);
+int chmod(const char *path, unsigned int mode);
+int access(const char *path, int mode);
+int stat(const char *path, void *buf);
+char *realpath(const char *path, char *resolved_path);
+int nanosleep(const timespec_t *req, timespec_t *rem);
+int getpid(void);
+int kill(int pid, int sig);
+int fork(void);
+int setsid(void);
+int waitpid(int pid, int *status, int options);
+int execvp(const char *file, const char *const argv[]);
+int dup2(int oldfd, int newfd);
+int open(const char *path, int flags, ...);
+int close(int fd);
+int fflush(void *stream);
+int setenv(const char *name, const char *value, int overwrite);
+int unsetenv(const char *name);
+char *getenv(const char *name);
+typedef unsigned char stbi_uc;
+const stbi_uc *stbi_load(const char *filename, int *x, int *y, int *comp, int req_comp);
+void stbi_image_free(const stbi_uc *retval_from_stbi_load);
+long ftruncate(int fd, long length);
+void *mmap(void *addr, long length, int prot, int flags, int fd, long offset);
+int munmap(void *addr, long length);
+int msync(void *addr, long length, int flags);
+]]
+
+-- pure-Lua sleep (FFI nanosleep, no external binary)
+function sleep(secs)
+    local req = ffi.new("timespec_t")
+    secs = tonumber(secs or 0)
+    req.sec = math.floor(secs)
+    req.nsec = math.floor((secs - math.floor(secs)) * 1e9)
+    ffi.C.nanosleep(req, nil)
+end
+
+-- current process pid (FFI getpid; no external binary)
+function getpid()
+    return tonumber(ffi.C.getpid())
+end
+
+-- send a signal to a process (FFI kill; bash `kill -<sig> <pid>`, no external
+-- binary, no shell). sig defaults to SIGTERM (15). returns success (killed).
+function kill_pid(pid, sig)
+    return ffi.C.kill(tonumber(pid), tonumber(sig or 15)) == 0
+end
+
+-- is a process alive? (FFI kill(pid, 0); bash `kill -0 <pid>`), in-process
+function process_alive(pid)
+    return ffi.C.kill(tonumber(pid), 0) == 0
+end
+
+-- ------------------------------------------------------- stb image decode ----
+-- Binary image decode through extras/stb_image.so, in-process (no external
+-- binary). Declared/loaded HERE so no script needs its own private ffi for it.
+-- Lazy-loaded on first use — only processes that actually decode load the .so.
+local stbi_lib
+local function stb_image()
+    if not stbi_lib then stbi_lib = ffi.load(sources .. "/lib/stb_image.so") end
+    return stbi_lib
+end
+
+-- decode image to 8-bit RGB; returns (pxptr, w, h) or (nil) on failure
+function load_stb_image(path)
+    local w = ffi.new("int[1]")
+    local h = ffi.new("int[1]")
+    local c = ffi.new("int[1]")
+    local px = stb_image().stbi_load(tostring(path), w, h, c, 3)
+    if px == nil or w[0] == 0 or h[0] == 0 then
+        return nil
+    end
+    return px, w[0], h[0]
+end
+
+function free_stb_image(px)
+    if px ~= nil then stb_image().stbi_image_free(px) end
+end
+
+-- ------------------------------------------------ shared memory (mmap) ----
+-- Shared in-memory regions backed by a tmpfs file: mmap(MAP_SHARED) makes the
+-- file's page-cache RAM visible to every process that maps the same path —
+-- access is a pure RAM store/load, NO io.open/read/write/close syscalls per
+-- update. Replaces hot-path file polling; the file stays on disk (debuggable).
+
+-- inotify: kernel event layer so a loop can block (0 CPU) and wake on every
+-- flag-file change instead of sleep-polling. pure FFI; no external binary.
+-- masks (linux/inotify.h): IN_MODIFY 0x2 IN_CLOSE_WRITE 0x8 IN_ATTRIB 0x4
+-- IN_CREATE 0x100. init1 flags: IN_NONBLOCK 0x800 IN_CLOEXEC 0x8000000.
+ffi.cdef[[
+struct inotify_event { int wd; uint32_t mask; uint32_t cookie; uint32_t len; char name[0]; };
+int inotify_init1(int flags);
+int inotify_add_watch(int fd, const char *pathname, uint32_t mask);
+int inotify_rm_watch(int fd, int wd);
+int close(int fd);
+struct pollfd { int fd; short events; short revents; };
+int poll(struct pollfd *fds, int nfds, int timeout);
+int read(int fd, void *buf, int count);
+]]
+_G.utils_ffi_cdef = true
+end
+
+-- open the kernel inotify instance (events auto-pushed to the queue). returns fd or nil.
+function inotify_init()
+    local fd = ffi.C.inotify_init1(0x80000) -- IN_CLOEXEC (== O_CLOEXEC, 02000000 octal)
+    if fd < 0 then return nil end
+    return fd
+end
+
+-- start watching `path` for `mask`. returns wd (>0) or nil (e.g. file missing).
+function inotify_watch(fd, path, mask)
+    local wd = ffi.C.inotify_add_watch(fd, tostring(path), mask)
+    if wd < 0 then return nil end
+    return wd
+end
+
+-- block ONCE (kernel poll + nonblocking dispatch read): wakes on any watched
+-- event or after `timeout_ms`; drains whatever is queuedaines. returns true if
+-- at least one event fired, else false (the timeout tick). 0% CPU either way.
+local inotify_buf = ffi.new("uint8_t[4096]")
+function inotify_wait_event(fd, timeout_ms)
+    local sp_fd, sp_ev = inotify_buf, inotify_buf -- reuse? no: pollfd overlay:
+    if not ffi.istype("struct pollfd", inotify_pfds) then
+        inotify_pfds = ffi.new("struct pollfd[1]")
+    end
+    inotify_pfds[0].fd = fd
+    inotify_pfds[0].events = 1 -- POLLIN
+    inotify_pfds[0].revents = 0
+    if ffi.C.poll(inotify_pfds, 1, timeout_ms) <= 0 then return false end
+    local n = ffi.C.read(fd, inotify_buf, 4096)
+    if n <= 0 then return false end
+    return true
+end
+
+-- release the inotify instance
+function inotify_close(fd)
+    if fd and fd >= 0 then ffi.C.close(fd) end
+end
+
+-- create-or-attach the shared region for `path` (size fixed at first create).
+-- returns (ptr, size) — uint8_t* for shmem_write / struct overlay via
+-- shmem_view — or (nil, nil) on failure.
+function shmem_init(path, size)
+    size = tonumber(size)
+    local fd = ffi.C.open(tostring(path), 2 + 64, ffi.cast("int", tonumber("600", 8))) -- O_RDWR|O_CREAT 0600
+    if fd < 0 then return nil end
+    if ffi.C.ftruncate(fd, size) ~= 0 then ffi.C.close(fd) return nil end
+    local p = ffi.C.mmap(nil, size, PROT_READ + PROT_WRITE, MAP_SHARED, fd, 0)
+    ffi.C.close(fd)
+    if p == ffi.cast("void *", -1) then return nil end
+    return ffi.cast("uint8_t *", p), size
+end
+
+-- detach a region (mapping ends; the backing file stays for other procs)
+function shmem_release(ptr, size)
+    if ptr ~= nil then return ffi.C.munmap(ptr, size) == 0 end
+    return false
+end
+
+-- flush the region to its backing file (tmpfs: RAM-backed, usually unneeded)
+function shmem_sync(ptr, size)
+    return ffi.C.msync(ptr, size, MS_SYNC) == 0
+end
+
+-- copy a string into the region (bounded by mapped size); returns bytes copied
+function shmem_write(ptr, size, content)
+    content = tostring(content)
+    local n = #content
+    if n > size then n = size end
+    ffi.copy(ptr, content, n)
+    return n
+end
+
+-- read bytes out of the region as a Lua string
+function shmem_str(ptr, len)
+    return ffi.string(ptr, tonumber(len))
+end
+
+-- overlay a typed struct cdata over the region for structured updates
+function shmem_view(ptr, ctype)
+    return ffi.cast(ctype .. " *", ptr)
+end
+
+-- ---------------------------------------------------- zero-I/O state IO ----
+-- flagf_set/flagf_get map the ACTUAL $states / $states2 file with
+-- mmap(MAP_SHARED): steady-state reads & writes are one RAM copy (no
+-- io.open/read/write/close syscalls) while the tmpfs file stays BYTE-EXACT
+-- (region size == value length, no headers, no padding) — so any other
+-- process that still reads it via plain ff()/cat sees the same bytes.
+-- Per-process lazy registry; a length change re-truncates+remaps once.
+local flagf_registry = {}
+
+function flagf_set(path, value)
+    value = tostring(value)
+    local len = #value
+    if len == 0 then return tf(path, value) end
+    local cur = flagf_registry[path]
+    if not cur or cur.len ~= len then
+        if cur then shmem_release(cur.ptr, cur.len) end
+        local p = shmem_init(path, len)
+        if p == nil then return tf(path, value) end
+        flagf_registry[path] = { ptr = p, len = len }
+        cur = flagf_registry[path]
+    end
+    ffi.copy(cur.ptr, value, len)
+    return true
+end
+
+function flagf_get(path)
+    local cur = flagf_registry[path]
+    if not cur then
+        local s = ff(path)
+        if s == nil then return nil end
+        local p = shmem_init(path, #s)
+        if p ~= nil then flagf_registry[path] = { ptr = p, len = #s } end
+        return s
+    end
+    return ffi.string(cur.ptr, cur.len)
+end
+
+function flagf_release(path)
+    local cur = flagf_registry[path]
+    if cur then
+        shmem_release(cur.ptr, cur.len)
+        flagf_registry[path] = nil
+    end
+end
+
+-- env var get (FFI getenv; no external binary). returns string or nil
+function get_env(name)
+    local p = ffi.C.getenv(tostring(name))
+    if p == nil then return nil end
+    return ffi.string(p)
+end
+
+-- env var set/add via libc setenv directly (no external binary, no child
+-- process). overwrite: pass true (or omit -> replaces) to overwrite an existing
+-- value, false to keep the existing value untouched. returns true on success.
+function set_env(name, value, overwrite)
+    name = tostring(name)
+    value = tostring(value == nil and "" or value)
+    local ov = 1
+    if overwrite ~= nil and not overwrite then ov = 0 end
+    return ffi.C.setenv(name, value, ov) == 0
+end
+
+-- env var unset via libc unsetenv (no external binary)
+function unset_env(name)
+    return ffi.C.unsetenv(tostring(name)) == 0
+end
+
+-- list directory entries (["."], [".."] excluded); bash `shopt -s nullglob` style
+function list_dir(path)
+    local entries = {}
+    local d = ffi.C.opendir(path)
+    if d == nil then return entries end
+    local e = ffi.C.readdir(d)
+    while e ~= nil do
+        local name = ffi.string(e.d_name)
+        if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
+        e = ffi.C.readdir(d)
+    end
+    ffi.C.closedir(d)
+    return entries
+end
+
+-- is a path a directory? (pure Lua, in-process)
+function is_dir(path)
+    local d = ffi.C.opendir(path)
+    if d ~= nil then ffi.C.closedir(d) return true end
+    return false
+end
+
+-- is a path a symlink? readlink succeeds only on links, in-process
+function is_symlink(path)
+    local buf = ffi.new("char[4096]")
+    return ffi.C.readlink(path, buf, 4096) >= 0
+end
+
+-- do two paths resolve to the same real file/dir? canonicalize in-process
+function is_same_file(a, b)
+    local ra = ffi.new("char[4096]")
+    local rb = ffi.new("char[4096]")
+    if ffi.C.realpath(a, ra) ~= nil and ffi.C.realpath(b, rb) ~= nil then
+        return ffi.string(ra) == ffi.string(rb)
+    end
+    return a == b
+end
+
+-- bash `command -v name`: is `name` an executable on PATH? pure-Lua (FFI
+-- access X_OK), no shell. Returns the resolved path or nil.
+function command_v(name)
+    name = tostring(name)
+    if name:find("/") then
+        if ffi.C.access(name, 1) == 0 then return name end
+        return nil
+    end
+    local path = os.getenv("PATH")
+    if not path then return nil end
+    for dir in path:gmatch("[^:]+") do
+        if dir == "" then dir = "." end
+        local cand = dir .. "/" .. name
+        if ffi.C.access(cand, 1) == 0 then return cand end
+    end
+    return nil
+end
+
+function mkdir_p(...)
+    local n = select("#", ...)
+    for i = 1, n do
+        local path = tostring(select(i, ...))
+        if not is_dir(path) then
+            local parent = dirname(path)
+            if parent ~= path and parent ~= "" and parent ~= "." then mkdir_p(parent) end
+            if ffi.C.mkdir(path, tonumber("755", 8)) ~= 0 and not is_dir(path) then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+-- rm -f equivalent for one file; also removes a (possibly dangling) symlink
+function rm(path)
+    if is_file(path) or is_symlink(path) then ffi.C.unlink(path) end
+end
+
+-- byte-exact raw IO; copy_tree/copy_file must not go through ff/tf (those
+-- would strip/add newlines). Lives only here; not exported.
+local function raw_read(path)
+    local f = io.open(path, "rb")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function raw_write(path, s)
+    local f = io.open(path, "wb")
+    if not f then return false end
+    f:write(s)
+    f:close()
+    return true
+end
+
+-- mv equivalent: rename when possible, else copy (in-process). NEVER deletes
+-- recursively — no rm -rf anywhere in this tree.
+function mv(src, dst)
+    if ffi.C.rename(src, dst) == 0 then return true end
+    local c = raw_read(src)
+    if c then
+        mkdir_p(dirname(dst))
+        if raw_write(dst, c) then
+            ffi.C.unlink(src)
+            return true
+        end
+    end
+    return false
+end
+
+-- cp equivalent (in-process copy)
+function copy_file(src, dst)
+    local c = raw_read(src)
+    if not c then return false end
+    mkdir_p(dirname(dst))
+    return raw_write(dst, c)
+end
+
+-- readlink: return symlink target string (nil if not a symlink)
+function readlink(path)
+    local buf = ffi.new("char[4096]")
+    local n = ffi.C.readlink(path, buf, 4096)
+    if n < 0 then return nil end
+    return ffi.string(buf, n)
+end
+
+-- copy a single entry recursively. Symlinks are recreated as symlinks.
+-- NEVER removes or deletes any directory (rm_rf stays banned).
+function copy_tree(src, dst)
+    if is_symlink(src) then
+        local target = readlink(src)
+        if not target then return false end
+        if is_file(dst) or is_symlink(dst) then rm(dst) end
+        return symlink(target, dst)
+    end
+    if is_dir(src) then
+        mkdir_p(dst)
+        for _, name in ipairs(list_dir(src)) do
+            copy_tree(src .. "/" .. name, dst .. "/" .. name)
+        end
+        return true
+    end
+    return copy_file(src, dst)
+end
+
+-- `cp -r <src>/* <dst>/`: merge every entry of src_dir under dst_dir.
+-- Overwrites matching entries, never deletes anything.
+function copy_dir_contents(src_dir, dst_dir)
+    if not is_dir(src_dir) then return false end
+    mkdir_p(dst_dir)
+    for _, name in ipairs(list_dir(src_dir)) do
+        copy_tree(src_dir .. "/" .. name, dst_dir .. "/" .. name)
+    end
+    return true
+end
+
+-- recursive chmod (pure Lua via libc); used for `chmod -R <mode> <dir>`
+function chmod_r(path, mode)
+    chmod(path, mode)
+    if is_dir(path) then
+        for _, name in ipairs(list_dir(path)) do
+            chmod_r(path .. "/" .. name, mode)
+        end
+    end
+end
+
+-- `chmod +x <dir>/*` equivalent: add exec mode to every non-hidden entry
+-- (bash `*` glob skips dotfiles)
+function chmod_x(dir)
+    for _, name in ipairs(list_dir(dir)) do
+        if name:sub(1, 1) ~= "." then chmod(dir .. "/" .. name, "755") end
+    end
+end
+
+-- recursive chmod_x: same as chmod_x but descends into non-hidden subdirs
+function chmod_xr(dir)
+    chmod_x(dir)
+    for _, name in ipairs(list_dir(dir)) do
+        local p = dir .. "/" .. name
+        if name:sub(1, 1) ~= "." and is_dir(p) then chmod_xr(p) end
+    end
+end
+
+-- bash `rm <dir>/<glob>` equivalent (glob match). ONLY removes files/symlinks
+-- via unlink — never a directory; rm_rf stays banned.
+function rm_glob(dir, pat)
+    for _, name in ipairs(list_dir(dir)) do
+        if name:match(pat) then
+            local p = dir .. "/" .. name
+            if is_file(p) or is_symlink(p) then ffi.C.unlink(p) end
+        end
+    end
+end
+
+-- ln -s equivalent: symlink via libc (no external binary)
+function symlink(target, link)
+    return ffi.C.symlink(target, link) == 0
+end
+
+-- touch equivalent
+function touch(path)
+    local f = io.open(path, "a")
+    if not f then return false end
+    f:close()
+    return true
+end
+
+-- chmod equivalent
+function chmod(path, mode)
+    return ffi.C.chmod(path, tonumber(mode, 8)) == 0
+end
+
+-- expand bash-style $VAR / ${VAR} inside template text from an env table
+function s_expand(s, env)
+    env = env or _G
+    s = s:gsub("${([%w_]+)}", function(k) return tostring(env[k] or "") end)
+    s = s:gsub("$([%w_]+)", function(k) return tostring(env[k] or "") end)
+    return s
+end
+
+-- fire-and-forget + blocking exec, both DIRECT (no middle shell):
+--   run(cmd)      = blocking; returns true on exit-0, nil otherwise
+--   run_bg(cmd)   = background, stdout/stderr -> /dev/null; returns child pid
+-- HARD RULES (enforced):
+--   * notify-send MUST always go through run_bg (bash used `&`) — a blocking
+--     notify-send can stall the UI.
+--   * the binary is fired directly via execvp; /bin/sh -c is used ONLY for
+--     commands that really need shell features (meta chars outside quotes).
+
+-- split a command line into argv tokens honoring '...', "..." and \ escapes
+local function shell_split(s)
+    local args, buf, q = {}, "", nil
+    local i, n = 1, #s
+    while i <= n do
+        local c = s:sub(i, i)
+        if q then
+            if q == "'" then
+                if c == "'" then
+                    q = nil
+                else
+                    buf = buf .. c
+                end
+            elseif c == '"' then
+                q = nil
+            elseif c == "\\" then
+                local nx = s:sub(i + 1, i + 1)
+                if nx == '"' or nx == "\\" or nx == "$" or nx == "`" then
+                    buf = buf .. nx
+                    i = i + 1
+                else
+                    buf = buf .. c
+                end
+            else
+                buf = buf .. c
+            end
+        else
+            if c == "'" or c == '"' then
+                q = c
+            elseif c == "\\" then
+                local nx = s:sub(i + 1, i + 1)
+                buf = buf .. (nx ~= "" and nx or "\\")
+                i = i + 1
+            elseif c == " " or c == "\t" or c == "\n" then
+                if buf ~= "" then
+                    args[#args + 1] = buf
+                    buf = ""
+                end
+            else
+                buf = buf .. c
+            end
+        end
+        i = i + 1
+    end
+    if buf ~= "" then args[#args + 1] = buf end
+    return args
+end
+
+-- true if an UNQUOTED shell meta char requires /bin/sh -c instead of execvp
+local function needs_shell(s)
+    local i, n, q = 1, #s, nil
+    while i <= n do
+        local c = s:sub(i, i)
+        if q == "'" then
+            if c == "'" then q = nil end
+        elseif q == '"' then
+            if c == '"' then
+                q = nil
+            elseif c == "$" or c == "`" or c == "\\" then
+                return true
+            end
+        else
+            if c == "'" or c == '"' then
+                q = c
+            elseif c == "|" or c == "&" or c == ";" or c == "<" or c == ">"
+                or c == "(" or c == ")" or c == "$" or c == "`" or c == "*"
+                or c == "?" or c == "[" or c == "]" or c == "{" or c == "}"
+                or c == "#" or c == "~" or c == "!" or c == "\n" then
+                return true
+            end
+        end
+        i = i + 1
+    end
+    return false
+end
+
+-- build argv and execvp directly; falls to /bin/sh -c when shells are needed
+local function exec_cmd(cmd)
+    if not needs_shell(cmd) then
+        local toks = shell_split(cmd)
+        if #toks == 0 then os.exit(0) end
+        local argv = ffi.new("const char *[?]", #toks + 1)
+        for i, t in ipairs(toks) do argv[i - 1] = t end
+        argv[#toks] = nil
+        ffi.C.execvp(toks[1], argv)
+    else
+        local argv = ffi.new("const char *[3]")
+        argv[0] = "/bin/sh"; argv[1] = "-c"; argv[2] = cmd
+        ffi.C.execvp("/bin/sh", argv)
+    end
+    os.exit(127)
+end
+
+function run(cmd)
+    cmd = tostring(cmd)
+    if cmd == "" then return nil end
+    ffi.C.fflush(nil)
+    local status = ffi.new("int[1]")
+    local pid = ffi.C.fork()
+    if pid == 0 then
+        pcall(exec_cmd, cmd)
+        os.exit(127)
+    end
+    if ffi.C.waitpid(pid, status, 0) < 0 then return nil end
+    return status[0] == 0 and true or nil
+end
+
+function run_bg(cmd)
+    cmd = tostring(cmd)
+    if cmd == "" then return nil end
+    ffi.C.fflush(nil)
+    local pid = ffi.C.fork()
+    if pid == 0 then
+        ffi.C.setsid()
+        local dn = ffi.C.open("/dev/null", 1) -- O_WRONLY
+        if dn >= 0 then
+            ffi.C.dup2(dn, 1)
+            ffi.C.dup2(dn, 2)
+            ffi.C.close(dn)
+        end
+        pcall(exec_cmd, cmd)
+        os.exit(127)
+    end
+    return pid
+end
+
+-- bash `exit 0` / `exit 1` — halt the script immediately, no shell involved
+function exit_0()
+    os.exit(0)
+end
+
+function exit_1()
+    os.exit(1)
+end
+
+-- bash `{ ...; } &`: fork a copy of THIS interpreter (no exec) and run fn(...)
+-- in the background child. Inherits all globals/closures (no bootstrap).
+-- The child is a real process and MUST os.exit; never returns a value.
+-- PIDs are tracked in the `jobs` table so `wait()` can reap them; `disown()`
+-- forgets them all.
+jobs = jobs or {}
+
+function bg_fn(fn, ...)
+    local pid = ffi.C.fork()
+    if pid == 0 then
+        local ok, msg = xpcall(fn, debug.traceback, ...)
+        if not ok then io.stderr:write("bg_fn: " .. tostring(msg) .. "\n") end
+        os.exit(ok and 0 or 1)
+    end
+    jobs[pid] = true
+    return pid
+end
+
+-- bash `disown`: forget every bg job spawned before this point. They are
+-- ours no more — never waited on, never reaped, init takes them when we exit.
+function disown()
+    jobs = {}
+end
+
+-- bash `wait $pid`: block until that job exits; returns its pid (-1 if there
+-- is no such child)
+function wait_pid(pid)
+    local status = ffi.new("int[1]")
+    return tonumber(ffi.C.waitpid(tonumber(pid), status, 0))
+end
+
+-- bash `kill -0 $pid`: true while the job is still running (WNOHANG probe)
+function is_running(pid)
+    local status = ffi.new("int[1]")
+    return ffi.C.waitpid(tonumber(pid), status, 1) == 0
+end
+
+-- bash `wait` (no args): block until ALL tracked jobs (post-disown) are reaped.
+-- Disowned jobs are NOT waited — damning them is final.
+function wait_all()
+    for pid in pairs(jobs) do
+        wait_pid(pid)
+    end
+    jobs = {}
+end
+
+-- bash `wait` alias
+wait = wait_all
+
+function bg_delay(secs, cmd)
+    local s = tonumber(secs) or 0
+    -- background: sleep, then run_bg() the command (both no-shell FFI exec)
+    local code = "dofile(" .. string.format("%q", sources .. "/utils") .. ") sleep("
+        .. tostring(s) .. ") run_bg(" .. string.format("%q", tostring(cmd)) .. ")"
+    run_bg("luajit -e " .. shq(code))
+end
+
+-- ---------------------------------------------------------- shell quote ----
+function shq(s)
+    s = tostring(s)
+    return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+-- canonical mode-flags read (s/m): one monolith (theme_vars.lua) when present;
+-- falls back to the individual $states2/s + $states2/m only when it is missing.
+function read_mode_flags()
+    local chunk = loadfile(states2 .. "/theme_vars.lua")
+    if chunk then
+        local ok, t = pcall(chunk)
+        if ok and type(t) == "table" then
+            s = t.s
+            m = t.m
+            return
+        end
+    end
+    s = ff(states2 .. "/" .. "s")
+    m = ff(states2 .. "/" .. "m")
+end
+
+-- -------------------------------------------------------- string helpers ----
+-- basename: bash ${1##*/}
+function basename(p)
+    p = tostring(p):gsub("[/\\]+$", "")
+    return p:match("[^/\\]+$") or p
+end
+
+-- dirname: bash ${1%/*}
+function dirname(p)
+    p = tostring(p)
+    return p:match("^(.*)[/\\][^/\\]*$") or "."
+end
+
+-- strip all non digits: bash ${v//[^0-9]/}
+function num_only(s)
+    s = tostring(s or ""):gsub("%D", "")
+    return s
+end
+
+-- first integer substring: bash grep -o '[0-9]\+%' style
+function first_num(s)
+    return tostring(s or ""):match("%d+") or ""
+end
+
+-- ------------------------------------------------------------- misc -------
+function is_file(path)
+    local f = io.open(path, "r")
+    if f then f:close(); return true end
+    return false
+end
+
+return nil

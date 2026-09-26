@@ -1,0 +1,60 @@
+[org/gnome/desktop/interface]
+cursor-theme='Bibata-Modern-Ice'
+cursor-size=24
+font-name='Inter 16'
+gtk-theme='gtk_d'
+icon-theme='Tela-black-dark'
+color-scheme='prefer-dark'
+font-hinting='slight'
+font-antialiasing='grayscale'
+font-rgba-order='rgb'
+text-scaling-factor=1.0
+toolbar-style='both-horiz'
+toolbar-icons-size='large'
+
+[org/xfce/mousepad/state/application]
+session=['1;file:///home/tw/.local/share/Mousepad/autosave-0;+']
+
+[org/xfce/mousepad/state/window]
+maximized=true
+fullscreen=false
+
+[org/gtk/settings/file-chooser]
+window-position=(0, 0)
+window-size=(1888, 1055)
+date-format='regular'
+location-mode='path-bar'
+show-hidden=true
+show-size-column=true
+show-type-column=true
+sidebar-width=233
+sort-column='name'
+sort-directories-first=false
+sort-order='descending'
+type-format='category'
+
+[org/blueman/general]
+window-properties=[937, 1106, 0, 0]
+
+[org/gnome/desktop/sound]
+event-sounds=true
+input-feedback-sounds=false
+
+[org/erikreider/swaync]
+dnd-state=true
+
+[org/gnome/Console]
+last-window-size=(1132, 878)
+last-window-maximised=true
+theme='night'
+
+[org/gtk/gtk4/settings/file-chooser]
+date-format='regular'
+location-mode='path-bar'
+show-hidden=false
+sidebar-width=198
+sort-column='name'
+sort-directories-first=true
+sort-order='ascending'
+type-format='category'
+view-type='list'

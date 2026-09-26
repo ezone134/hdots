@@ -1,0 +1,25 @@
+(
+    // notes card — the note list (bullet · title · body-caption) is a `Rows`
+    // item with a two-col `dy` offset for the dim caption line below the
+    // title; `visible` hides it while the shared composer is open so the list
+    // never draws on top of the title/body input.  Title/meta/count + the
+    // `+` add button + the empty hint stay the resident `notes` Ink; the
+    // full-screen title+body composer is also Rust (stateful).
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "notes"),
+        Rows(
+            name: "notes_rows",
+            y: 32.0,
+            row_h: 24.0,
+            pad: 12.0,
+            row_dy: 0.0,
+            cols: [
+                (x: 2.0, icon: true, size: 9.0, color: Some(fg3)),
+                (x: 16.0, size: 9.5),
+                (x: 24.0, dy: Some(12.0), size: 8.0, color: Some(fg2)),
+            ],
+            start: Some("notes_scroll"),
+            visible: Some("notes_composing"),
+        ),
+    ],
+)

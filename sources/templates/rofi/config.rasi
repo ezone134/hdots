@@ -1,0 +1,2 @@
+// rofi launcher configuration — expanded from $states2 by pull_colors_val
+@theme "$rconfig/rofi/dmenu.rasi"

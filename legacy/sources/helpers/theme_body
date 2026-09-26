@@ -1,0 +1,253 @@
+# -*- mode: sh -*-
+
+sfg_ec_d () {
+    sfg_ec="$sfg_l"
+}
+sfg_ec_l () {
+    sfg_ec="$sfg_d"
+}
+common_sfg_assign_func () {
+    if [[ $scrim_mode == 1 ]]; then
+        sfg="$fg"
+    else
+                if [[ $sfg_mode == d ]]; then
+                    sfg="$sfg_d"
+                else
+                    sfg="$sfg_l"
+                fi
+    fi
+}
+
+backup_colors () {
+    sfg_bak="$sfg"
+    bg_bak="$bg"
+    fg_bak="$fg"
+    border_bak=$(<"$states2/border_${s}${m}")
+    border8_bak="${border_bak}${border_alpha}"
+    acc_bak=$(<"$states2/acc_${s}${m}")
+}
+
+fetch_first () {
+    bg2_8="${bg2}ff"
+    bg_gtk="$bg"
+    start_icon="$fg"
+    border8="${border}${border_alpha}"
+    acc_gtk="$acc"
+
+    [[ $scrim_mode == 1 ]] && {
+        acc_id="${acc:1}"
+        scrim_list=$rcache/scrim_acc/${s}/${m}/$acc_id/scrim_list
+        if [[ -e "$scrim_list" ]]; then
+            . "$scrim_list"
+            notify-send -a theme-extras "Theme extras" "Shades list already exists" &
+        else
+            mkdir -p "$rcache/scrim_acc/${s}/${m}/$acc_id"
+            . $hypr_sources/helpers/set_bri_helper "$acc_id" ${m}
+            printf "acc=%s\nacc_us=%s\nacc_hc=%s\nacc_ec=%s\n" "$acc" "$acc_us" "$acc_hc" "$acc_ec" > "$scrim_list"
+        fi
+    }
+}
+
+fetch_second () {
+    [[ $scrim_mode == 1 ]] && {
+        acc=$(<"$states2/scrim_hex_${s}")
+        first_fetch
+        return 0
+    }
+    . "$hypr_sources/helpers/contrast_check"
+    . "$shades_list"
+    . "$hypr_sources/helpers/theme_logic_${m}"
+}
+
+color_fetch_master () {
+    border_alpha=$(<"$states/border_alpha_${s}") || border_alpha=$default_border_alpha
+    if [[ $scrim_mode == 1 ]]; then
+        acc_alpha=$(<"$states/scrim_alpha_${s}")
+    else
+        acc_alpha=$(<"$states/acc_alpha_${s}") || acc_alpha=$default_acc_alpha
+    fi
+    bg_alpha=$(<"$states/bg_alpha_${s}") || bg_alpha=$default_bg_alpha
+    backup_colors
+    case $acc_source in
+        "w")
+        wall="$(<"$states/current_wall_${s}")"
+        export wall
+        export accent_anchor=$(<"$states/accent_anchor")
+        . "$hypr_sources/helpers/init_hex_from_wall"
+            fetch_second
+            accent_string="accent from wall"
+            ;;
+        "c")
+        export accent_anchor=$(<"$states/accent_anchor")
+        . "$hypr_sources/helpers/init_custom_accent"
+            fetch_second
+            accent_string="custom acc ($(<"$states/custom_acc_name_${s}")"
+            ;;
+        *)
+                common_sfg_assign_func
+                fetch_first
+                accent_string="color scheme ($(<"$states/scheme_${sm}") $acc)"
+                ;;
+    esac
+    echo "$accent_string" > "$states2/acc_Source"
+}
+
+init_global_vars () {
+    # Cleaned up duplicate writes
+    echo 0 > "$states2/configs_done"
+    [[ -z $regen_colors ]] && {
+        echo 0 > "$states2/general_done"
+        echo 0 > "$states2/hs_done"
+        echo 0 > "$states2/shadow_done"
+        echo 0 > "$states2/opacity_done"
+        echo 0 > "$states2/shader_done"
+        echo 0 > "$states2/blur_done"
+        echo 0 > "$states2/awww_done"
+        echo 0 > "$states2/gtk_css_generated"
+        echo 0 > "$states2/all_theme_set"
+    }
+#    set -u
+
+    halt_pipeline=""
+    echo "s is $s m is $m and sm is $sm"
+    echo $$ > "$states2/theme_run_pid"
+
+    > "$lock_files/theme_run_lock"
+    rnd="$RANDOM.$RANDOM.old"
+    s_string=$(<"$states2/s_string")
+    echo "s is $s"
+
+    start_icon_flag=$(<"$states/custom_acc_start_icon_${s}") || start_icon_flag=0
+    app_border_flag=$(<"$states/custom_acc_app_border_${s}") || app_border_flag=0
+    hyprland_border_flag=$(<"$states/custom_acc_hyprland_${s}") || hyprland_border_flag=0
+    gtk_app_bg_flag=$(<"$states/custom_acc_gtk_${s}") || gtk_app_bg_flag=1
+    normal_app_bg_flag=$(<"$states/custom_acc_normal_app_${s}") || normal_app_bg_flag=1
+
+    default_border_alpha=80
+    default_acc_alpha=80
+    default_bg_alpha=ff
+    acc_flip_thresh_dark=600  # (1-999)
+    acc_target_thresh_dark=150   # percentage of $accent_anchor scale
+    acc_manual_override=350  # both for light and dark theme
+
+    start_icon_contrast=$(<"$states/start_icon_tone_${s}")
+    acc_flip_thresh_light=150  # (1-99)
+    acc_target_thresh_light=600   # percentage of $accent_anchor scale
+
+    acc_source=$(<"$states/acc_source_${s}") || acc_source=d
+
+    . "$hypr_sources/helpers/fetch_color_scheme"
+
+    acc_virgin="$acc"
+    t_bg="$bg"
+    echo "$t_bg" > "$states2/${m}bg" &
+    export t_bg
+    echo "t_bg is $t_bg"
+
+    if [[ $(<"$states/acc_scrim_${s}") == 1 ]]; then
+        export scrim_mode=1
+    else
+        export scrim_mode=0
+    fi
+
+    color_fetch_master
+    . $hypr_sources/helpers/theme_definitions # source vars file
+    font_vars
+    vars_${m}
+    sfg_ec_${m}
+    . "$hypr_sources/helpers/theme_save_hex"
+    . "$hypr_sources/helpers/gen_gtk_css" &
+    useful_hex_${m}
+} # end of global var init func
+
+
+
+# =================================================
+# Init color pipelines
+# =================================================
+init_dark_colors () {
+    [[ -n $setting_theme ]] && {
+        . "$hypr_sources/msg/init_dark_theme"
+        msg="${theme_init_msgs[$RANDOM % ${#theme_init_msgs[@]}]}"
+        notify-send -a theme "Theme" "$msg" &
+    }
+    init_global_vars
+}
+
+init_light_colors () {
+    [[ -n $setting_theme ]] && {
+        . "$hypr_sources/msg/init_light_theme"
+        msg="${theme_init_msgs[$RANDOM % ${#theme_init_msgs[@]}]}"
+        notify-send -a theme "Theme" "$msg" &
+    }
+    init_global_vars
+}
+
+show_mode_switch () {
+    pkill splash
+    export do_not_relaunch_rofi="yes"
+    {
+        sleep 0.4
+        . "$hypr_sources/helpers/center_pop" "$1" "$2"
+    } &
+}
+
+# =================================================
+# Dark theme pipeline
+# =================================================
+final_apply () {
+    . "$hypr_sources/helpers/rconfig_gen" &
+    . "$hypr_sources/helpers/hyprlock_vars_gen" &
+    . "$hypr_sources/helpers/awww_final" &
+    . "$hypr_sources/helpers/theme_body_run"
+}
+
+set-dark-function () {
+    init_dark_colors
+    show_mode_switch "moon" "Dark Elements Generated"
+    set-theme-elements
+    final_apply
+    notify-send -a theme "Theme" "Switched to dark m\nMode: $s_string" &
+}
+
+restore-dark-function () {
+    init_dark_colors
+    final_apply
+    notify-send -a theme "Theme" "Dark elements generated\nMode: $s_string" &
+}
+
+# =================================================
+# Light theme pipeline
+# =================================================
+
+set-light-function () {
+    init_light_colors
+    show_mode_switch "sun-dim" "Light Elements Generated"
+    set-theme-elements
+    final_apply
+    notify-send -a theme "Theme" "Switched to light m\nMode: $s_string" &
+}
+
+restore-light-function () {
+    init_light_colors
+    final_apply
+    notify-send -a theme "Theme" "Light elements generated\nMode: $s_string" &
+}
+
+regen_accent_and_theme_colors () {
+    export regen_colors="yes"
+    if [[ $m == d ]]; then
+       export m_string=dark # gtk css generator needs m_string var
+        init_dark_colors
+    else
+       export m_string=light
+        init_light_colors
+    fi
+    . "$hypr_sources/helpers/rconfig_gen" &
+    . "$hypr_sources/helpers/hyprlock_vars_gen" &
+    . $hypr_sources/helpers/theme_main_body
+    echo 1 > "$states2/acc_changed"
+    theme_reapply_func_accent_hot_reload
+    regen_colors=""
+    echo "end of regen color"
+}

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# power_main — battery/AC + session control CLI. Was: qs-ctl power|session.
+#   power_main [status|battery|ac|state]        battery / AC (pure sysfs)
+#   power_main session [lock|logout|suspend|hibernate|reboot|shutdown]
+set -u
+. "$hypr_sources/helpers/power_main_body"
+
+case "${1:-}" in
+	session) shift; session_cmd "$@";;
+	*)       power_cmd "$@";;
+esac

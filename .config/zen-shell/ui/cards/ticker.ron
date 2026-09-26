@@ -1,0 +1,16 @@
+(
+    // prices card — fully declarative (Batch 1). Crypto rows from
+    // `ticker_rows` (sym · price · right chg% colored by sign); the window
+    // follows `ticker_scroll`, rows register `ticker_key_base + index` to open
+    // the coin's market page.
+    items: [
+        Header(title: "Prices", glyph: Some("\u{f201}"), meta: Some("crypto"), pad: 12.0),
+        Text(x: 0.0, y: -6.0, w: 0.0, text: "{ticker_status}", font_size: 9.0,
+             center_x: true, center_y: true, color: Some(fg3)),
+        Rows(name: "ticker_rows", y: 26.0, pad: 12.0, row_h: 18.0, cols: [
+            (x: 6.0, size: 9.5),
+            (x: 62.0, size: 9.5, color: Some(fg2)),
+            (x: 0.0, w: 0.0, right: true, size: 9.0),
+        ], key_base: Some(14600), hover_surface: Some(hover), start: Some("ticker_scroll")),
+    ],
+)

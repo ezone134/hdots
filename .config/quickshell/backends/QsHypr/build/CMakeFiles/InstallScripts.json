@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/acc/common/hdots/.config/quickshell/backends/QsHypr/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

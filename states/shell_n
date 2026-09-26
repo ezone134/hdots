@@ -1,0 +1,213 @@
+dash_tray = [
+    "batteryv",
+    "cpu",
+    "clipimg",
+    "powerh",
+    "disk",
+    "procmon",
+    "mem",
+    "clipboard",
+    "notes",
+    "activewin",
+    "topproc",
+    "cpugpu",
+    "gauges",
+    "toggles",
+    "todo",
+    "pkgupdates",
+    "wallpaper",
+    "docker",
+    "powerv",
+    "weather",
+    "sensors",
+    "news",
+    "calendar",
+    "viz",
+    "sliders",
+    "lyrics",
+    "wifi",
+    "bluetooth",
+    "speedtest",
+    "quote",
+    "currency",
+    "ticker",
+    "recent",
+    "thermal",
+    "clock",
+    "batteryh",
+]
+news_feeds = []
+viz_style = 2
+app_shortcuts = []
+
+[fonts]
+family = ""
+icon = ""
+icon_style = ""
+
+[bar]
+height = 0
+floating = false
+expanded = false
+floating_offset = 0
+collapsed_width = 0
+expanded_width = 0
+reserve = true
+expand_on_hover = true
+cc_instead_of_dash = false
+show_clock = true
+show_battery = true
+show_battery_pct = true
+show_ws = true
+show_tray = true
+show_viz = false
+settings_on_pill = true
+show_notif = true
+show_user = false
+show_watts = false
+show_brightness = true
+pill_order = [
+    "workspaces",
+    "clock",
+    "battery",
+    "watts",
+    "visualizer",
+    "settings",
+    "bell",
+    "tray",
+    "user",
+]
+anchor = "top"
+grid_scale = 1.0
+pill_margin_x = 18.0
+pill_alpha = 176
+dash_card_alpha = 204
+power_hold_delay = 1.5
+allow_over_100 = true
+max_vol = 100
+banner_order = []
+dash_enabled = true
+dash_scroll_dir = true
+ui_pad = 12.0
+win_radius = 20.0
+card_radius = 20.0
+card_radius_sync = true
+
+[animation]
+duration_ms = 0.0
+collapse_delay_ms = 0.0
+
+[colors]
+fg = ""
+bg = ""
+acc = ""
+hover = ""
+
+[weather]
+latitude = 0.0
+longitude = 0.0
+city = ""
+interval_s = 0
+
+[wallpaper]
+dir = ""
+command = ""
+cell = 96.0
+
+[backends]
+power = ""
+brightness = ""
+audio = ""
+lockscreen = ""
+wallpaper = ""
+
+[notifications]
+position = "top-right"
+timeout_ms = 5000
+max_visible = 5
+max_history = 64
+show_on_lock = false
+
+[notifications.per_app]
+
+[[dash_cards]]
+card = "system"
+x = 0
+y = 0
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "kblayout"
+x = 0
+y = 4
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "network"
+x = 0
+y = 8
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "gpu"
+x = 5
+y = 4
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "sshvpn"
+x = 6
+y = 0
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "media"
+x = 6
+y = 8
+w = 8
+h = 4
+
+[[dash_cards]]
+card = "accent"
+x = 11
+y = 0
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "mirror"
+x = 11
+y = 4
+w = 6
+h = 4
+
+[cards.audiorec]
+rec_surface = "raised"
+rec_active_surface = "danger"
+rec_dot = "danger"
+row_ink = "fg2"
+row_hover = "raised_hl"
+play_hover = "acc"
+del_hover = "danger"
+del_armed = "danger"
+rec_pad_bottom = 12.0
+row_h = 24.0
+[dashboard]
+padding = 12.0
+radius = 20.0
+card_radius = 20.0
+card_radius_sync = true
+
+[dashboard.banner]
+run = ["workspaces", "title", "date", "clock", "zone:1", "app_search", "tray", "zone:2", "settings", "power", "connectivity", "wifi", "bluetooth"]
+parked = ["battery", "weather", "cpu", "ram", "net_speed", "dnd", "volume", "brightness", "vpn", "branding"]
+
+[dashboard.cards]
+run = ["system", "kblayout", "network", "gpu", "sshvpn", "media", "accent", "mirror"]
+parked = ["batteryv", "cpu", "clipimg", "powerh", "disk", "procmon", "mem", "clipboard", "notes", "activewin", "topproc", "cpugpu", "gauges", "toggles", "todo", "pkgupdates", "wallpaper", "docker", "powerv", "weather", "sensors", "news", "calendar", "viz", "sliders", "lyrics", "wifi", "bluetooth", "speedtest", "quote", "currency", "ticker", "recent", "thermal", "clock", "batteryh"]
+

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+. $hypr_sources/helpers/hs_body
+
+case $1 in
+restore)
+    restore_func
+    ;;
+manual)
+    manual_func
+    ;;
+toggle)
+    toggle_func
+    ;;
+on)
+    on_func
+    ;;
+off)
+    off_func
+;;
+set)
+    # set a manual color temperature (Kelvin) and activate it
+    printf '%s\n' "${2:-4000}" > "$states/hyprsunset_val"
+    manual_func   # writes state=m, starts hyprsunset -t <val>, exits
+    ;;
+status)
+    # "<state> <kelvin>" — state c(off) | a(auto) | m(manual)
+    st=c; [[ -f "$states/hyprsunset_state" ]] && st=$(<"$states/hyprsunset_state")
+    kv=4000; [[ -f "$states/hyprsunset_val" ]] && kv=$(<"$states/hyprsunset_val")
+    printf '%s %s\n' "$st" "$kv"
+    ;;
+esac

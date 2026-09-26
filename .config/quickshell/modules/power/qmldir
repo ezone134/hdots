@@ -1,0 +1,3 @@
+# explicit qmldir for qs.power — disables the synthesizer
+module qs.power
+PowerPanel 1.0 PowerPanel.qml

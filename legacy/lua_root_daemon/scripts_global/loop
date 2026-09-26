@@ -1,0 +1,18 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+
+dofile(SCRIPT_DIR .. "/before_loop.lua")
+
+while true do
+    local fire_delay = read_line(SCRIPT_DIR .. "/states/fire_delay")
+    if not fire_delay then fire_delay = "3" end
+    run("sleep " .. fire_delay)
+
+    local fire_count = read_line(SCRIPT_DIR .. "/fire_count") or "0"
+    if fire_count ~= "0" then
+        run(SCRIPT_DIR .. "/during_loop")
+    end
+
+    run("sleep " .. fire_delay)
+end

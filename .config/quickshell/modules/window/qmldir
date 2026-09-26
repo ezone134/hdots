@@ -1,0 +1,3 @@
+# explicit qmldir for qs.window — disables the synthesizer
+module qs.window
+WindowPanel 1.0 WindowPanel.qml

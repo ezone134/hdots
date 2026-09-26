@@ -1,0 +1,12 @@
+#!/usr/bin/env luajit
+
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+
+tf(states2 .. "/pid_user_loop", tostring(getpid()))
+
+while true do
+    sleep(30)
+    run(sources .. "/daemon/run_inside_loop")
+    sleep(30)
+end

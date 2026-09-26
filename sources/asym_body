@@ -1,0 +1,18 @@
+#!/usr/bin/env luajit
+-- helper asym_body — absolute symlink creator.
+
+function asym_cmd(i)
+    if is_symlink(i .. "_") then
+        run_bg("notify-send -a Symlink 'Symlink' 'Already exists'")
+        exit_0()
+    end
+
+    symlink(i, i .. "_")
+
+    if is_symlink(i .. "_") then
+        run_bg("notify-send -a Symlink 'Symlink' 'Created'")
+    else
+        run_bg("notify-send -a Symlink 'Symlink' 'Failed to create'")
+    end
+    exit_0()
+end

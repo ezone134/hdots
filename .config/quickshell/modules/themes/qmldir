@@ -1,0 +1,3 @@
+# explicit qmldir for qs.themes — disables the synthesizer
+module qs.themes
+ThemesPanel 1.0 ThemesPanel.qml

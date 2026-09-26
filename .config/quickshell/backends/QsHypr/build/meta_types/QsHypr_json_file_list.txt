@@ -1,0 +1,2 @@
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/QsHypr_autogen/include/../EWIEGA46WW/moc_qsHypr.cpp.json
+/acc/common/hdots/.config/quickshell/backends/QsHypr/build/QsHypr_autogen/include/qsHypr.moc.json

@@ -1,0 +1,27 @@
+(
+    // PKGUPDATES — hero count figure, fully declarative. The pending and ok
+    // states are exclusively gated: pending → DOWN glyph in accent + accent
+    // count hero + "updates" caption; ok → CHECK glyph in ok green + fg
+    // count + "up to date" caption. Center-anchored like the Rust drawer's
+    // `cy − 18 / cy + 10 / cy + 34` trio.
+    items: [
+        Text(x: 0.0, y: -18.0, w: 0.0, icon: true, text: "\u{f063}", font_size: 22.0,
+             center_x: true, center_y: true, center: true, color: Some(acc),
+             visible: Some("pkg_pending")),
+        Text(x: 0.0, y: 10.0, w: 0.0, text: "{pkg_count}", font_size: 20.0,
+             font: display, weight: medium, center_x: true, center_y: true,
+             center: true, color: Some(acc), visible: Some("pkg_pending")),
+        Text(x: 0.0, y: 34.0, w: 0.0, text: "updates", font_size: 9.0,
+             center_x: true, center_y: true, center: true, color: Some(fg2),
+             visible: Some("pkg_pending")),
+        Text(x: 0.0, y: -18.0, w: 0.0, icon: true, text: "\u{f00c}", font_size: 22.0,
+             center_x: true, center_y: true, center: true, color: Some(ok),
+             visible: Some("pkg_ok")),
+        Text(x: 0.0, y: 10.0, w: 0.0, text: "{pkg_count}", font_size: 20.0,
+             font: display, weight: medium, center_x: true, center_y: true,
+             center: true, color: Some(fg), visible: Some("pkg_ok")),
+        Text(x: 0.0, y: 34.0, w: 0.0, text: "up to date", font_size: 9.0,
+             center_x: true, center_y: true, center: true, color: Some(fg2),
+             visible: Some("pkg_ok")),
+    ],
+)

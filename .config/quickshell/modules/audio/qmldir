@@ -1,0 +1,3 @@
+# explicit qmldir for qs.audio — disables the synthesizer
+module qs.audio
+AudioPanel 1.0 AudioPanel.qml

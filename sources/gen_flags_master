@@ -1,0 +1,499 @@
+-- helper gen_flags_master
+-- ported from bash sources/gen_flags_master:
+--   [[ -f $states/<k> ]] || echo <v> > $states/<k>
+
+if not is_file(states2 .. "/s") then
+    tf(states2 .. "/s", '"d"')
+end
+if not is_file(states .. "/accent_anchor") then
+    tf(states .. "/accent_anchor", '"1000"')
+end
+if not is_file(states .. "/save_shades") then
+    tf(states .. "/save_shades", '0')
+end
+if not is_file(states .. "/fav_accents_list") then
+    tf(states .. "/fav_accents_list", '"opensuse_green_2 sunken_jade_8 murky_abyss_9 noir_cherry_8 indigo_28 deep_mulberry_20 moss_41 deep_sea_blue_40"')
+end
+if not is_file(states .. "/start_icon_tone_n") then
+    tf(states .. "/start_icon_tone_n", '"900"')
+end
+if not is_file(states .. "/start_icon_tone_d") then
+    tf(states .. "/start_icon_tone_d", '"900"')
+end
+if not is_file(states .. "/start_icon_tone_l") then
+    tf(states .. "/start_icon_tone_l", '"700"')
+end
+if not is_file(states .. "/acc_alpha_n") then
+    tf(states .. "/acc_alpha_n", '"ff"')
+end
+if not is_file(states .. "/acc_alpha_d") then
+    tf(states .. "/acc_alpha_d", '"e5"')
+end
+if not is_file(states .. "/acc_alpha_l") then
+    tf(states .. "/acc_alpha_l", '"ff"')
+end
+if not is_file(states .. "/border_alpha_n") then
+    tf(states .. "/border_alpha_n", '"bf"')
+end
+if not is_file(states .. "/border_alpha_d") then
+    tf(states .. "/border_alpha_d", '"bf"')
+end
+if not is_file(states .. "/border_alpha_l") then
+    tf(states .. "/border_alpha_l", '"ff"')
+end
+if not is_file(states .. "/bg_alpha_n") then
+    tf(states .. "/bg_alpha_n", '"bf"')
+end
+if not is_file(states .. "/bg_alpha_d") then
+    tf(states .. "/bg_alpha_d", '"ff"')
+end
+if not is_file(states .. "/bg_alpha_l") then
+    tf(states .. "/bg_alpha_l", '"ff"')
+end
+if not is_file(states .. "/bg_tint_strength_n") then
+    tf(states .. "/bg_tint_strength_n", '"3"')
+end
+if not is_file(states .. "/bg_tint_strength_d") then
+    tf(states .. "/bg_tint_strength_d", '"3"')
+end
+if not is_file(states .. "/bg_tint_strength_l") then
+    tf(states .. "/bg_tint_strength_l", '"3"')
+end
+if not is_file(states .. "/param_l") then
+    tf(states .. "/param_l", '"1"')
+end
+if not is_file(states .. "/param_r") then
+    tf(states .. "/param_r", '"1"')
+end
+if not is_file(states .. "/opacity_active_n") then
+    tf(states .. "/opacity_active_n", '"0.7"')
+end
+if not is_file(states .. "/opacity_active_d") then
+    tf(states .. "/opacity_active_d", '"0.8"')
+end
+if not is_file(states .. "/opacity_active_l") then
+    tf(states .. "/opacity_active_l", '"0.8"')
+end
+if not is_file(states .. "/opacity_inactive_n") then
+    tf(states .. "/opacity_inactive_n", '"0.5"')
+end
+if not is_file(states .. "/opacity_inactive_d") then
+    tf(states .. "/opacity_inactive_d", '"0.5"')
+end
+if not is_file(states .. "/opacity_inactive_l") then
+    tf(states .. "/opacity_inactive_l", '"0.7"')
+end
+if not is_file(states .. "/opacity_state_n") then
+    tf(states .. "/opacity_state_n", '"0"')
+end
+if not is_file(states .. "/opacity_state_d") then
+    tf(states .. "/opacity_state_d", '"1"')
+end
+if not is_file(states .. "/opacity_state_l") then
+    tf(states .. "/opacity_state_l", '"0"')
+end
+if not is_file(states .. "/hypr_blur_n") then
+    tf(states .. "/hypr_blur_n", '"1"')
+end
+if not is_file(states .. "/hypr_blur_d") then
+    tf(states .. "/hypr_blur_d", '"1"')
+end
+if not is_file(states .. "/hypr_blur_l") then
+    tf(states .. "/hypr_blur_l", '"1"')
+end
+if not is_file(states .. "/hypr_blur_size_n") then
+    tf(states .. "/hypr_blur_size_n", '"10"')
+end
+if not is_file(states .. "/hypr_blur_size_d") then
+    tf(states .. "/hypr_blur_size_d", '"2"')
+end
+if not is_file(states .. "/hypr_blur_size_l") then
+    tf(states .. "/hypr_blur_size_l", '"2"')
+end
+if not is_file(states .. "/hypr_blur_passes_n") then
+    tf(states .. "/hypr_blur_passes_n", '"3"')
+end
+if not is_file(states .. "/hypr_blur_passes_d") then
+    tf(states .. "/hypr_blur_passes_d", '"4"')
+end
+if not is_file(states .. "/hypr_blur_passes_l") then
+    tf(states .. "/hypr_blur_passes_l", '"3"')
+end
+if not is_file(states .. "/hypr_blur_vibrancy_n") then
+    tf(states .. "/hypr_blur_vibrancy_n", '"0.5"')
+end
+if not is_file(states .. "/hypr_blur_vibrancy_d") then
+    tf(states .. "/hypr_blur_vibrancy_d", '"0.1"')
+end
+if not is_file(states .. "/hypr_blur_vibrancy_l") then
+    tf(states .. "/hypr_blur_vibrancy_l", '"0.8"')
+end
+if not is_file(states .. "/shader_val_n") then
+    tf(states .. "/shader_val_n", '"40"')
+end
+if not is_file(states .. "/shader_val_d") then
+    tf(states .. "/shader_val_d", '"40"')
+end
+if not is_file(states .. "/shader_val_l") then
+    tf(states .. "/shader_val_l", '"40"')
+end
+if not is_file(states .. "/shader_m_n") then
+    tf(states .. "/shader_m_n", '0')
+end
+if not is_file(states .. "/shader_m_d") then
+    tf(states .. "/shader_m_d", '0')
+end
+if not is_file(states .. "/shader_m_l") then
+    tf(states .. "/shader_m_l", '0')
+end
+if not is_file(states .. "/rounding_n") then
+    tf(states .. "/rounding_n", '"10"')
+end
+if not is_file(states .. "/rounding_d") then
+    tf(states .. "/rounding_d", '"10"')
+end
+if not is_file(states .. "/rounding_l") then
+    tf(states .. "/rounding_l", '"10"')
+end
+if not is_file(states .. "/rounding_power_n") then
+    tf(states .. "/rounding_power_n", '"8"')
+end
+if not is_file(states .. "/rounding_power_d") then
+    tf(states .. "/rounding_power_d", '"2"')
+end
+if not is_file(states .. "/rounding_power_l") then
+    tf(states .. "/rounding_power_l", '"2"')
+end
+if not is_file(states .. "/border_size_n") then
+    tf(states .. "/border_size_n", '"3"')
+end
+if not is_file(states .. "/border_size_d") then
+    tf(states .. "/border_size_d", '"3"')
+end
+if not is_file(states .. "/border_size_l") then
+    tf(states .. "/border_size_l", '"3"')
+end
+if not is_file(states .. "/gaps_in_n") then
+    tf(states .. "/gaps_in_n", '"5"')
+end
+if not is_file(states .. "/gaps_in_d") then
+    tf(states .. "/gaps_in_d", '"7"')
+end
+if not is_file(states .. "/gaps_in_l") then
+    tf(states .. "/gaps_in_l", '"6"')
+end
+if not is_file(states .. "/gaps_out_n") then
+    tf(states .. "/gaps_out_n", '"10"')
+end
+if not is_file(states .. "/gaps_out_d") then
+    tf(states .. "/gaps_out_d", '"10"')
+end
+if not is_file(states .. "/gaps_out_l") then
+    tf(states .. "/gaps_out_l", '"10"')
+end
+if not is_file(states .. "/layout_n") then
+    tf(states .. "/layout_n", '"dwindle"')
+end
+if not is_file(states .. "/layout_d") then
+    tf(states .. "/layout_d", '"dwindle"')
+end
+if not is_file(states .. "/layout_l") then
+    tf(states .. "/layout_l", '"dwindle"')
+end
+if not is_file(states .. "/allow_tearing_n") then
+    tf(states .. "/allow_tearing_n", '"1"')
+end
+if not is_file(states .. "/allow_tearing_d") then
+    tf(states .. "/allow_tearing_d", '"1"')
+end
+if not is_file(states .. "/allow_tearing_l") then
+    tf(states .. "/allow_tearing_l", '"1"')
+end
+if not is_file(states .. "/resize_on_border_n") then
+    tf(states .. "/resize_on_border_n", '"1"')
+end
+if not is_file(states .. "/resize_on_border_d") then
+    tf(states .. "/resize_on_border_d", '"1"')
+end
+if not is_file(states .. "/resize_on_border_l") then
+    tf(states .. "/resize_on_border_l", '"1"')
+end
+if not is_file(states .. "/shadow_enabled_n") then
+    tf(states .. "/shadow_enabled_n", '"0"')
+end
+if not is_file(states .. "/shadow_enabled_d") then
+    tf(states .. "/shadow_enabled_d", '"1"')
+end
+if not is_file(states .. "/shadow_enabled_l") then
+    tf(states .. "/shadow_enabled_l", '"1"')
+end
+if not is_file(states .. "/shadow_range_n") then
+    tf(states .. "/shadow_range_n", '"3"')
+end
+if not is_file(states .. "/shadow_range_d") then
+    tf(states .. "/shadow_range_d", '"8"')
+end
+if not is_file(states .. "/shadow_range_l") then
+    tf(states .. "/shadow_range_l", '"15"')
+end
+if not is_file(states .. "/shadow_render_power_n") then
+    tf(states .. "/shadow_render_power_n", '"8"')
+end
+if not is_file(states .. "/shadow_render_power_d") then
+    tf(states .. "/shadow_render_power_d", '"1"')
+end
+if not is_file(states .. "/shadow_render_power_l") then
+    tf(states .. "/shadow_render_power_l", '"3"')
+end
+if not is_file(states .. "/shadow_rgba_n") then
+    tf(states .. "/shadow_rgba_n", '"0xee1a1a1a"')
+end
+if not is_file(states .. "/shadow_rgba_d") then
+    tf(states .. "/shadow_rgba_d", '"0xee1a1a1a"')
+end
+if not is_file(states .. "/shadow_rgba_l") then
+    tf(states .. "/shadow_rgba_l", '"0xee1a1a1a"')
+end
+if not is_file(states .. "/current_wall_n") then
+    tf(states .. "/current_wall_n", '"/home/tw/Wallpapers/damir-babacic-7EkyXZYeYsw-unsplash.jpg"')
+end
+if not is_file(states .. "/current_wall_d") then
+    tf(states .. "/current_wall_d", '"/home/tw/Wallpapers/winter-10.png"')
+end
+if not is_file(states .. "/current_wall_l") then
+    tf(states .. "/current_wall_l", '"/home/tw/Wallpapers/japan-artistic-5120x2880-25406.jpg"')
+end
+if not is_file(states .. "/wall_anim_n") then
+    tf(states .. "/wall_anim_n", '"simple"')
+end
+if not is_file(states .. "/wall_anim_d") then
+    tf(states .. "/wall_anim_d", '"grow"')
+end
+if not is_file(states .. "/wall_anim_l") then
+    tf(states .. "/wall_anim_l", '"center"')
+end
+if not is_file(states .. "/wall_anim_dur_n") then
+    tf(states .. "/wall_anim_dur_n", '"5"')
+end
+if not is_file(states .. "/wall_anim_dur_d") then
+    tf(states .. "/wall_anim_dur_d", '"5"')
+end
+if not is_file(states .. "/wall_anim_dur_l") then
+    tf(states .. "/wall_anim_dur_l", '"5"')
+end
+if not is_file(states .. "/custom_acc_n") then
+    tf(states .. "/custom_acc_n", 'accent_amber')
+end
+if not is_file(states .. "/custom_acc_d") then
+    tf(states .. "/custom_acc_d", 'accent_amber')
+end
+if not is_file(states .. "/custom_acc_l") then
+    tf(states .. "/custom_acc_l", 'accent_amber')
+end
+if not is_file(states .. "/custom_acc_normal_app_n") then
+    tf(states .. "/custom_acc_normal_app_n", '"0"')
+end
+if not is_file(states .. "/custom_acc_normal_app_d") then
+    tf(states .. "/custom_acc_normal_app_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_normal_app_l") then
+    tf(states .. "/custom_acc_normal_app_l", '"0"')
+end
+if not is_file(states .. "/custom_acc_start_icon_n") then
+    tf(states .. "/custom_acc_start_icon_n", '"0"')
+end
+if not is_file(states .. "/custom_acc_start_icon_d") then
+    tf(states .. "/custom_acc_start_icon_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_start_icon_l") then
+    tf(states .. "/custom_acc_start_icon_l", '"1"')
+end
+if not is_file(states .. "/custom_acc_app_border_n") then
+    tf(states .. "/custom_acc_app_border_n", '"1"')
+end
+if not is_file(states .. "/custom_acc_app_border_d") then
+    tf(states .. "/custom_acc_app_border_d", '"1"')
+end
+if not is_file(states .. "/custom_acc_app_border_l") then
+    tf(states .. "/custom_acc_app_border_l", '"1"')
+end
+if not is_file(states .. "/custom_acc_gtk_n") then
+    tf(states .. "/custom_acc_gtk_n", '"0"')
+end
+if not is_file(states .. "/custom_acc_gtk_d") then
+    tf(states .. "/custom_acc_gtk_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_gtk_l") then
+    tf(states .. "/custom_acc_gtk_l", '"0"')
+end
+if not is_file(states .. "/custom_acc_hyprland_n") then
+    tf(states .. "/custom_acc_hyprland_n", '"1"')
+end
+if not is_file(states .. "/custom_acc_hyprland_d") then
+    tf(states .. "/custom_acc_hyprland_d", '"0"')
+end
+if not is_file(states .. "/custom_acc_hyprland_l") then
+    tf(states .. "/custom_acc_hyprland_l", '"0"')
+end
+if not is_file(states .. "/show_splash_d") then
+    tf(states .. "/show_splash_d", '1')
+end
+if not is_file(states .. "/show_splash_n") then
+    tf(states .. "/show_splash_n", '1')
+end
+if not is_file(states .. "/show_splash_l") then
+    tf(states .. "/show_splash_l", '1')
+end
+if not is_file(states .. "/splash_alpha_d") then
+    tf(states .. "/splash_alpha_d", '0')
+end
+if not is_file(states .. "/splash_alpha_n") then
+    tf(states .. "/splash_alpha_n", '0')
+end
+if not is_file(states .. "/splash_alpha_l") then
+    tf(states .. "/splash_alpha_l", '0')
+end
+if not is_file(states .. "/scheme_dd") then
+    tf(states .. "/scheme_dd", 'default')
+end
+if not is_file(states .. "/scheme_ll") then
+    tf(states .. "/scheme_ll", 'default')
+end
+if not is_file(states .. "/scheme_nl") then
+    tf(states .. "/scheme_nl", 'default')
+end
+if not is_file(states .. "/scheme_nd") then
+    tf(states .. "/scheme_nd", 'default')
+end
+if not is_file(states .. "/splash_bg_acc_d") then
+    tf(states .. "/splash_bg_acc_d", '0')
+end
+if not is_file(states .. "/splash_bg_acc_n") then
+    tf(states .. "/splash_bg_acc_n", '0')
+end
+if not is_file(states .. "/splash_bg_acc_l") then
+    tf(states .. "/splash_bg_acc_l", '0')
+end
+if not is_file(states .. "/font_size_n") then
+    tf(states .. "/font_size_n", '"16"')
+end
+if not is_file(states .. "/font_size_d") then
+    tf(states .. "/font_size_d", '"16"')
+end
+if not is_file(states .. "/font_size_l") then
+    tf(states .. "/font_size_l", '"16"')
+end
+if not is_file(states .. "/font_n") then
+    tf(states .. "/font_n", '"SF Pro"')
+end
+if not is_file(states .. "/font_d") then
+    tf(states .. "/font_d", '"SF Pro"')
+end
+if not is_file(states .. "/font_l") then
+    tf(states .. "/font_l", '"SF Pro"')
+end
+if not is_file(states .. "/splash_id_n") then
+    tf(states .. "/splash_id_n", '0')
+end
+if not is_file(states .. "/splash_id_d") then
+    tf(states .. "/splash_id_d", '0')
+end
+if not is_file(states .. "/splash_id_l") then
+    tf(states .. "/splash_id_l", '0')
+end
+if not is_file(states .. "/hyprsunset_state") then
+    tf(states .. "/hyprsunset_state", 'c')
+end
+if not is_file(states .. "/hyprsunset_val") then
+    tf(states .. "/hyprsunset_val", '"4500"')
+end
+if not is_file(states .. "/acc_scrim_n") then
+    tf(states .. "/acc_scrim_n", '"0"')
+end
+if not is_file(states .. "/acc_scrim_d") then
+    tf(states .. "/acc_scrim_d", '"0"')
+end
+if not is_file(states .. "/acc_scrim_l") then
+    tf(states .. "/acc_scrim_l", '"0"')
+end
+if not is_file(states .. "/scrim_alpha_n") then
+    tf(states .. "/scrim_alpha_n", '"4c"')
+end
+if not is_file(states .. "/scrim_alpha_d") then
+    tf(states .. "/scrim_alpha_d", '"4c"')
+end
+if not is_file(states .. "/scrim_alpha_l") then
+    tf(states .. "/scrim_alpha_l", '"59"')
+end
+if not is_file(states .. "/acc_source_d") then
+    tf(states .. "/acc_source_d", 'd')
+end
+if not is_file(states .. "/acc_source_n") then
+    tf(states .. "/acc_source_n", 'd')
+end
+if not is_file(states .. "/acc_source_l") then
+    tf(states .. "/acc_source_l", 'd')
+end
+if not is_file(states .. "/pop_notif_delay") then
+    tf(states .. "/pop_notif_delay", "0.8")
+end
+
+
+if not is_file(states .. "/m_output") then
+    tf(states .. "/m_output", "")
+end
+
+if not is_file(states .. "/m_mode") then
+    tf(states .. "/m_mode", "preferred")
+end
+
+if not is_file(states .. "/m_pos") then
+    tf(states .. "/m_pos", "auto")
+end
+
+if not is_file(states .. "/m_scl") then
+    tf(states .. "/m_scl", "1")
+end
+
+if not is_file(states .. "/auto_launch") then
+    tf(states .. "/auto_launch", "1")
+end
+
+if not is_file(states .. "/b") then
+    tf(states .. "/b", "/tmp")
+end
+
+if not is_file(r_daemon .. "/states/fire_delay") then
+    tf(r_daemon .. "/states/fire_delay", "2")
+end
+
+if not is_file(r_daemon .. "/states/ps") then
+    tf(r_daemon .. "/states/ps", "1")
+end
+
+
+if not is_file(r_daemon .. "/states/ac_plan") then
+    tf(r_daemon .. "/states/ac_plan", "powersave")
+end
+
+
+if not is_file(r_daemon .. "/states/bat_plan") then
+    tf(r_daemon .. "/states/bat_plan", "powersave")
+end
+
+if not is_file(r_daemon .. "/states/max_bat_mhz") then
+    tf(r_daemon .. "/states/max_ac_mhz", "1200")
+end
+
+if not is_file(r_daemon .. "/states/max_ac_mhz") then
+    tf(r_daemon .. "/states/max_ac_mhz", "3500")
+end
+
+
+if not is_file(states .. "/gamma_v") then
+    tf(states .. "/gamma_v", "0")
+end
+
+if not is_file(states .. "/ms") then
+    tf(states .. "/ms", "0")
+end

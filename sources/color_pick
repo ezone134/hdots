@@ -1,0 +1,324 @@
+-- helper color_pick — pure-Lua color engine
+-- Replaces: sources/color_engine (ELF binary) + init_hex_from_wall +
+-- init_custom_accent. Image decode is done in-process through the FFI-loaded
+-- extras/stb_image.so (no external binary). Deterministic and mirrors
+-- rust_project_root/color_engine/src/main.rs exactly. Image I/O lives in
+-- /utils (load_stb_image / free_stb_image) — no private ffi in this file.
+
+-- decode image to 8-bit RGB; returns (pxptr, w, h) or (nil) on failure
+local function decode_image(path)
+    return load_stb_image(path)
+end
+
+local function trunc_div(a, b)
+    local q = a / b
+    if q >= 0 then return math.floor(q) end
+    return math.ceil(q)
+end
+
+-- floor division (LuaJIT has no //)
+local function fdiv(a, b)
+    return math.floor(a / b)
+end
+
+-- quantized bucket counts; key = (r>>3)<<10 | (g>>3)<<5 | (b>>3)
+local function sample_colors(px, w, h, size)
+    local counts = {}
+    for y = 0, size - 1 do
+        local sy = fdiv(y * h, size)
+        for x = 0, size - 1 do
+            local sx = fdiv(x * w, size)
+            local idx = (sy * w + sx) * 3
+            local key = fdiv(px[idx], 8) * 1024 + fdiv(px[idx + 1], 8) * 32 + fdiv(px[idx + 2], 8)
+            counts[key] = (counts[key] or 0) + 1
+        end
+    end
+    return counts
+end
+
+local function key_to_rgb(key)
+    local r = (fdiv(key, 1024) % 32) * 8
+    local g = (fdiv(key, 32) % 32) * 8
+    local b = (key % 32) * 8
+    return r, g, b
+end
+
+-- ascending packed-key iteration (deterministic)
+local function sorted_keys(counts)
+    local keys = {}
+    for k in pairs(counts) do keys[#keys + 1] = k end
+    table.sort(keys)
+    return keys
+end
+
+-- mode "d" (default / matugen-ish)
+local function pick_color(px, w, h)
+    local counts = sample_colors(px, w, h, 128)
+    local best_score = -1.0
+    local best_count = 0
+    local best_hex = "#000000"
+    for _, key in ipairs(sorted_keys(counts)) do
+        local count = counts[key]
+        local r, g, b = key_to_rgb(key)
+        local max_c = math.max(r, g, b)
+        local min_c = math.min(r, g, b)
+        local chroma = max_c - min_c
+        local luma = r * 0.299 + g * 0.587 + b * 0.114
+        if luma >= 20.0 and luma <= 245.0 and chroma >= 10 then
+            local score = chroma * math.log(count + 1)
+            if score > best_score or (score == best_score and count > best_count) then
+                best_score = score
+                best_count = count
+                best_hex = string.format("#%02x%02x%02x", r, g, b)
+            end
+        end
+    end
+    return best_hex
+end
+
+-- mode "s" (most saturated)
+local function run_saturated(px, w, h)
+    local counts = sample_colors(px, w, h, 140)
+    local best_sat = -1
+    local best_count = 0
+    local best_hex = "#000000"
+    for _, key in ipairs(sorted_keys(counts)) do
+        local count = counts[key]
+        local r, g, b = key_to_rgb(key)
+        local bright = fdiv(r * 299 + g * 587 + b * 114, 1000)
+        if bright <= 230 and bright >= 40 then
+            local sat = math.max(r, g, b) - math.min(r, g, b)
+            if sat > best_sat or (sat == best_sat and count > best_count) then
+                best_sat = sat
+                best_count = count
+                best_hex = string.format("#%02x%02x%02x", r, g, b)
+            end
+        end
+    end
+    return best_hex
+end
+
+-- mode "f" (fast): 3rd most common bucket
+local function run_fast(px, w, h)
+    local counts = sample_colors(px, w, h, 100)
+    local list = {}
+    for k, c in pairs(counts) do list[#list + 1] = { c, k } end
+    table.sort(list, function(a, b)
+        if a[1] ~= b[1] then return a[1] > b[1] end
+        return a[2] < b[2]
+    end)
+    if #list >= 3 then
+        local r, g, b = key_to_rgb(list[3][2])
+        return string.format("#%02x%02x%02x", r, g, b)
+    end
+    return "#000000"
+end
+
+-- mode "v" (vibrant)
+local function run_vibrant(px, w, h)
+    local counts = sample_colors(px, w, h, 160)
+    local best_score = -1
+    local best_hex = "#FFFFFF"
+    for _, key in ipairs(sorted_keys(counts)) do
+        local count = counts[key]
+        local r, g, b = key_to_rgb(key)
+        local chroma = math.max(r, g, b) - math.min(r, g, b)
+        local luma = math.floor(0.2126 * r + 0.7152 * g + 0.0722 * b)
+        if chroma > 30 and luma > 40 and luma < 220 then
+            local score = count * chroma
+            if score > best_score then
+                best_score = score
+                best_hex = string.format("#%02x%02x%02x", r, g, b)
+            end
+        end
+    end
+    return best_hex
+end
+
+-- mode "b" (balanced): luma-average of non-grey pixels, step 300 bytes
+local function run_balanced(px, w, h)
+    local total_r, total_g, total_b, samples = 0, 0, 0, 0
+    local total_bytes = w * h * 3
+    local i = 0
+    while i < total_bytes do
+        local pi = fdiv(i, 3)
+        local x = pi % w
+        local y = fdiv(pi, w)
+        local idx = (y * w + x) * 3
+        local r, g, b = px[idx], px[idx + 1], px[idx + 2]
+        if math.abs(r - g) > 20 or math.abs(g - b) > 20 then
+            total_r = total_r + r
+            total_g = total_g + g
+            total_b = total_b + b
+            samples = samples + 1
+        end
+        i = i + 300
+    end
+    if samples == 0 then return "#444444" end
+    return string.format("#%02x%02x%02x", fdiv(total_r, samples), fdiv(total_g, samples), fdiv(total_b, samples))
+end
+
+-- pick a hex from an image file by mode; d|s|f|v|b (default f)
+function pick_hex_from_img(path, mode)
+    local px, w, h = decode_image(path)
+    if px == nil then return "" end
+    local hex
+    if mode == "d" then
+        hex = pick_color(px, w, h)
+    elseif mode == "s" then
+        hex = run_saturated(px, w, h)
+    elseif mode == "v" then
+        hex = run_vibrant(px, w, h)
+    elseif mode == "b" then
+        hex = run_balanced(px, w, h)
+    else
+        hex = run_fast(px, w, h)
+    end
+    free_stb_image(px)
+    return hex
+end
+
+local function hex_nibble(c)
+    local n = tonumber(c, 16)
+    if n == nil then n = 0 end
+    return n
+end
+
+local function hex_to_rgb(h)
+    h = h:gsub("^#", "")
+    if h:len() ~= 6 then return nil end
+    return hex_nibble(h:sub(1, 2)), hex_nibble(h:sub(3, 4)), hex_nibble(h:sub(5, 6))
+end
+
+local function clamp_u8(v)
+    if v < 0 then return 0 end
+    if v > 255 then return 255 end
+    return v
+end
+
+-- gen_shades: write shade_0..shade_(2*anchor)="#RRGGBB" ramp lines to outpath.
+-- mirrors color_engine gen_shades; env equivalents: m, accent_anchor, t_bg.
+function gen_shades_lua(hex_raw, outpath)
+    hex_raw = tostring(hex_raw):gsub("^%s*#?", "")
+    local mode = m
+    local accent_anchor = tonumber(ff(states .. "/accent_anchor")) or 1000
+    local dark_tint = t_bg
+    local r0, g0, b0 = hex_to_rgb(hex_raw)
+    if r0 == nil then
+        err("gen_shades: bad hex " .. tostring(hex_raw))
+        return nil
+    end
+    local dark_hex, light_hex
+    if mode == "d" then
+        dark_hex, light_hex = dark_tint or "", "ffffff"
+    else
+        dark_hex, light_hex = "000000", dark_tint or ""
+    end
+    local dr, dg, db = hex_to_rgb(dark_hex)
+    local lr, lg, lb = hex_to_rgb(light_hex)
+    if dr == nil or lr == nil then
+        err("gen_shades: missing t_bg for mode " .. tostring(mode))
+        return nil
+    end
+    mkdir_p(dirname(outpath))
+    local light_anchor = accent_anchor * 2
+    local lines = {}
+    local n = 0
+    for i = 0, light_anchor do
+        local r, g, b
+        if i <= accent_anchor then
+            r = dr + trunc_div((r0 - dr) * i, accent_anchor)
+            g = dg + trunc_div((g0 - dg) * i, accent_anchor)
+            b = db + trunc_div((b0 - db) * i, accent_anchor)
+        else
+            local t = i - accent_anchor
+            r = r0 + trunc_div((lr - r0) * t, accent_anchor)
+            g = g0 + trunc_div((lg - g0) * t, accent_anchor)
+            b = b0 + trunc_div((lb - b0) * t, accent_anchor)
+        end
+        n = n + 1
+        lines[n] = string.format("shade_%d=\"#%02X%02X%02X\"", i, clamp_u8(r), clamp_u8(g), clamp_u8(b))
+    end
+    tf(outpath, table.concat(lines, "\n") .. "\n")
+    return true
+end
+
+-- init_hex_from_wall (replaces helper file of the same name)
+function init_hex_from_wall()
+    local base = basename(wall)
+    shades_list = rcache .. "/accents/" .. s .. "/w_" .. base .. "/l"
+    local pickers = { "v", "b", "d", "s", "f" }
+    local function pick_hex_logic()
+        for _, mode in ipairs(pickers) do
+            hex = pick_hex_from_img(wall, mode)
+            if hex ~= "" then
+                return true
+            end
+        end
+        return false
+    end
+    if scrim_mode == 0 then
+        if is_file(shades_list) then
+            local msg = "Shades list already exists"
+            run_bg("notify-send -a theme-extras 'Theme extras' " .. shq(msg))
+            halt_pipeline = "yes"
+        else
+            run_bg("notify-send -a theme-extras 'Theme extras' 'Generating wallpaper accent cache…'")
+            if pick_hex_logic() then
+                gen_shades_lua(hex, shades_list)
+            else
+                err("init_hex_from_wall: could not decode any picker")
+                halt_pipeline = "yes"
+            end
+        end
+    else
+        pick_hex_logic()
+        scrim_hex = hex
+        tf(states2 .. "/scrim_hex_" .. s, scrim_hex)
+    end
+end
+
+
+-- init_custom_accent (replaces helper file of the same name)
+function init_custom_accent()
+    local input = ff(states .. "/custom_acc_" .. s) or ""
+    local hex_override, hex_code
+    if input:sub(1, 1) == "#" then
+        hex_override = "yes"
+        hex_code = input
+        local hex_id = hex_code:gsub("^#", "")
+        shades_list = rcache .. "/accents/" .. s .. "/c_" .. hex_id .. "/l"
+    else
+        hex_code = ""
+        if is_file(custom_acc_master_list) then
+            -- Load the master list into a temporary environment table
+            -- so all variables are cleanly accessible without manual parsing
+            local env = {}
+            local chunk, err_msg = loadfile(custom_acc_master_list, "t", env)
+            if chunk then
+                pcall(chunk)
+                hex_code = env[input] or ""
+            end
+        end
+        hex_override = ""
+        shades_list = rcache .. "/accents/" .. s .. "/c_" .. input .. "/l"
+    end
+    if scrim_mode == 0 then
+        if not hex_code or hex_code == "" then
+            err("Custom accent init_custom_accent error: hex is empty")
+            halt_pipeline = "yes"
+        end
+        if is_file(shades_list) then
+            run_bg("notify-send -a theme-extras 'Theme extras' 'Shades list already exists'")
+            halt_pipeline = "yes"
+        end
+        if halt_pipeline == "no" then
+            run_bg("notify-send -a theme-extras 'Theme extras' 'Generating custom accent shades…'")
+            gen_shades_lua(hex_code, shades_list)
+        end
+    else
+        tf(states2 .. "/scrim_hex_" .. s, hex_code)
+    end
+end
+
+return nil

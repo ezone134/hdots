@@ -1,0 +1,30 @@
+(
+    // sensors card — fully declarative (zero Ink): Header (accent glyph,
+    // Rust parity) + one row per exposed sensor — tilt always meaningful
+    // once any sensor exists, compass/gyro gated on their hardware. Each
+    // row: dim label left · live value right (compass renders the octant
+    // gauge glyph + heading in accent — the value string arrives with the
+    // glyph baked in). One centered dim caption when nothing is exposed.
+    items: [
+        Header(
+            title: "Sensors",
+            glyph: Some("\u{f6c7}"),
+            glyph_color: Some(acc),
+        ),
+        // empty state — everything gated off when no IIO hardware exists
+        Text(
+            x: 0.0, y: 0.0, center_x: true, center_y: true,
+            text: "no IIO sensors", font_size: 9.0, color: Some(fg3),
+            visible: Some("sensors_none"),
+        ),
+        // tilt: pitch/roll
+        Text(x: 16.0, y: 32.0, text: "tilt", font_size: 9.0, color: Some(fg2), visible: Some("sensors_tilt")),
+        Text(x: 16.0, y: 32.0, w: 32.0, right: true, text: "{sensor_tilt}", font_size: 9.5, color: Some(fg), visible: Some("sensors_tilt")),
+        // compass: octant gauge glyph + heading (accent)
+        Text(x: 16.0, y: 52.0, text: "compass", font_size: 9.0, color: Some(fg2), visible: Some("sensors_compass")),
+        Text(x: 16.0, y: 52.0, w: 32.0, right: true, text: "{sensor_compass}", font_size: 9.5, color: Some(acc), icon: true, visible: Some("sensors_compass")),
+        // gyro: °/s triplet (mono)
+        Text(x: 16.0, y: 72.0, text: "gyro °/s", font_size: 9.0, color: Some(fg2), visible: Some("sensors_gyro")),
+        Text(x: 16.0, y: 72.0, w: 32.0, right: true, text: "{sensor_gyro}", font_size: 9.0, font: mono, color: Some(fg), visible: Some("sensors_gyro")),
+    ],
+)

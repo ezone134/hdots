@@ -1,0 +1,95 @@
+(
+    // mirror card — fully declarative two-pane body. Pane 0 (feed): the live
+    // camera `Image` (frame stops above the dots via negative h) and the
+    // Photo/Record button bar as a bottom-anchored `Row` of two equal-split
+    // `Hit`s with leading glyphs (Photo's fill is hover-only, Record's rests
+    // on the `mirror_rec_bg` dynamic — red-tinged while recording); the
+    // no-camera message replaces the feed when the device is missing.
+    // Pane 1 (fps): capture-rate `Rows` (active row = SelBg wash, per-row
+    // keys 30710..) + the "Show real fps" label/Toggle. Pagination `Dots`
+    // follow the HARD RULE (one dot per pane, active accent, hover-gated).
+    items: [
+        // ── pane 0: camera feed + photo / record buttons ──
+        Image(
+            x: 10.0, y: 38.0,
+            w: -20.0, h: -98.0,
+            key: "cam",
+            visible: Some("mirror_pane_0"),
+        ),
+        Text(
+            x: 0.0, y: -6.0, center_x: true, center_y: true,
+            text: "no camera",
+            font_size: 9.0,
+            color: Some(fg3),
+            visible: Some("mirror_cam_missing"),
+        ),
+        Row(
+            x: 0.0, y: 18.0, w: 0.0, h: 30.0,
+            bottom: true,
+            spacing: 8.0,
+            visible: Some("mirror_pane_0"),
+            items: [
+                Hit(
+                    x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                    key: 30700,
+                    glyph: Some("\u{f03d}"),
+                    glyph_pad: 8.0,
+                    glyph_color: Some(fg),
+                    glyph_color_hover: Some(acc),
+                    text: "Photo",
+                    font_size: 10.0,
+                    dy: 11.5,
+                    color: Some(fg2),
+                    color_hover: Some(fg),
+                    surface: Some(hover_hl),
+                    hover_only: true,
+                ),
+                Hit(
+                    x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                    key: 30701,
+                    glyph: Some("\u{f111}"),
+                    glyph_pad: 8.0,
+                    glyph_color: Some(danger),
+                    text: "{mirror_rec_label}",
+                    font_size: 10.0,
+                    dy: 11.5,
+                    color: Some(fg2),
+                    color_hover: Some(fg),
+                    surface: Some(value("mirror_rec_bg")),
+                    surface_hover: Some(hover_hl),
+                ),
+            ],
+        ),
+        // ── pane 1: capture-rate rows + show-fps toggle ──
+        Rows(
+            name: "mirror_fps_rows",
+            y: 43.0,
+            row_h: 34.0,
+            pitch: Some(40.0),
+            pad: 12.0,
+            row_dy: 11.5,
+            cols: [
+                (x: 14.0, size: 11.0),
+            ],
+            visible: Some("mirror_pane_1"),
+            hover_surface: Some(hover),
+        ),
+        Text(
+            x: 26.0, y: 174.5,
+            text: "Show real fps",
+            font_size: 11.0,
+            color: Some(fg),
+            visible: Some("mirror_pane_1"),
+        ),
+        Toggle(
+            name: "mirror_show_fps",
+            x: 12.0, y: 173.5,
+            w: 26.0, h: 13.0,
+            right: true,
+            key: 30704,
+            visible: Some("mirror_pane_1"),
+        ),
+        // ── pagination dots (HARD RULE: one per pane, active = accent) ──
+        Dots(active: "mirror_pane", when: Some("mirror_hover"), dy: 3.5, step: 7.0, panes: 2),
+    ],
+)

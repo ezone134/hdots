@@ -1,0 +1,5 @@
+# -*- mode: sh -*-
+ptc_array=(
+    $home_dir/.fonts:$p_user/.fonts
+    $boss_bin:$home_dir/.pixi/bin
+)

@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/general_body")
+general_main_cmd(unpack(arg))

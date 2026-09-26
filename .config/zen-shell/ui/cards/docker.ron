@@ -1,0 +1,23 @@
+(
+    // docker card — fully declarative (zero Ink): one row per container —
+    // status dot (6×6 rounded bar, Ok while "Up" else Danger) then the
+    // container name, right-anchored image label capped at 20 chars (Rust
+    // parity: rows at 26px pitch under the header, baseline on the row top).
+    // The centered "No containers" caption replaces the list when empty.
+    items: [
+        Header(title: "Docker", pad: 12.0),
+        Text(x: 0.0, y: 0.0, center_x: true, center_y: true, text: "No containers", font_size: 9.5, color: Some(fg), visible: Some("docker_empty")),
+        Rows(
+            name: "docker_rows",
+            y: 32.0,
+            row_h: 26.0,
+            pad: 14.0,
+            row_dy: 0.0,
+            cols: [
+                (x: 0.0, w: 6.0, dy: Some(0.0), size: 9.0, bar: Some((height: 6.0, top: 3.0, radius: 3.0))),
+                (x: 10.0, dy: Some(0.0), size: 9.0),
+                (x: 0.0, w: 0.0, edge: Some(14.0), right: true, dy: Some(0.0), size: 7.5),
+            ],
+        ),
+    ],
+)

@@ -1,0 +1,2 @@
+/home/tw/.config/quickshell/backends/QsNet/build/QsNet_autogen/include/../EWIEGA46WW/moc_qsnet.cpp.json
+/home/tw/.config/quickshell/backends/QsNet/build/QsNet_autogen/include/qsnet.moc.json

@@ -1,0 +1,7 @@
+#!/usr/bin/env luajit
+-- custom-lock — launch hyprlock unless it is already running.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+if qpid("hyprlock") == "" then
+    run("hyprlock")
+end

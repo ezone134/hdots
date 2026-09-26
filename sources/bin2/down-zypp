@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+. $sources/git_body
+down_zypp_func

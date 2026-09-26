@@ -1,0 +1,67 @@
+#!/usr/bin/env luajit
+-- helper rconfig_gen
+
+-- bg_fn(dofile) forks this interpreter, so utils and every theme var are
+-- already loaded; no bootstrap, no $states2 pulls.
+
+-- border.lua (hyprland_border_* come from theme_save_hex globals)
+local hlbi = hlbi
+local hlba = hlba
+local border_content = string.format(
+    "hl.config({\ngeneral = {\ncol = {\n    active_border = \"%s\",\n    inactive_border = \"%s\",\n    },\n},\n})",
+    hlba,
+    hlbi
+)
+tf(os.getenv("HOME") .. "/.config/hypr/luas/border.lua", border_content)
+
+-- cursor size
+local cursor_size = out("gsettings get org.gnome.desktop.interface cursor-size")
+tf(states2 .. "/cur_cursor_size", cursor_size .. "px")
+
+-- theme flags for editors
+if m == "d" then
+    color_sch = "abc-dark.conf"
+    lite_xl_theme = "catppuccin-frappe"
+    lapce_theme = "Lapce Dark"
+    zed_theme = "dark"
+    sublime_theme = "Default Dark.sublime-theme"
+    sublime_color_scheme = "Mariana.sublime-color-scheme"
+else
+    color_sch = ""
+    lite_xl_theme = "catppuccin-latte"
+    lapce_theme = "Lapce Light"
+    zed_theme = "light"
+    sublime_theme = "Default.sublime-theme"
+    sublime_color_scheme = "Breakers.sublime-color-scheme"
+end
+
+dofile(sources .. "/define_master")
+dofile(sources .. "/configs_array")
+dofile(sources .. "/expand_gen_body")
+
+function sub_func_11()
+    for _, entry in ipairs(list_dir(a)) do
+        local i = a .. "/" .. entry
+        if is_file(i) then
+            local base = basename(i)
+            local dir_name = dirname(i)
+            local main_line = dir_name:gsub("^" .. templates .. "/", "")
+            expand_gen(i, rconfig .. "/" .. main_line .. "/" .. base)
+        end
+    end
+end
+
+-- bash: for a in ${configs_array_1[@]}; do ... uses the GLOBAL a
+for _, adir in ipairs(configs_array_1) do
+    a = adir
+    sub_func_11()
+end
+
+run("makoctl reload")
+
+for _, adir in ipairs(configs_array_2) do
+    a = adir
+    sub_func_11()
+end
+
+flagf_set(states2 .. "/configs_done", "1")

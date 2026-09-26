@@ -1,0 +1,16 @@
+(
+    // quote card — the wrapped quote body (text + author caption) is a
+    // `TextWrap` item; the title/meta + the two pills (refresh/save, with the
+    // save pill's green/disabled + region states) stay Rust as the resident
+    // `quote` Ink so their stateful hover/conditional logic maps 1:1.
+    items: [
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "quote"),
+        TextWrap(
+            text: "{quote_text}",
+            caption: Some("— {quote_author}"),
+            top: 28.0,
+            bottom: 36.0,
+            visible: Some("quote_has"),
+        ),
+    ],
+)

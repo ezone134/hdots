@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- toggles_main — accent toggles CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/toggles_main_body")
+toggles_cmd(unpack(arg))

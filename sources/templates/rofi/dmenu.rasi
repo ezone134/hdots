@@ -1,0 +1,44 @@
+// rofi dmenu theme — expanded from $states2 by pull_colors_val
+* {
+    font: "$rofi_font $rofi_font_size";
+    background-color: $bg8;
+    text-color: $fg8;
+}
+
+window {
+    width: 30%;
+    border: 2px;
+    border-color: $border8;
+    border-radius: 10px;
+    background-color: $bg8;
+}
+
+mainbox {
+    padding: 12px;
+    spacing: 8px;
+}
+
+inputbar, listview, element, element-text, element-icon {
+    background-color: $bg8;
+    text-color: $fg8;
+    padding: 8px;
+}
+
+prompt {
+    text-color: $acc8;
+}
+
+entry {
+    text-color: $fg8;
+    placeholder-color: #${fg_1}66;
+}
+
+element selected, element-text selected, element-icon selected {
+    background-color: $acc_ec8;
+    text-color: $fg8;
+}
+
+mode-switcher, button, error-message {
+    background-color: $bg8;
+    text-color: $fg8;
+}

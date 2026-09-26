@@ -1,0 +1,16 @@
+#!/usr/bin/env luajit
+-- helper center_pop
+fcs_caller = "center_pop"
+
+-- fired ~0.4s later via bg_fn + sleep(): that forks THIS interpreter, so
+-- sources, utils, bg/fg/bf/m/sm are all already loaded — no bootstrap, no
+-- $states2 pulls.
+
+local big = big or arg[1]
+local small = small or arg[2]
+
+tf(states2 .. "/sp_vars", string.format(
+    '{"w":20,"h":20,"bg":"%s","fg":"%s","b_text":"%s","b_font":"Phosphor","b_size":100,"s_text":"%s","s_font":"JetBrainsMonoNL Nerd Font","s_size":18,"duration":3,"spacing":5,"loading_id":2,"show_loading_animation":false,"center_b_text":0,"corner_rounding":20,"alpha":%s}',
+    bg8, fg, big, small, tostring(bf)))
+
+run_bg(sources .. "/sp")

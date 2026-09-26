@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/shader_body")
+shader_cmd(unpack(arg))

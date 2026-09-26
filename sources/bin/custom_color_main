@@ -1,0 +1,23 @@
+#!/usr/bin/env luajit
+-- custom_color_main — open the gcp color-chooser GUI and apply the picked
+-- color as the shell's custom accent.
+--
+-- gcp (deployed next to the sources tree at $sources/gcp) is a blocking
+-- layer-shell picker; on OK it prints `#rrggbb` to stdout. We capture that,
+-- store it as `$states/custom_acc_${s}` with source `c`, mark acc_changed and
+-- restore via scheme_main (custom path) so GTK / the shell pick it up.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/pick_accent_body")
+
+function apply_custom_color(hex)
+    hex = hex:gsub("%s+", "")
+    if hex == "" then exit_0() end
+    if not hex:match("^#") then hex = "#" .. hex end
+    -- keep only the RGB: the accent pipeline takes a 6-digit hex; an 8-digit
+    -- #rrggbbaa (alpha < 255 in the picker) would corrupt the shades path.
+    hex = hex:sub(1, 7)
+    pick_accent_cmd(hex)
+end
+
+apply_custom_color(out(sources .. "/gcp"))

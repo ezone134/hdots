@@ -1,0 +1,150 @@
+#!/usr/bin/env luajit
+-- helper scheme_body
+-- Modes are derived here, never stored: flags length (from resolve) decides
+-- dual vs single; a single's dark/light answer comes from bg luminance via
+-- is_dark_theme (theme_is_dark).
+dofile(sources .. "/theme_is_dark")
+
+function theme_apply(theme_id_arg)
+    print("to apply theme_id is " .. theme_id_arg)
+    local s = flagf_get(states2 .. "/s")
+    local m = flagf_get(states2 .. "/m")
+    dofile(sources .. "/theme_init")
+    resolve(theme_id_arg)
+
+    if found == 0 then
+        run_bg("notify-send 'Error scheme_main_body'")
+        return
+    end
+    local old_theme = flagf_get(states2 .. "/cur_scheme")
+    if old_theme == theme_id_arg then return end
+
+    if dual == 1 then
+
+        if s == "n" then
+            tf(states .. "/scheme_nd", theme_id_arg)
+            tf(states .. "/scheme_nl", theme_id_arg)
+        else
+            tf(states .. "/scheme_dd", theme_id_arg)
+            tf(states .. "/scheme_ll", theme_id_arg)
+        end
+        tf(states .. "/acc_source_" .. s, "0")
+        theme_cmd("crestore")
+    else
+        mode = (is_dark_theme(bg) and "d" or "l")
+        print("scheme_body line 31")
+        local tmp_string
+        if s == "n" then
+            tmp_string = "n"
+        else
+            tmp_string = mode
+        end
+        print("scheme_body line 39")
+        tf(states .. "/acc_source_" .. tmp_string, "0")
+        tf(states .. "/scheme_" .. tmp_string .. mode, theme_id_arg)
+        print("scheme_body line 39")
+        if m == mode then
+            theme_cmd("crestore")
+        else
+            if mode == "d" then
+                theme_apply_dark_func()
+            else
+                theme_apply_light_func()
+            end
+        end
+    end
+end
+
+function theme_accent_func(acc_source, acc_info)
+    local s = flagf_get(states2 .. "/s")
+
+    if acc_source == "default" then
+        if acc_info == "all" then
+            tf(states .. "/acc_source_n", "0")
+            tf(states .. "/acc_source_d", "0")
+            tf(states .. "/acc_source_l", "0")
+        else
+            tf(states .. "/acc_source_" .. s, "0")
+        end
+    elseif acc_source == "wall" then
+        if acc_info == "all" then
+            tf(states .. "/acc_source_n", "w")
+            tf(states .. "/acc_source_d", "w")
+            tf(states .. "/acc_source_l", "w")
+        else
+            tf(states .. "/acc_source_" .. s, "w")
+        end
+    elseif acc_source == "custom" then
+        tf(states .. "/acc_source_" .. s, "c")
+        if acc_info and acc_info ~= "" then
+            tf(states .. "/custom_acc_" .. s, acc_info)
+        end
+    else
+        return
+    end
+    theme_cmd("crestore")
+end
+
+-- fetch_card: pure fetch — no writes to disk. Resolves the given theme by
+-- name (via theme_init) and prints its colors as one JSON object on stdout so
+-- the zen-shell theme-card ">" button can display them: `scheme_main fetch <id>`.
+-- ALL vars are always emitted (extras + series on both sides when dual); the
+-- per-side flags e1/s1 (dark) and e2/s2 (light) are also emitted so the shell
+-- can hide a block when its flag is 0. Nothing here touches $states.
+function fetch_card(theme_id_arg)
+    dofile(sources .. "/theme_init")
+    resolve(theme_id_arg)
+    if found == 0 then
+        print('{"error":"theme not found: ' .. theme_id_arg .. '"}')
+        return
+    end
+    local mode = (#(flags or "") == 4 or #(flags or "") == 1) and "b" or (is_dark_theme(bg) and "d" or "l")
+
+    local function sfg()
+        return getBestContrastColor(acc, sfg_d, sfg_l)
+    end
+
+local function side_json()
+        return '{"bg":"' .. bg .. '","fg":"' .. fg .. '","acc":"' .. acc ..
+            '","sfg":"' .. sfg() .. '","border":"' .. border ..
+            '","acc_us":"' .. acc_us .. '","acc_hc":"' .. acc_hc ..
+            '","acc_ec":"' .. acc_ec .. '"' ..
+            ',"extras":{"hover":"' .. hover .. '","focus":"' .. focus ..
+            '","disabled":"' .. disabled .. '","sfg_d":"' .. sfg_d ..
+            '","sfg_l":"' .. sfg_l .. '"}' ..
+            ',"series":["' .. series1 .. '","' .. series2 ..
+            '","' .. series3 .. '","' .. series4 .. '","' .. series5 ..
+            '","' .. series6 .. '"]}'
+    end
+
+    if mode == "b" then
+        d_side()
+        local dark = side_json()
+        local de = e1
+        local ds = s1
+        l_side()
+        local light = side_json()
+        print('{"name":"' .. theme_id_arg .. '","mode":"b","dual":true' ..
+            ',"e1":' .. de .. ',"s1":' .. ds ..
+            ',"e2":' .. e2 .. ',"s2":' .. s2 ..
+            ',"dark":' .. dark .. ',"light":' .. light .. '}')
+    else
+        local dark = side_json()
+        print('{"name":"' .. theme_id_arg .. '","mode":"' .. mode .. '","dual":false' ..
+            ',"e1":' .. e1 .. ',"s1":' .. s1 ..
+            ',"e2":0,"s2":0' ..
+            ',"dark":' .. dark .. ',"light":null}')
+    end
+end
+
+function scheme_cmd(action, arg2, arg3)
+    if action == "apply" and arg2 ~= "" then
+        theme_apply(arg2)
+    elseif action == "fetch" and arg2 ~= "" then
+        fetch_card(arg2)
+    elseif action == "accent" then
+        theme_accent_func(arg2, arg3)
+    else
+        print("scheme: use apply <id>|fetch <id>|accent <key> [hex]")
+    end
+end

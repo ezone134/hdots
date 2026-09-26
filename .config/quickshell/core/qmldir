@@ -1,0 +1,8 @@
+# explicit qmldir for qs.core — disables the synthesizer
+module qs.core
+MorphContainer 1.0 MorphContainer.qml
+MorphPlaceholder 1.0 MorphPlaceholder.qml
+MorphSurface 1.0 MorphSurface.qml
+singleton PanelRegistry 1.0 PanelRegistry.qml
+Pill 1.0 Pill.qml
+ShellRoot 1.0 ShellRoot.qml

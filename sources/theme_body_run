@@ -1,0 +1,63 @@
+-- helper theme_body_run
+-- ported from bash sources/theme_body_run
+-- pure Lua: no external binaries (FFI inotify wait + in-process file reads)
+m = flagf_get(states2 .. "/" .. "m")
+
+if qpid("thunar") == "" then
+    run_bg("hyprctl dispatch \"hl.dsp.exec_cmd('thunar --daemon')\"")
+end
+
+run_bg("blur_main restore")
+run_bg("shadow_main restore")
+run_bg("opacity_main restore")
+run_bg("general_main restore")
+run_bg("hs_main restore")
+run_bg("shader_main restore")
+run_bg("mn_main restore")
+
+-- Wait for all *_done flags (each bg *_main restore writes its flag when done),
+-- then hyprctl reload. Same blocking poll loop as wait_for_theme_proc_to_stop_func:
+-- flagf_set writes go through mmap (no inotify event), so poll the files directly.
+local done_flags = { "general_done", "hs_done", "shadow_done", "opacity_done", "shader_done", "blur_done", "monitors_done" }
+local function flags_done_count()
+    local n = 0
+    for _, flag in ipairs(done_flags) do
+        if flagf_get(states2 .. "/" .. flag) == "1" then n = n + 1 end
+    end
+    return n
+end
+while flags_done_count() < #done_flags do
+    sleep(0.2)
+end
+run_bg("hyprctl reload")
+
+local kitty_pid = qpid("kitty")
+if kitty_pid ~= "" then
+    for kpid in kitty_pid:gmatch("%d+") do
+        kill_pid(kpid, 10)
+    end
+end
+err("this is after first wait")
+
+-- Second wait: config generation is independent of the *_restore pipeline
+-- (rconfig_gen / awww_final / gen_gtk_css run in bg). Same blocking
+-- poll loop as wait_for_theme_proc_to_stop_func until configs_done,
+-- awww_done, css_done all read "1".
+local release_flags = { "configs_done", "awww_done", "css3_done", "css4_done" }
+local function release_flags_done_count()
+    local n = 0
+    for _, flag in ipairs(release_flags) do
+        if flagf_get(states2 .. "/" .. flag) == "1" then n = n + 1 end
+    end
+    return n
+end
+local rdeadline = os.time() + 2
+while release_flags_done_count() < #release_flags do
+    if os.time() >= rdeadline then break end
+    sleep(0.2)
+end
+
+flagf_set(states2 .. "/all_theme_set", "1")
+rm(states2 .. "/theme_lock")
+
+err("this is end of theme body run")

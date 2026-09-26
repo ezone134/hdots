@@ -1,0 +1,25 @@
+-- splash_init — resolve color scheme, build splash vars, launch splash binary
+fcs_caller = "splash_init"
+
+dofile(dots .. "/sources/fetch_color_scheme")
+-- bash: . $dots/sources/fetch_color_scheme splash_init
+
+dofile(dots .. "/sources/msg/splash_loading_texts")
+-- random_msg is computed at load time in splash_loading_texts
+
+-- bg/fg are set by fetch_color_scheme -> resolve (exported to _G)
+-- bg_alpha is read from persist states ($states tmpfs is not synced yet)
+local bg_alpha = ff(dots .. "/states/bg_alpha_" .. s)
+
+local splash_json = string.format(
+    '{"w":100,"h":100,"bg":"%s","fg":"%s","b_text":"p","b_font":"distro_splash","b_size":600,"s_text":"%s","s_font":"JetBrainsMonoNL Nerd Font","s_size":18,"duration":3,"spacing":50,"loading_id":2,"show_loading_animation":true,"center_b_text":1,"corner_rounding":0,"alpha":%s}',
+    bg .. bg_alpha,
+    fg,
+    random_msg,
+    tostring(bf)
+)
+
+tf(states2 .. "/sp_vars", splash_json)
+
+-- run the binary splash helper (NOT ported — call the bash binary path exactly)
+run_bg(dots .. "/sources/sp")

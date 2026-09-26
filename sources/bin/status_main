@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- status_main — everything at once.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/status_body")
+status()

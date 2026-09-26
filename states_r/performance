@@ -1,0 +1,4 @@
+local scaling_governor = "performance"
+local dpm_force_performance_level = "auto" -- power_dpm_force_performance_level=manual
+local power_dpm_state = "performance"      -- we manually need to set it or it stays on battery mode
+-- local pp_dpm_sclk = 0                   -- no need to set this if on auto mode

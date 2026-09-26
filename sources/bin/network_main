@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- network_main — wifi / bluetooth (nmcli/bluetoothctl) CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/network_body")
+net_cmd(unpack(arg))

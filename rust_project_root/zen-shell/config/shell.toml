@@ -1,0 +1,78 @@
+[fonts]
+family = "Inter"
+# icon font name — the authoritative default lives in src/icons.rs
+# (ICON_FONT_FAMILY / ICON_FONT_ID); setting it here overrides the constant.
+# The glyph codepoints in the shell assume this font's U+F000.. mapping.
+icon = "Material Symbols Rounded"
+
+[bar]
+height = 38
+floating = false
+expanded = false
+floating_offset = 25
+collapsed_width = 165
+expanded_width = 1120
+reserve = true
+expand_on_hover = true
+cc_instead_of_dash = false
+show_clock = true
+show_battery = true
+show_battery_pct = true
+show_ws = false
+show_tray = false
+show_viz = false
+settings_on_pill = false
+show_notif = false
+show_user = false
+show_watts = true
+show_brightness = false
+pill_order = [
+    "visualizer",
+    "tray",
+    "user",
+    "workspaces",
+    "bell",
+    "clock",
+    "settings",
+    "watts",
+    "battery",
+]
+anchor = "top"
+grid_scale = 1.0
+
+[animation]
+duration_ms = 240.0
+collapse_delay_ms = 0.0
+
+[colors]
+fg = "#cdd6f4"
+bg = "#1e1e2e"
+acc = "#89b4fa"
+hover = "#313244"
+
+[weather]
+latitude = 28.6139
+longitude = 77.209
+city = "New Delhi"
+interval_s = 600
+
+[wallpaper]
+dir = "~/Wallpapers"
+command = "set_wall {path}"
+cell = 104.0
+
+[backends]
+power = "sysfs"
+brightness = "sysfs"
+audio = "wpctl"
+lockscreen = "native"
+wallpaper = "command"
+
+[notifications]
+position = "top-right"
+timeout_ms = 5000
+max_visible = 5
+max_history = 64
+show_on_lock = false
+
+[notifications.per_app]

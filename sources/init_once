@@ -1,0 +1,34 @@
+-- hypr_init_run_once — run one-time initialization functions
+
+function init_once_f()
+    touch(states2 .. "/distro")
+
+    -- Read /etc/os-release (bash: . /etc/os-release)
+    local osrelease = ff("/etc/os-release")
+    local name_match = osrelease:match('NAME="([^"]*)"')
+    if name_match then name_match = name_match:gsub('"', ''):gsub("\n$", "") end
+    tf(states2 .. "/distro_name", name_match)
+
+    local id_match = osrelease:match('ID="([^"]*)"')
+    if id_match then id_match = id_match:gsub('"', ''):gsub("\n$", "") end
+
+    local distro_id, d
+    if id_match and id_match:match("arch") then
+        distro_id = "arch"; d = "a"
+    elseif id_match and id_match:match("fedora") then
+        distro_id = "fedora"; d = "f"
+    elseif id_match and id_match:match("tumbleweed") then
+        distro_id = "tumbleweed"; d = "o"
+    elseif id_match and id_match:match("leap") then
+        distro_id = "leap"; d = "o"
+    else
+        distro_id = "generic"; d = "g"
+    end
+    tf(states2 .. "/distro", distro_id)
+    tf(states2 .. "/d", d)
+    tf(states2 .. "/branding_font", "opensuse")
+end
+
+if not is_file(states2 .. "/distro") then
+    init_once_f()
+end

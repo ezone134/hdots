@@ -1,0 +1,66 @@
+-- helper gen_theme_cards
+-- ported from bash sources/gen_theme_cards
+-- Modes are derived here, never stored: a 4-char flags entry (themes[name][2])
+-- is a dual; a single's dark/light answer comes from its bg luminance via
+-- is_dark_theme (theme_is_dark).  Each card emits the derived "mode" alongside
+-- the existing dual/dark/light fields.
+dofile(sources .. "/theme_init")
+dofile(sources .. "/theme_is_dark")
+
+fetch_theme_names = function()
+    local names = {}
+    for name in pairs(themes or {}) do
+        names[#names + 1] = name
+    end
+    table.sort(names, function(a, b)
+        return tonumber(themes[a][1]) < tonumber(themes[b][1])
+    end)
+    return names
+end
+
+all_themes = fetch_theme_names()
+
+local json_parts = {}
+
+for _, name in ipairs(all_themes) do
+    resolve(name)
+    if found == 0 then goto continue end
+
+    local function sfg()
+        return getBestContrastColor(acc, sfg_d, sfg_l)
+    end
+
+    local function dark_json()
+        return string.format(
+            '{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"}',
+            bg, fg, acc, sfg(), border)
+    end
+
+    local function light_json()
+        return string.format(
+            '{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"}',
+            bg, fg, acc, sfg(), border)
+    end
+
+    local ref = theme_ref(name)
+    local dual = ref and (#(ref[2] or "") == 4 or #(ref[2] or "") == 1)
+
+    if dual then
+        d_side()
+        local dark = dark_json()
+        l_side()
+        local light = light_json()
+        json_parts[#json_parts + 1] = string.format(
+            '{"name":"%s","mode":"b","dual":true,"dark":%s,"light":%s}',
+            name, dark, light)
+    else
+        local mode = is_dark_theme(bg) and "d" or "l"
+        local dark = dark_json()
+        json_parts[#json_parts + 1] = string.format(
+            '{"name":"%s","mode":"%s","dual":false,"dark":%s,"light":null}',
+            name, mode, dark)
+    end
+    ::continue::
+end
+
+tf(states2 .. "/themes", "[\n" .. table.concat(json_parts, ",\n") .. "\n]\n")

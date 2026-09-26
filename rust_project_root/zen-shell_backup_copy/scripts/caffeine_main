@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# caffeine_main — idle-inhibit (hypridle swap) CLI. Was: qs-ctl caffeine.
+set -u
+. "$hypr_sources/helpers/caffeine_body"
+caffeine_cmd "$@"

@@ -1,0 +1,78 @@
+# zen-shell commands
+#
+# Every IPC command the running bar serves. The bar binds
+# $XDG_RUNTIME_DIR/zen-shell.sock; call it with the same binary as a client:
+#
+#     zen-shell <command>            # plain form
+#     zen-shell ipc call <handler>   # quickshell-compatible form
+#
+# `open` toggles: if the widget is already the current one it collapses
+# back to the pill instead of re-opening. The server replies `ok`, or
+# `error: <reason>` for an unknown handler.
+
+# ── open a widget ────────────────────────────────────────────────────────────
+zen-shell open launcher        # app launcher (search apps)
+zen-shell open cc              # control center (wifi/bt, sliders, audio, wallpaper)
+zen-shell open notifications   # notifications panel
+zen-shell open calendar        # calendar
+zen-shell open settings        # settings (toggles, sliders, accent picker, stats)
+zen-shell open power           # power menu (hold 3s to act)
+zen-shell open wifi            # wi-fi network list
+zen-shell open bluetooth       # bluetooth device list
+zen-shell open audio           # per-app volume (output + input, app streams)
+zen-shell open keybinds        # keybind viewer (from $states2/keybinds_cache)
+zen-shell open wallpaper       # wallpaper picker (thumbnails)
+zen-shell open weather         # detailed weather (feels-like, humidity, wind)
+zen-shell open clipboard       # clipboard history — TEXT entries (SUPER+V)
+zen-shell open clipboard_images  # clipboard history — IMAGE entries (SUPER+SHIFT+V)
+zen-shell open expanded        # the dashboard (as if hovered)
+zen-shell open lock            # lockscreen (ext-session-lock: compositor binds
+                               #   stop, all input swallowed; type your
+                               #   password + Enter to unlock)
+zen-shell wallpaper set <path> # set the wallpaper daemon background (cover-fit)
+zen-shell close                # collapse back to the pill
+
+# ── live theme sync (no restart needed) ──────────────────────────────────────
+zen-shell reload colors        # PALETTE-ONLY hot reload: re-read the live
+                               # palette from $states2/shell_vars.json (fast,
+                               # never touches config/geometry — run after the
+                               # theme pipeline flips the colors)
+zen-shell colors reload        # same as `reload colors` (legacy form)
+zen-shell mode sync            # re-read dark/light from $states2/m_dummy
+                               # (refreshes the dark-mode toggle chip + icons)
+zen-shell reload               # hot-reload ALL configs: the channel's
+                               # shell.toml (geometry, pill toggles, colors,
+                               # animation, anchor, floating, dashboard) — no
+                               # restart needed
+zen-shell reload config        # same as `reload` (long form)
+zen-shell config reload        # same as `reload` (legacy form)
+
+# ── toggle (open, or close if already the current widget) ───────────────────
+# `open <target>` now toggles too, so `zen-shell toggle launcher` and
+# `zen-shell open launcher` behave identically.
+zen-shell toggle launcher
+zen-shell toggle cc
+
+# ── aliases ──────────────────────────────────────────────────────────────────
+#   notif → notifications      cal → calendar       bt → bluetooth
+#   volume → audio             wallpapers → wallpaper
+#   clip → clipboard           clipimg → clipboard_images
+#   collapse / pill → close
+
+# ── Hyprland keybinds (add to ~/.config/hypr/hyprland.conf) ─────────────────
+# bind = SUPER, SPACE,      exec, zen-shell open launcher
+# bind = SUPER, L,          exec, zen-shell open lock
+# bind = SUPER, P,          exec, zen-shell open power
+# bind = SUPER, A,          exec, zen-shell open audio
+# bind = SUPER, W,          exec, zen-shell open wallpaper
+# bind = SUPER, SHIFT, /,   exec, zen-shell open keybinds
+# bind = SUPER, V,          exec, zen-shell open clipboard          # text history
+# bind = SUPER, SHIFT, V,   exec, zen-shell open clipboard_images   # image history
+# bind = SUPER, ESCAPE,     exec, zen-shell close
+
+# theme pipeline calls these after writing $states2/ files:
+# exec, zen-shell reload colors # palette flip (palette-only, never breaks)
+# exec, zen-shell mode sync     # dark/light toggle
+# exec, zen-shell reload        # full config reload (shell.toml edited)
+
+# Full prose reference (every target, aliases, replies): docs/ipc.md

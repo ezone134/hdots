@@ -1,0 +1,10 @@
+# -*- mode: sh -*-
+
+[[ -e "$lock_files/dirs_setup" ]] || {
+    # Create the lock file
+:> "$lock_files/dirs_setup"
+
+    echo "This is setup dirs master" > "$lock_files/dirs_setup"
+    . "$hypr_sources/dirs_master_array"
+    mkdir -p "${dirs_array[@]}"
+}

@@ -1,0 +1,277 @@
+(
+    // sliders card — fully declarative two-pane body (zero Ink; the Rust
+    // drawer is the fallback when this file is absent).
+    //
+    // PANE 0 — the six fader rows (brightness · volume · balance · mic ·
+    // saturation · kelvin) in a vertically centered `Column` that stops 16 px
+    // short of the card bottom so the pagination dots keep their band; the
+    // block recenters when a row is gated off. Each row is a `Stack`:
+    //   · a full-width `Hit` carries the row's hover/drag region and its icon
+    //     (the glyph inks to the row's fill on hover, as the drawer did);
+    //   · the `Fader` groove starts 34 px from the left and stops 52 px from
+    //     the right edge (`w: -38` = parent span minus 38), so the value
+    //     column stays clear on any card width;
+    //   · the value label right-anchors at the card's 14 px inset.
+    // The balance + saturation rows carry `visible` gates — their pane-1
+    // switch collapses the row instead of leaving a hole, exactly like the
+    // drawer filtering its row list (keys stay fixed, so the drag geometry
+    // each fader publishes stays key-accurate).
+    //
+    // PANE 1 — the "show balance" / "show saturation" switches: per-frame
+    // hover fill, whole-row `Hit` region, label, right-anchored switch.
+    items: [
+        // ── pane 0: the fader rows ──
+        Column(
+            x: 0.0, y: 0.0, w: 0.0, h: -16.0,
+            valign: middle,
+            pad: 0.0, spacing: 0.0,
+            visible: Some("sliders_pane_0"),
+            items: [
+                // brightness (key 51)
+                Stack(x: 14.0, y: 0.0, w: -14.0, h: 24.0, items: [
+                    Hit(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        dy: 4.8,
+                        key: 51,
+                        glyph: Some("\u{f185}"),
+                        glyph_pad: 0.0,
+                        icon: true,
+                        font_size: 11.0,
+                        glyph_color: Some(fg),
+                        glyph_color_hover: Some(acc),
+                    ),
+                    Fader(
+                        name: "brightness_fader",
+                        x: 20.0, y: 0.0, w: -38.0, h: 24.0,
+                        key: 51,
+                        head: 10.0,
+                        fill: acc,
+                    ),
+                    Text(
+                        x: 14.0, y: 5.0, w: 0.0,
+                        text: "{bri_lbl}",
+                        font_size: 9.5,
+                        right: true,
+                        color: Some(fg),
+                    ),
+                ]),
+                // volume (key 52) — glyph + fill go red while muted
+                Stack(x: 14.0, y: 0.0, w: -14.0, h: 24.0, items: [
+                    Hit(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        dy: 4.8,
+                        key: 52,
+                        glyph: Some("{vol_glyph}"),
+                        glyph_pad: 0.0,
+                        icon: true,
+                        font_size: 11.0,
+                        glyph_color: Some(fg),
+                        glyph_color_hover: Some(value("vol_fill")),
+                    ),
+                    Fader(
+                        name: "volume_fader",
+                        x: 20.0, y: 0.0, w: -38.0, h: 24.0,
+                        key: 52,
+                        head: 10.0,
+                        fill: value("vol_fill"),
+                    ),
+                    Text(
+                        x: 14.0, y: 5.0, w: 0.0,
+                        text: "{vol_lbl}",
+                        font_size: 9.5,
+                        right: true,
+                        color: Some(fg),
+                    ),
+                ]),
+                // balance (key 59) — centered fill, L/R flanks, reset chip
+                Stack(x: 14.0, y: 0.0, w: -14.0, h: 24.0, items: [
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 59),
+                    Fader(
+                        name: "balance_fader",
+                        x: 20.0, y: 0.0, w: -34.0, h: 24.0,
+                        key: 59,
+                        head: 10.0,
+                        centered: true,
+                        fill: acc,
+                        visible: Some("show_balance"),
+                    ),
+                    Text(
+                        x: 0.0, y: 5.0, w: 8.0,
+                        text: "L",
+                        font_size: 9.0,
+                        icon: true,
+                        color: Some(fg),
+                    ),
+                    Text(
+                        x: 46.0, y: 5.0, w: 0.0,
+                        text: "R",
+                        font_size: 9.0,
+                        icon: true,
+                        right: true,
+                        color: Some(fg),
+                    ),
+                    Hit(
+                        x: 14.0, y: 0.0, w: 18.0, h: 17.0,
+                        dy: 6.8,
+                        right: true,
+                        key: 58,
+                        glyph: Some("\u{f0e2}"),
+                        glyph_pad: 4.0,
+                        icon: true,
+                        font_size: 10.0,
+                        color: Some(fg),
+                        color_hover: Some(acc),
+                    ),
+                ]),
+                // mic (key 53) — reuses the live `mic_icon` glyph swap
+                Stack(x: 14.0, y: 0.0, w: -14.0, h: 24.0, items: [
+                    Hit(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        dy: 4.8,
+                        key: 53,
+                        glyph: Some("{mic_icon}"),
+                        glyph_pad: 0.0,
+                        icon: true,
+                        font_size: 11.0,
+                        glyph_color: Some(fg),
+                        glyph_color_hover: Some(value("mic_fill")),
+                    ),
+                    Fader(
+                        name: "mic_fader",
+                        x: 20.0, y: 0.0, w: -38.0, h: 24.0,
+                        key: 53,
+                        head: 10.0,
+                        fill: value("mic_fill"),
+                    ),
+                    Text(
+                        x: 14.0, y: 5.0, w: 0.0,
+                        text: "{mic_lbl}",
+                        font_size: 9.5,
+                        right: true,
+                        color: Some(fg),
+                    ),
+                ]),
+                // saturation (key 54) — centered fill + reset chip (key 79)
+                Stack(x: 14.0, y: 0.0, w: -14.0, h: 24.0, items: [
+                    Hit(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        dy: 4.8,
+                        key: 54,
+                        glyph: Some("\u{f043}"),
+                        glyph_pad: 0.0,
+                        icon: true,
+                        font_size: 11.0,
+                        glyph_color: Some(fg),
+                        glyph_color_hover: Some(acc),
+                    ),
+                    Fader(
+                        name: "sat_fader",
+                        x: 20.0, y: 0.0, w: -38.0, h: 24.0,
+                        key: 54,
+                        head: 10.0,
+                        centered: true,
+                        fill: acc,
+                        visible: Some("show_saturation"),
+                    ),
+                    Text(
+                        x: 38.0, y: 5.0, w: 0.0,
+                        text: "{sat_lbl}",
+                        font_size: 9.5,
+                        right: true,
+                        color: Some(fg),
+                    ),
+                    Hit(
+                        x: 14.0, y: 0.0, w: 18.0, h: 17.0,
+                        dy: 6.8,
+                        right: true,
+                        key: 79,
+                        glyph: Some("\u{f0e2}"),
+                        glyph_pad: 4.0,
+                        icon: true,
+                        font_size: 10.0,
+                        color: Some(fg),
+                        color_hover: Some(acc),
+                    ),
+                ]),
+                // kelvin (key 55) — fill rides warn → accent with warmth
+                Stack(x: 14.0, y: 0.0, w: -14.0, h: 24.0, items: [
+                    Hit(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        dy: 4.8,
+                        key: 55,
+                        glyph: Some("\u{f2c9}"),
+                        glyph_pad: 0.0,
+                        icon: true,
+                        font_size: 11.0,
+                        glyph_color: Some(fg),
+                        glyph_color_hover: Some(value("kel_fill")),
+                    ),
+                    Fader(
+                        name: "kelvin_fader",
+                        x: 20.0, y: 0.0, w: -38.0, h: 24.0,
+                        key: 55,
+                        head: 10.0,
+                        fill: value("kel_fill"),
+                    ),
+                    Text(
+                        x: 14.0, y: 5.0, w: 0.0,
+                        text: "{kel_lbl}",
+                        font_size: 9.5,
+                        right: true,
+                        color: Some(fg),
+                    ),
+                ]),
+            ],
+        ),
+        // ── pane 1: the two row switches ──
+        Column(
+            x: 0.0, y: 13.0, w: 0.0, h: 0.0,
+            pad: 0.0, spacing: 6.0,
+            visible: Some("sliders_pane_1"),
+            items: [
+                Stack(x: 12.0, y: 0.0, w: -24.0, h: 34.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 5.0,
+                        color: value("sliders_tog_bg_0"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 30720),
+                    Text(
+                        x: 14.0, y: 11.5, w: 0.0,
+                        text: "Show balance",
+                        font_size: 11.0,
+                        color: Some(fg),
+                    ),
+                    Toggle(
+                        name: "show_balance",
+                        x: 0.0, y: 10.5, w: 26.0, h: 13.0,
+                        right: true,
+                        key: 30720,
+                    ),
+                ]),
+                Stack(x: 12.0, y: 0.0, w: -24.0, h: 34.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 5.0,
+                        color: value("sliders_tog_bg_1"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 30721),
+                    Text(
+                        x: 14.0, y: 11.5, w: 0.0,
+                        text: "Show saturation",
+                        font_size: 11.0,
+                        color: Some(fg),
+                    ),
+                    Toggle(
+                        name: "show_saturation",
+                        x: 0.0, y: 10.5, w: 26.0, h: 13.0,
+                        right: true,
+                        key: 30721,
+                    ),
+                ]),
+            ],
+        ),
+        // ── pagination dots (HARD RULE: one per pane, active = accent) ──
+        Dots(active: "sliders_pane", when: Some("sliders_hover"), dy: 3.5, step: 7.0, panes: 2),
+    ],
+)

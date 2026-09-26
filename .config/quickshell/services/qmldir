@@ -1,0 +1,23 @@
+# explicit qmldir for qs.services — disables the synthesizer
+module qs.services
+singleton AppManager 1.0 AppManager.qml
+singleton AudioManager 1.0 AudioManager.qml
+singleton BrightnessManager 1.0 BrightnessManager.qml
+singleton CalendarManager 1.0 CalendarManager.qml
+singleton CaptureManager 1.0 CaptureManager.qml
+singleton ClipboardManager 1.0 ClipboardManager.qml
+singleton HyprlandManager 1.0 HyprlandManager.qml
+singleton MprisManager 1.0 MprisManager.qml
+singleton NetworkManager 1.0 NetworkManager.qml
+singleton NotificationManager 1.0 NotificationManager.qml
+singleton PolkitManager 1.0 PolkitManager.qml
+singleton PowerManager 1.0 PowerManager.qml
+singleton SettingsManager 1.0 SettingsManager.qml
+ShellIpc 1.0 ShellIpc.qml
+singleton StateController 1.0 StateController.qml
+singleton SystemSettingsManager 1.0 SystemSettingsManager.qml
+singleton Theme 1.0 Theme.qml
+singleton VolumeManager 1.0 VolumeManager.qml
+singleton AudioRecorderManager 1.0 AudioRecorderManager.qml
+singleton WeatherManager 1.0 WeatherManager.qml
+singleton WallpaperManager 1.0 WallpaperManager.qml

@@ -1,0 +1,24 @@
+   # -*- mode: sh -*-
+    files_pairs=(
+            $HOME/.config/gtk-3.0/gtk.css:$rconf/gtk-override/gtk.css
+            $HOME/.config/lite-xl/user_settings.lua:$rconf/lite-xl/user_settings.lua
+            $HOME/.config/lapce-stable/settings.toml:$rconf/lapce-stable/settings.toml
+            $HOME/.config/sublime-text/Packages/User/Preferences.sublime-settings:$rconf/sublime-text/Packages/User/Preferences.sublime-settings
+            $HOME/.config/alacritty/alacritty.toml:$rconf/alacritty/alacritty.toml
+            $HOME/.config/geany/geany.conf:$rconf/geany/geany.conf
+            $HOME/.config/geany/session.conf:$rconf/geany/geany-session.conf
+            $HOME/.config/fuzzel/fuzzel.ini:$rconf/fuzzel/fuzzel.ini
+            $HOME/.config/foot/foot.ini:$rconf/foot/foot.ini
+            $HOME/.config/waybar/config.jsonc:$rconf/waybar/config.jsonc
+            $HOME/.config/waybar/style.css:$rconf/waybar/style.css
+            $HOME/.config/dunst/dunstrc:$rconf/dunst/dunstrc
+            $HOME/.config/wofi/style.css:$rconf/wofi/style.css
+            $HOME/.config/hypr/hypridle.conf:$rconf/hypr/hypridle.conf
+            $HOME/.config/mimeapps.list:$hdots/.config/mimeapps.list_$USER
+            $HOME/.config/kitty/kitty.conf:$rconf/kitty/kitty.conf
+            $HOME/.config/zed/settings.json:$rconf/zed/settings.json
+            $HOME/.config/swayimg/init.lua:$rconf/swayimg/init.lua
+            $HOME/.config/xdg-desktop-portal/hyprland-portals.conf:$hdots/.config//xdg-desktop-portal/hyprland-portals.conf
+
+            $HOME/.config/sublime-text/Packages/User/Bash.sublime-settings:$hdots/.config/sublime-text/Packages/User/Bash.sublime-settings
+)

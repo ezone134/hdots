@@ -1,0 +1,20 @@
+#!/usr/bin/env luajit
+-- accent hc
+hc = {
+    -- middle is darker variant and right side hex is lighter variant accent color
+    -- Electric Blues
+    "cyber_cobalt_hc,#1a3a5f",
+    "neon_glacier_hc,#0b4f6c",
+    -- Toxic & Forest Greens
+    "venom_sprout_hc,#1b4332",
+    "radioactive_moss_hc,#2d5a27",
+    -- Sunset & Blood Oranges
+    "magma_vein_hc,#6a040f",
+    "amber_ember_hc,#7a4915",
+    -- Deep Violets & Pinks
+    "nebula_warp_hc,#3c096c",
+    "toxic_petal_hc,#5a189a",
+    -- Industrial Slates
+    "iron_oxide_hc,#212529",
+    "deep_ocean_hc,#14213d",
+}

@@ -1,0 +1,19 @@
+# -*- mode: sh -*-
+
+neutrals=(
+    "iron_throne_nt_15,#262626"
+    "silk_ebony_nt_16,#28282b"
+    "obsidian_heart_nt_18,#2d1b1b"
+    "warm_graphite_nt_21,#363537"
+    "gunmetal_nt_26,#374150"
+    "cool_gray_nt_35,#4d5965"
+    "mist_gray_nt_51,#78818a"
+    "starlight_silver_nt_64,#a2a2a2"
+    "arctic_blush_nt_89,#dee4e7"
+    "pearl_nt_89,#eae2d0"
+    "antique_lace_nt_93,#f9e6d2"
+    "porcelain_love_nt_95,#fdf5e6"
+    "pearly_shell_nt_97,#f8f4ff"
+    "ballerina_mist_nt_97,#fdeef4"
+    "bridal_veil_nt_99,#fdfdfd"
+)

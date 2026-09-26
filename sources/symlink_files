@@ -1,0 +1,32 @@
+-- array symlink_files
+-- ported from bash sources/symlink_files
+
+local home = os.getenv("HOME")
+local user = os.getenv("USER")
+hypr_global = os.getenv("r_daemon")
+rconfig = os.getenv("rconfig")
+
+files_pairs = {
+    {sources .. "/utils", r_daemon .. "/utils"},
+    {rconfig .. "/gtk-override/gtk.css", home .. "/.config/gtk-3.0/gtk.css"},
+    {rconfig .. "/lite-xl/user_settings.lua", home .. "/.config/lite-xl/user_settings.lua"},
+    {rconfig .. "/lapce-stable/settings.toml", home .. "/.config/lapce-stable/settings.toml"},
+    {rconfig .. "/sublime-text/Packages/User/Preferences.sublime-settings", home .. "/.config/sublime-text/Packages/User/Preferences.sublime-settings"},
+    {rconfig .. "/alacritty/alacritty.toml", home .. "/.config/alacritty/alacritty.toml"},
+    {rconfig .. "/geany/geany.conf", home .. "/.config/geany/geany.conf"},
+    {rconfig .. "/geany/geany-session.conf", home .. "/.config/geany/session.conf"},
+    {rconfig .. "/fuzzel/fuzzel.ini", home .. "/.config/fuzzel/fuzzel.ini"},
+    {rconfig .. "/rofi/config.rasi", home .. "/.config/rofi/config.rasi"},
+    {rconfig .. "/foot/foot.ini", home .. "/.config/foot/foot.ini"},
+    {rconfig .. "/waybar/config.jsonc", home .. "/.config/waybar/config.jsonc"},
+    {rconfig .. "/waybar/style.css", home .. "/.config/waybar/style.css"},
+    {rconfig .. "/dunst/dunstrc", home .. "/.config/dunst/dunstrc"},
+    {rconfig .. "/wofi/style.css", home .. "/.config/wofi/style.css"},
+    {rconfig .. "/hypr/hypridle.conf", home .. "/.config/hypr/hypridle.conf"},
+    {rconfig .. "/kitty/kitty.conf", home .. "/.config/kitty/kitty.conf"},
+    {rconfig .. "/zed/settings.json", home .. "/.config/zed/settings.json"},
+    {rconfig .. "/swayimg/init.lua", home .. "/.config/swayimg/init.lua"},
+    {dots .. "/.config/mimeapps.list_" .. user, home .. "/.config/mimeapps.list"},
+    {dots .. "/.config//xdg-desktop-portal/hyprland-portals.conf", home .. "/.config/xdg-desktop-portal/hyprland-portals.conf"},
+    {dots .. "/.config/sublime-text/Packages/User/Bash.sublime-settings", home .. "/.config/sublime-text/Packages/User/Bash.sublime-settings"},
+}

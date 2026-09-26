@@ -1,0 +1,309 @@
+-- helper theme_body
+-- ported from bash sources/theme_body
+
+function sfg_extras_d()
+    sfg_ec = sfg_l
+    sfg_us = sfg_d
+    sfg_hc = sfg_l
+end
+
+function sfg_extras_l()
+    sfg_ec = sfg_d
+    sfg_us = sfg_l
+    sfg_hc = sfg_d
+end
+
+function common_sfg_assign_func()
+    if scrim_mode == 1 then
+        local _ = _G
+        -- scrim_mode: sfg = fg
+        sfg = fg
+    else
+        sfg = getBestContrastColor(acc, sfg_d, sfg_l)
+    end
+end
+
+function backup_colors()
+    sfg_bak = sfg
+    bg_bak = bg
+    fg_bak = fg
+    local border_bak_path = states2 .. "/border_" .. s .. m
+    border_bak = ff(border_bak_path)
+    border8_bak = tostring(border_bak) .. tostring(border_alpha)
+    acc_bak = ff(states2 .. "/acc_" .. s .. m)
+end
+
+function fetch_first()
+    bg2_8 = tostring(bg2) .. "ff"
+    bg_gtk = bg
+    start_icon = fg
+    border8 = tostring(border) .. tostring(border_alpha)
+    acc_gtk = acc
+
+    if tonumber(scrim_mode) == 1 then
+        -- scrim path: set_hyprland_regexfunc from cache
+        local scrim_list = rcache .. "/scrim_" .. s .. "_" .. m .. ".list"
+        local f = io.open(scrim_list, "r")
+        if not f then
+            set_bri_helper(scrim_list)
+        end
+    end
+end
+
+function fetch_second()
+    if tonumber(scrim_mode) == 1 then
+        local scrim_hex = ff(states2 .. "/" .. "scrim_hex_" .. s)
+        first_fetch()
+    else
+        dofile(shades_list)
+        dofile(sources .. "/theme_logic_" .. m)
+    end
+end
+
+function color_fetch_master()
+    local bpath = states .. "/border_alpha_" .. s
+    if is_file(bpath) then
+        border_alpha = ff(bpath)
+    else
+        border_alpha = ff(states .. "/default_border_alpha")
+    end
+
+    if tonumber(scrim_mode) == 1 then
+        local scrim_hex = ff(states2 .. "/" .. "scrim_hex_" .. s)
+        local hex_id = scrim_hex:gsub("^#", "")
+        shades_list = rcache .. "/accent_files/scrim_shades_" .. s .. "/" .. hex_id .. "/shades_list"
+        gen_shades_lua(scrim_hex, shades_list)
+    else
+        local apath = states .. "/acc_alpha_" .. s
+        if is_file(apath) then
+            acc_alpha = ff(apath)
+        else
+            acc_alpha = "80"
+        end
+    end
+
+    local bgpath = states .. "/bg_alpha_" .. s
+    if is_file(bgpath) then
+        bg_alpha = ff(bgpath)
+    else
+        bg_alpha = ff(states .. "/default_bg_alpha")
+    end
+
+    backup_colors()
+
+    local acc_source = ff(states .. "/acc_source_" .. s)
+    fetch_first()
+
+    if acc_source == "w" then
+        wall = ff(states .. "/current_wall_" .. s)
+        accent_anchor = tonumber(ff(states .. "/accent_anchor")) or 1000
+        dofile(sources .. "/color_pick")
+        init_hex_from_wall()
+        fetch_second()
+        accent_string = "accent from wall"
+    elseif acc_source == "c" then
+        accent_anchor = tonumber(ff(states .. "/accent_anchor")) or 1000
+        dofile(sources .. "/color_pick")
+        init_custom_accent()
+        fetch_second()
+        local custom_name = ff(states .. "/custom_acc_name_" .. s)
+        if not custom_name or custom_name == "" then
+            custom_name = ff(states .. "/custom_acc_" .. s)
+        end
+        accent_string = "custom acc (" .. custom_name .. ")"
+    else
+        common_sfg_assign_func()
+        fetch_first()
+        -- bash reads $states/scheme_${sm} (e.g. scheme_nd/nl/dd/ll)
+        local scheme_id = ff(states .. "/scheme_" .. sm)
+        accent_string = "color scheme (" .. tostring(scheme_id) .. " " .. tostring(acc) .. ")"
+    end
+    tf(states2 .. "/acc_Source", accent_string)
+end
+
+function init_global_vars(...)
+    flagf_set(states2 .. "/" .. "configs_done", "0")
+    flagf_set(states2 .. "/" .. "acc_reload", "1") -- just internal flag
+
+    if not quick_mode then
+        flagf_set(states2 .. "/" .. "general_done", "0")
+        flagf_set(states2 .. "/" .. "monitors_done", "0")
+        flagf_set(states2 .. "/" .. "hs_done", "0")
+        flagf_set(states2 .. "/" .. "shadow_done", "0")
+        flagf_set(states2 .. "/" .. "opacity_done", "0")
+        flagf_set(states2 .. "/" .. "shader_done", "0")
+        flagf_set(states2 .. "/" .. "blur_done", "0")
+        flagf_set(states2 .. "/" .. "awww_done", "0")
+        flagf_set(states2 .. "/" .. "css3_done", "0")
+        flagf_set(states2 .. "/" .. "css4_done", "0")
+        flagf_set(states2 .. "/" .. "all_theme_set", "0")
+        halt_pipeline = "no"
+    end
+
+    tf(states2 .. "/theme_run_pid", tostring(getpid()))
+
+    touch(states2 .. "/theme_lock")
+
+    local s_string_path = states2 .. "/s_string"
+    s_string = ff(s_string_path)
+
+    local start_icon_flag_path = states .. "/custom_acc_start_icon_" .. s
+    start_icon_flag = tonumber(ff(start_icon_flag_path))
+    app_border_flag = tonumber(ff(states .. "/custom_acc_app_border_" .. s))
+    hyprland_border_flag = tonumber(ff(states .. "/custom_acc_hyprland_" .. s))
+    gtk_app_bg_flag = tonumber(ff(states .. "/custom_acc_gtk_" .. s))
+    normal_app_bg_flag = tonumber(ff(states .. "/custom_acc_normal_app_" .. s))
+
+    default_border_alpha = "80"
+    default_acc_alpha = "80"
+    default_bg_alpha = "ff"
+
+    start_icon_contrast = tonumber(ff(states .. "/start_icon_tone_" .. s))
+
+    acc_source = ff(states .. "/acc_source_" .. s)
+
+    dofile(sources .. "/fetch_color_scheme")
+
+    dofile(sources .. "/sfg_calc")
+
+    acc_virgin = acc
+    t_bg = bg
+    flagf_set(states2 .. "/" .. m .. "bg", t_bg)
+
+    if ff(states .. "/acc_scrim_" .. s) == "1" then
+        scrim_mode = 1
+    else
+        scrim_mode = 0
+    end
+
+    color_fetch_master()
+    dofile(sources .. "/theme_definitions")
+    font_vars()
+    _G["vars_" .. m]()
+    _G["sfg_extras_" .. m]()
+    dofile(sources .. "/theme_save_hex")
+    -- fork a copy of THIS interpreter: gen_gtk_css inherits every color var,
+    -- so it no longer has to pull them out of the async $states2 flush
+    bg_fn(function()
+        dofile(sources .. "/gen_gtk3_css")
+    end)
+
+    bg_fn(function()
+        dofile(sources .. "/gen_gtk4_css")
+    end)
+end
+
+function init_dark_colors(...)
+    if setting_theme and setting_theme ~= "" then
+        dofile(sources .. "/msg/init_dark_theme")
+        local msg = theme_init_msgs[math.random(#theme_init_msgs)]
+        run_bg("notify-send -a theme 'Theme' " .. shq(msg))
+    end
+    init_global_vars(...)
+end
+
+function init_light_colors(...)
+    if setting_theme and setting_theme ~= "" then
+        dofile(sources .. "/msg/init_light_theme")
+        local msg = theme_init_msgs[math.random(#theme_init_msgs)]
+        run_bg("notify-send -a theme 'Theme' " .. shq(msg))
+    end
+    init_global_vars(...)
+end
+
+function show_mode_switch(icon, text)
+    do_not_relaunch_rofi = "yes"
+    bg_fn(function()
+        run("pkill splash")
+        sleep(0.4)
+        big = icon
+        small = text
+        dofile(sources .. "/center_pop")
+    end)
+end
+
+function show_st_switch()
+    if tostring(s) == "n" then
+        big = "NORMAL"
+        small = "Switched to Normal UI State"
+    else
+        big = "SPLIT"
+        small = "Switched to Split UI State"
+    end
+    bg_fn(function()
+        dofile(sources .. "/center_pop")
+    end)
+    flagf_set(states2 .. "/" .. "st_switched", "0")
+end
+
+function final_apply()
+    bg_fn(function()
+        dofile(sources .. "/rconfig_gen")
+    end)
+    bg_fn(function()
+        dofile(sources .. "/hyprlock_vars_gen")
+    end)
+    bg_fn(function()
+        dofile(sources .. "/awww_final")
+    end)
+    dofile(sources .. "/theme_body_run")
+end
+
+function tb_set_d(...)
+    setting_theme = "yes"
+    m = "d"
+    sm = tostring(s) .. "d"
+    init_dark_colors(...)
+    show_mode_switch("moon", "Dark Elements Generated")
+    set_theme_elements()
+    final_apply()
+    run_bg("notify-send -a theme 'Theme' " .. shq("Switched to Dark Mode\nUI State: " .. tostring(s_string)))
+end
+
+function tb_r_d(...)
+    init_dark_colors(...)
+    if tonumber(flagf_get(states2 .. "/" .. "st_switched", "0")) == 1 then
+        show_st_switch()
+    end
+    final_apply()
+    run_bg("notify-send -a theme 'Theme' " .. shq("Dark elements generated\nUI State: " .. tostring(s_string)))
+end
+
+function tb_set_l(...)
+    setting_theme = "yes"
+    m = "l"
+    sm = tostring(s) .. "l"
+    init_light_colors(...)
+    show_mode_switch("sun-dim", "Light Elements Generated")
+    set_theme_elements()
+    final_apply()
+    run_bg("notify-send -a theme 'Theme' " .. shq("Switched to Light Mode\nUI State: " .. tostring(s_string)))
+end
+
+function tb_r_l(...)
+    init_light_colors(...)
+    if tonumber(flagf_get(states2 .. "/" .. "st_switched", "0")) == 1 then
+        show_st_switch()
+    end
+    final_apply()
+    run_bg("notify-send -a theme 'Theme' " .. shq("Light elements generated\nUI State: " .. tostring(s_string)))
+end
+
+function quick_regen(...)
+    quick_mode = "yes"
+    if m == "d" then
+        init_dark_colors(...)
+    else
+        init_light_colors(...)
+    end
+    bg_fn(function()
+        dofile(sources .. "/rconfig_gen")
+    end)
+    bg_fn(function()
+        dofile(sources .. "/hyprlock_vars_gen")
+    end)
+    dofile(sources .. "/theme_main_body")
+    theme_cmd("gtk_reload")
+    quick_mode = nil
+    rm(states2 .. "/theme_lock")
+end

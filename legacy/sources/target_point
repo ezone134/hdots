@@ -1,0 +1,7 @@
+target_contents_of_second_pairs_array=(
+    # Put multiple folders in right side and all those folders will be targeted from leftside/symlinks_pointing_to_all_those_folders
+    $HOME/.icons:$hdots/.icons
+    $HOME/.themes:$hdots/.themes
+    $HOME/.fonts:$hdots/.fonts
+    $HOME/.local/share/applications:$rconf/desktop_launchers
+)

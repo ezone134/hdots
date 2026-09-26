@@ -1,0 +1,2 @@
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/QsIo_autogen/include/../EWIEGA46WW/moc_qsio.cpp.json
+/acc/common/hdots/.config/quickshell/backends/QsIo/build/QsIo_autogen/include/qsio.moc.json

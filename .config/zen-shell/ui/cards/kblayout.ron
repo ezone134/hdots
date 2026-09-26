@@ -1,0 +1,12 @@
+(
+    // KBLAYOUT — quiet keyboard icon above, hero layout label below. Live
+    // {kblayout} from scene_values(); center_x/center_y adapt to any cell.
+    items: [
+        Text(x: 0.0, y: -12.0, w: 0.0, text: "\u{f11c}", font_size: 22.0,
+             icon: true, center_x: true, center_y: true, center: true,
+             color: Some(fg2)),
+        Text(x: 0.0, y: 15.0, w: 0.0, text: "{kblayout}", font_size: 14.0,
+             font: display, weight: medium, center_x: true, center_y: true,
+             center: true, color: Some(fg)),
+    ],
+)

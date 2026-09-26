@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Zen Image
+Comment=Minimal Wayland + Vulkan image viewer
+Exec=zen-image %f
+Icon=/tmp/r_daemon/icons/zen-image.svg
+Terminal=false
+Categories=Graphics;Viewer;
+MimeType=image/png;image/jpeg;image/jpg;
+StartupNotify=true
+StartupWMClass=zen-image

@@ -1,0 +1,44 @@
+-- helper theme_definitions
+
+function font_vars()
+    font_size = ff(states .. "/" .. "font_size_" .. s)
+    font = ff(states .. "/" .. "font_" .. s)
+    font_name = font .. " " .. font_size
+end
+
+
+function vars_d()
+    theme_name = "gtk_d"
+--    theme_name = "adw-gtk3-dark"
+    icon_name = "Tela-black-dark"
+    cursor_name = "Bibata-Modern-Ice"
+end
+
+function vars_l()
+    theme_name = "gtk_l"
+--    theme_name = "adw-gtk3"
+    icon_name = "Tela-black-light"
+    cursor_name = "Hypr-Ice"
+end
+
+function common_setter_for_all(...)
+    run("gsettings set org.gnome.desktop.interface icon-theme " .. shq(icon_name))
+    local cursor_check = out("gsettings get org.gnome.desktop.interface cursor-theme")
+    if not cursor_check:find(cursor_name, 1, true) then
+        run("gsettings set org.gnome.desktop.interface cursor-theme " .. shq(cursor_name))
+    end
+    local font_check = out("gsettings get org.gnome.desktop.interface font-name")
+    if not font_check:find(font_name, 1, true) then
+        run("gsettings set org.gnome.desktop.interface font-name " .. shq(font_name))
+    end
+end
+
+function set_theme_elements()
+    run("gsettings set org.gnome.desktop.interface gtk-theme " .. shq(theme_name))
+    common_setter_for_all()
+    flagf_set(states2 .. "/" .. "acc_reload", "0")
+end
+
+function full_hot_reload_func(...)
+    common_setter_for_all(...)
+end

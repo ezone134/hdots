@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- channel_switcher — debounce-switch between normal/split UI channels.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/ssw_body")
+switch_cmd()

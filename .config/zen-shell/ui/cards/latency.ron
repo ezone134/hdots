@@ -1,0 +1,6 @@
+(
+    items: [
+        Header(title: "Latency", glyph: Some("\u{e9e4}"), meta: Some("1.1.1.1"), meta_mono: true, pad: 12.0),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "latency"),
+    ],
+)

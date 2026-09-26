@@ -1,0 +1,33 @@
+(
+    // cpu card — fully declarative (zero Ink): beaded ring gauge + hero % on
+    // the left (gauge ink is the Rust ladder — fg → warn ≥ 70 → danger ≥ 90,
+    // bound per frame through the `cpu_gauge_col` dynamic color), then the
+    // load / freq / temp metric rows on the right (label fg2 caption, mono
+    // value right-aligned at the card pad; temp ink warn > 65 / danger > 80).
+    // The header meta reuses `{cpu_meta}` (the Rust drawer's "x.yz GHz").
+    items: [
+        Header(title: "CPU", meta: Some("{cpu_meta}"), meta_mono: true, pad: 14.0),
+        Ring(
+            name: "cpu_ring",
+            cx: 38.0, cy: 13.0,
+            center_y: true,
+            radius: 26.0,
+            beads: 36,
+            dot: 4.0,
+            fill: value("cpu_gauge_col"),
+            track: hover,
+        ),
+        Text(x: 38.0, y: 6.0, center: true, center_y: true, text: "{cpu}%", font_size: 15.0, weight: semibold, color: Some(value("cpu_gauge_col"))),
+        Rows(
+            name: "cpu_rows",
+            y: 30.0,
+            row_h: 22.0,
+            pad: 14.0,
+            row_dy: 1.0,
+            cols: [
+                (x: 62.0, dy: Some(0.0), size: 8.5, color: Some(fg2)),
+                (x: 62.0, w: 0.0, edge: Some(14.0), right: true, dy: Some(0.0), size: 8.5, font: mono),
+            ],
+        ),
+    ],
+)

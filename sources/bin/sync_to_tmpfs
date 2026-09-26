@@ -1,0 +1,10 @@
+#!/usr/bin/env luajit
+-- helper sync_to_tmpfs
+
+dots = os.getenv("dots")
+dofile(dots .. "/sources/utils")
+dofile(dots .. "/sources/launch_body")
+sync_sources()
+bg_fn(function() chmod_x(sources .. "/bin") end)
+bg_fn(function() chmod_x(sources .. "/bin2") end)
+run_bg("notify-send 'Sync' 'Synced to $sources...'")

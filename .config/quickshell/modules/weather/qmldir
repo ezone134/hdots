@@ -1,0 +1,3 @@
+# explicit qmldir for qs.weather — disables the synthesizer
+module qs.weather
+WeatherPanel 1.0 WeatherPanel.qml

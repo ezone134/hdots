@@ -1,0 +1,76 @@
+#!/usr/bin/env luajit
+
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+
+tf(sources .. "/daemon/loop_is_running", "loop_is_running\n")
+
+local lfs = require("lfs")
+
+bg_fn(function()
+    if qpid("hypridle") == "" then
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'hypridle\')"')
+    end
+end)
+
+bg_fn(function()
+    local run_thunar = flagf_get(states2 .. "/run_thunar_daemon")
+    if run_thunar == "0" then
+        local max_try = 10
+        while max_try > 0 do
+            run_thunar = flagf_get(states2 .. "/run_thunar_daemon")
+            if run_thunar ~= "0" then break end
+            sleep(0.5)
+            max_try = max_try - 1
+        end
+    end
+    flagf_set(states2 .. "/run_thunar_daemon", "1")
+    if qpid("thunar") == "" then
+        run_bg("notify-send -a thunar 'loop calling thunar daemon run' ''")
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'thunar --daemon\')"')
+    end
+    sleep(2)
+    local n = select(2, qpid("thunar"):gsub("%S+", ""))
+    if (tonumber(n)) > 1 then
+        run("pkill thunar")
+        sleep(0.5)
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'thunar --daemon\')"')
+    end
+end)
+
+bg_fn(function()
+    if qpid("alacritty") == "" then
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'alacritty --daemon\')"')
+    end
+end)
+
+bg_fn(function()
+    if qpid("wl-paste") == "" then
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'wl-paste --type text --watch cliphist store\')"')
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'wl-paste --type image --watch cliphist -db-path ' .. os.getenv("HOME") .. '/.cache/cliphist_image/db store\')"')
+    end
+end)
+
+bg_fn(function()
+    local FILE = states2 .. "/zen_shell_watch"
+    if is_file(FILE) then
+        local attr = lfs.attributes(FILE)
+        if attr and attr.mtime then
+            local age = os.time() - attr.mtime
+            if age > 30 then
+                math.randomseed(os.time() + getpid())
+                dofile(sources .. "/msg/shell_frozen")
+                run_bg("notify-send -a 'Watch dog' 'Watch dog' " .. shq(rnd_msg))
+                run("pkill zen-shell")
+                sleep(2)
+                run('hyprctl dispatch "hl.dsp.exec_cmd(\'zen-shell\')"')
+            end
+        end
+    end
+end)
+
+bg_fn(function()
+    if qpid("zen-shell") == "" then
+        run('hyprctl dispatch "hl.dsp.exec_cmd(\'zen-shell\')"')
+    end
+end)

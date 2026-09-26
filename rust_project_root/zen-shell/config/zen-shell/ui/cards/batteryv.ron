@@ -1,0 +1,59 @@
+(
+    // batteryv card — upright battery, two panes. Pane 0: the vector gauge
+    // (a `Battery` item sizing itself to the card, the drawer's own ladder)
+    // and the percent line. Pane 1: the four metric rows + the power-save
+    // pill. The `Dots` row marks the active pane (HARD RULE) and appears
+    // only while the cursor rests on the card.
+    //
+    // Pane gates: every item carries `visible: Some("<pane>")`, and the
+    // no-battery state is one centered caption gated on `batt_absent`.
+    items: [
+        Header(title: "Battery", glyph: Some("\u{f240}"), pad: 12.0),
+
+        // ── pane 0: gauge + percent ──
+        Battery(x: 0.0, y: 0.0, w: 0.0, h: 0.0, vertical: true, value: "{batt_pct}", visible: Some("batt_v_pane_0")),
+        Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+            // a card-level `Text` gets NO implicit width, so the Stack's fill
+            // pass hands this one the card width and `center` lands the percent
+            // on the card center (the drawer's `text_c`); `bottom: true`
+            // anchors `y` px above the card's bottom edge
+            Text(
+                x: 0.0, y: 24.0, w: 0.0, bottom: true,
+                text: "{batt_pct_txt}", font_size: 11.0, center: true,
+                color: Some(value("batt_ink")), visible: Some("batt_v_pane_0"),
+            ),
+        ]),
+
+        // ── pane 1: extra info + the power-save pill ──
+        Rows(
+            name: "batt_info", x: 0.0, y: 30.0, w: 0.0,
+            row_h: 18.0, pad: 12.0, row_dy: 0.0, bottom: 26.0,
+            visible: Some("batt_v_pane_1"),
+            cols: [
+                (x: 0.0, size: 9.0, color: Some(fg3)),
+                (x: 0.0, edge: Some(38.0), size: 9.5),
+            ],
+        ),
+        Hit(
+            x: 12.0, y: 2.0, w: -50.0, h: 22.0, bottom: true, r: 11.0,
+            key: 32130, surface: Some(value("batt_psave_bg")),
+            visible: Some("batt_v_pane_1"),
+        ),
+        Text(
+            // the capsule's top edge is 24px above the card's bottom, and the
+            // drawer insets the label 24px from the capsule's left, 6.5px down
+            x: 36.0, y: 17.5, w: 0.0, bottom: true,
+            text: "{batt_psave_lbl}", font_size: 9.0,
+            color: Some(value("batt_psave_ink")), visible: Some("batt_v_pane_1"),
+        ),
+
+        // ── the no-battery state (the Rust drawer's early return) ──
+        Text(
+            x: 0.0, y: -6.0, w: 0.0, center_x: true, center_y: true,
+            text: "no battery", font_size: 9.0, color: Some(fg3),
+            visible: Some("batt_absent"),
+        ),
+
+        Dots(active: "batt_v_pane", when: Some("batt_v_hover"), dy: 3.5, step: 7.0, panes: 2),
+    ],
+)

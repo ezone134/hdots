@@ -1,0 +1,69 @@
+#!/usr/bin/env luajit
+-- helper hs_body
+
+function on_func()
+    run("pkill hyprsunset")
+    sleep(0.3)
+    tf(states .. "/hyprsunset_state", "a")
+    run_bg("hyprsunset")
+    run_bg("notify-send -a Hyprsunset 'Hyprsunset' 'Started (auto mode)'")
+end
+
+function manual_func()
+    run("pkill hyprsunset")
+    sleep(0.3)
+    tf(states .. "/hyprsunset_state", "m")
+    local val = ff(states .. "/hyprsunset_val")
+    run_bg("hyprsunset -t " .. val)
+    run_bg("notify-send -a Hyprsunset 'Hyprsunset' 'Manual " .. val .. " K'")
+end
+
+function off_func()
+    tf(states .. "/hyprsunset_state", "c")
+    run("pkill hyprsunset")
+    run_bg("notify-send -a Hyprsunset 'Hyprsunset' 'Stopped and state reset'")
+end
+
+function toggle_func()
+    local state = ff(states .. "/hyprsunset_state")
+    if state == "c" then
+        on_func()
+    else
+        off_func()
+    end
+end
+
+function restore_func()
+    local state = ff(states .. "/hyprsunset_state")
+    if state == "m" then
+        run_bg("sleep 0.3 && pkill hyprsunset; sleep 0.3; echo m > " .. states .. "/hyprsunset_state; hyprsunset -t " .. ff(states .. "/hyprsunset_val") .. " & notify-send -a Hyprsunset 'Hyprsunset' 'Manual " .. ff(states .. "/hyprsunset_val") .. " K' &")
+    elseif state == "a" then
+        run_bg("sleep 0.3 && pkill hyprsunset; sleep 0.3; echo a > " .. states .. "/hyprsunset_state; hyprsunset & notify-send -a Hyprsunset 'Hyprsunset' 'Started (auto mode)' &")
+    end
+    flagf_set(states2 .. "/hs_done", "1")
+end
+
+function hs_cmd(cmd, val)
+    if cmd == "restore" then
+        restore_func()
+    elseif cmd == "manual" then
+        manual_func()
+    elseif cmd == "toggle" then
+        toggle_func()
+    elseif cmd == "on" then
+        on_func()
+    elseif cmd == "off" then
+        off_func()
+    elseif cmd == "set" then
+        -- set a manual color temperature (Kelvin) and activate it
+        tf(states .. "/hyprsunset_val", val)
+        manual_func()
+    elseif cmd == "status" then
+        -- "<state> <kelvin>" — state c(off) | a(auto) | m(manual)
+        local st = "c"
+        if is_file(states .. "/hyprsunset_state") then st = ff(states .. "/hyprsunset_state") end
+        local kv = "4000"
+        if is_file(states .. "/hyprsunset_val") then kv = ff(states .. "/hyprsunset_val") end
+        print(st .. " " .. kv)
+    end
+end

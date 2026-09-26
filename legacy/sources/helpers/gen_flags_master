@@ -1,0 +1,211 @@
+# -*- mode: sh -*-
+# generate flags if empty master
+
+# --- Core & Logic ---
+[[ -f $states2/s ]] || echo "d" > $states2/s
+[[ -f $states/accent_anchor ]] || echo "1000" > $states/accent_anchor
+[[ -f $states/accent_caching ]] || echo 0 > $states/accent_caching
+[[ -f $states/fav_accents_list ]] || echo "opensuse_green_2 sunken_jade_8 murky_abyss_9 noir_cherry_8 indigo_28 deep_mulberry_20 moss_41 deep_sea_blue_40" > $states/fav_accents_list
+
+# --- Logos & Icons ---
+[[ -f $states/start_icon_tone_n ]] || echo "900" > $states/start_icon_tone_n
+[[ -f $states/start_icon_tone_d ]] || echo "900" > $states/start_icon_tone_d
+[[ -f $states/start_icon_tone_l ]] || echo "700" > $states/start_icon_tone_l
+# --- Alpha & Tinting ---
+[[ -f $states/acc_alpha_n ]] || echo "ff" > $states/acc_alpha_n
+[[ -f $states/acc_alpha_d ]] || echo "e5" > $states/acc_alpha_d
+[[ -f $states/acc_alpha_l ]] || echo "ff" > $states/acc_alpha_l
+[[ -f $states/border_alpha_n ]] || echo "bf" > $states/border_alpha_n
+[[ -f $states/border_alpha_d ]] || echo "bf" > $states/border_alpha_d
+[[ -f $states/border_alpha_l ]] || echo "ff" > $states/border_alpha_l
+[[ -f $states/bg_alpha_n ]] || echo "bf" > $states/bg_alpha_n
+[[ -f $states/bg_alpha_d ]] || echo "ff" > $states/bg_alpha_d
+[[ -f $states/bg_alpha_l ]] || echo "ff" > $states/bg_alpha_l
+[[ -f $states/bg_tint_strength_n ]] || echo "3" > $states/bg_tint_strength_n
+[[ -f $states/bg_tint_strength_d ]] || echo "3" > $states/bg_tint_strength_d
+[[ -f $states/bg_tint_strength_l ]] || echo "3" > $states/bg_tint_strength_l
+[[ -f $states/param_l ]] || echo "1" > $states/param_l
+[[ -f $states/param_r ]] || echo "1" > $states/param_r
+
+# --- Opacity ---
+[[ -f $states/opacity_active_n ]] || echo "0.7" > $states/opacity_active_n
+[[ -f $states/opacity_active_d ]] || echo "0.8" > $states/opacity_active_d
+[[ -f $states/opacity_active_l ]] || echo "0.8" > $states/opacity_active_l
+[[ -f $states/opacity_inactive_n ]] || echo "0.5" > $states/opacity_inactive_n
+[[ -f $states/opacity_inactive_d ]] || echo "0.5" > $states/opacity_inactive_d
+[[ -f $states/opacity_inactive_l ]] || echo "0.7" > $states/opacity_inactive_l
+[[ -f $states/opacity_state_n ]] || echo "0" > $states/opacity_state_n
+[[ -f $states/opacity_state_d ]] || echo "1" > $states/opacity_state_d
+[[ -f $states/opacity_state_l ]] || echo "0" > $states/opacity_state_l
+
+# --- Blur & Shader ---
+[[ -f $states/hypr_blur_n ]] || echo "1" > $states/hypr_blur_n
+[[ -f $states/hypr_blur_d ]] || echo "1" > $states/hypr_blur_d
+[[ -f $states/hypr_blur_l ]] || echo "1" > $states/hypr_blur_l
+[[ -f $states/hypr_blur_size_n ]] || echo "10" > $states/hypr_blur_size_n
+[[ -f $states/hypr_blur_size_d ]] || echo "2" > $states/hypr_blur_size_d
+[[ -f $states/hypr_blur_size_l ]] || echo "2" > $states/hypr_blur_size_l
+[[ -f $states/hypr_blur_passes_n ]] || echo "3" > $states/hypr_blur_passes_n
+[[ -f $states/hypr_blur_passes_d ]] || echo "4" > $states/hypr_blur_passes_d
+[[ -f $states/hypr_blur_passes_l ]] || echo "3" > $states/hypr_blur_passes_l
+[[ -f $states/hypr_blur_vibrancy_n ]] || echo "0.5" > $states/hypr_blur_vibrancy_n
+[[ -f $states/hypr_blur_vibrancy_d ]] || echo "0.1" > $states/hypr_blur_vibrancy_d
+[[ -f $states/hypr_blur_vibrancy_l ]] || echo "0.8" > $states/hypr_blur_vibrancy_l
+[[ -f $states/shader_val_n ]] || echo "/home/tw/hypr/shaders/saturations/4.glsl" > $states/shader_val_n
+[[ -f $states/shader_val_d ]] || echo "/home/tw/hypr/shaders/saturations/4.glsl" > $states/shader_val_d
+[[ -f $states/shader_val_l ]] || echo "/home/tw/hypr/shaders/saturations/4.glsl" > $states/shader_val_l
+[[ -f $states/shader_state_n ]] || echo "0" > $states/shader_state_n
+[[ -f $states/shader_state_d ]] || echo "0" > $states/shader_state_d
+[[ -f $states/shader_state_l ]] || echo "0" > $states/shader_state_l
+
+# --- Geometry & Layout ---
+[[ -f $states/rounding_n ]] || echo "10" > $states/rounding_n
+[[ -f $states/rounding_d ]] || echo "10" > $states/rounding_d
+[[ -f $states/rounding_l ]] || echo "10" > $states/rounding_l
+[[ -f $states/rounding_power_n ]] || echo "8" > $states/rounding_power_n
+[[ -f $states/rounding_power_d ]] || echo "2" > $states/rounding_power_d
+[[ -f $states/rounding_power_l ]] || echo "2" > $states/rounding_power_l
+[[ -f $states/border_size_n ]] || echo "3" > $states/border_size_n
+[[ -f $states/border_size_d ]] || echo "3" > $states/border_size_d
+[[ -f $states/border_size_l ]] || echo "3" > $states/border_size_l
+[[ -f $states/gaps_in_n ]] || echo "5" > $states/gaps_in_n
+[[ -f $states/gaps_in_d ]] || echo "7" > $states/gaps_in_d
+[[ -f $states/gaps_in_l ]] || echo "6" > $states/gaps_in_l
+[[ -f $states/gaps_out_n ]] || echo "10" > $states/gaps_out_n
+[[ -f $states/gaps_out_d ]] || echo "10" > $states/gaps_out_d
+[[ -f $states/gaps_out_l ]] || echo "10" > $states/gaps_out_l
+[[ -f $states/layout_n ]] || echo "dwindle" > $states/layout_n
+[[ -f $states/layout_d ]] || echo "dwindle" > $states/layout_d
+[[ -f $states/layout_l ]] || echo "dwindle" > $states/layout_l
+[[ -f $states/allow_tearing_n ]] || echo "1" > $states/allow_tearing_n
+[[ -f $states/allow_tearing_d ]] || echo "1" > $states/allow_tearing_d
+[[ -f $states/allow_tearing_l ]] || echo "1" > $states/allow_tearing_l
+[[ -f $states/resize_on_border_n ]] || echo "1" > $states/resize_on_border_n
+[[ -f $states/resize_on_border_d ]] || echo "1" > $states/resize_on_border_d
+[[ -f $states/resize_on_border_l ]] || echo "1" > $states/resize_on_border_l
+
+
+
+
+
+
+
+
+
+# --- Shadows ---
+[[ -f $states/shadow_enabled_n ]] || echo "0" > $states/shadow_enabled_n
+[[ -f $states/shadow_enabled_d ]] || echo "1" > $states/shadow_enabled_d
+[[ -f $states/shadow_enabled_l ]] || echo "1" > $states/shadow_enabled_l
+[[ -f $states/shadow_range_n ]] || echo "3" > $states/shadow_range_n
+[[ -f $states/shadow_range_d ]] || echo "8" > $states/shadow_range_d
+[[ -f $states/shadow_range_l ]] || echo "15" > $states/shadow_range_l
+[[ -f $states/shadow_render_power_n ]] || echo "8" > $states/shadow_render_power_n
+[[ -f $states/shadow_render_power_d ]] || echo "1" > $states/shadow_render_power_d
+[[ -f $states/shadow_render_power_l ]] || echo "3" > $states/shadow_render_power_l
+[[ -f $states/shadow_rgba_n ]] || echo "0xee1a1a1a" > $states/shadow_rgba_n
+[[ -f $states/shadow_rgba_d ]] || echo "0xee1a1a1a" > $states/shadow_rgba_d
+[[ -f $states/shadow_rgba_l ]] || echo "0xee1a1a1a" > $states/shadow_rgba_l
+
+# --- Wallpaper & Animations ---
+[[ -f $states/current_wall_n ]] || echo "/home/tw/Wallpapers/damir-babacic-7EkyXZYeYsw-unsplash.jpg" > $states/current_wall_n
+[[ -f $states/current_wall_d ]] || echo "/home/tw/Wallpapers/winter-10.png" > $states/current_wall_d
+[[ -f $states/current_wall_l ]] || echo "/home/tw/Wallpapers/japan-artistic-5120x2880-25406.jpg" > $states/current_wall_l
+[[ -f $states/wall_anim_n ]] || echo "simple" > $states/wall_anim_n
+[[ -f $states/wall_anim_d ]] || echo "grow" > $states/wall_anim_d
+[[ -f $states/wall_anim_l ]] || echo "center" > $states/wall_anim_l
+[[ -f $states/wall_anim_dur_n ]] || echo "5" > $states/wall_anim_dur_n
+[[ -f $states/wall_anim_dur_d ]] || echo "5" > $states/wall_anim_dur_d
+[[ -f $states/wall_anim_dur_l ]] || echo "5" > $states/wall_anim_dur_l
+
+# --- Custom Accents ---
+[[ -f $states/custom_acc_n ]] || echo "ancient_azure_hdots" > $states/custom_acc_n
+[[ -f $states/custom_acc_d ]] || echo "dark_terracotta_28" > $states/custom_acc_d
+[[ -f $states/custom_acc_l ]] || echo "ancient_azure_hdots" > $states/custom_acc_l
+
+[[ -f $states/custom_acc_normal_app_n ]] || echo "0" > $states/custom_acc_normal_app_n
+[[ -f $states/custom_acc_normal_app_d ]] || echo "0" > $states/custom_acc_normal_app_d
+[[ -f $states/custom_acc_normal_app_l ]] || echo "0" > $states/custom_acc_normal_app_l
+[[ -f $states/custom_acc_start_icon_n ]] || echo "0" > $states/custom_acc_start_icon_n
+[[ -f $states/custom_acc_start_icon_d ]] || echo "0" > $states/custom_acc_start_icon_d
+[[ -f $states/custom_acc_start_icon_l ]] || echo "1" > $states/custom_acc_start_icon_l
+[[ -f $states/custom_acc_app_border_n ]] || echo "1" > $states/custom_acc_app_border_n
+[[ -f $states/custom_acc_app_border_d ]] || echo "1" > $states/custom_acc_app_border_d
+[[ -f $states/custom_acc_app_border_l ]] || echo "1" > $states/custom_acc_app_border_l
+[[ -f $states/custom_acc_gtk_n ]] || echo "0" > $states/custom_acc_gtk_n
+[[ -f $states/custom_acc_gtk_d ]] || echo "0" > $states/custom_acc_gtk_d
+[[ -f $states/custom_acc_gtk_l ]] || echo "0" > $states/custom_acc_gtk_l
+[[ -f $states/custom_acc_hyprland_n ]] || echo "1" > $states/custom_acc_hyprland_n
+[[ -f $states/custom_acc_hyprland_d ]] || echo "0" > $states/custom_acc_hyprland_d
+[[ -f $states/custom_acc_hyprland_l ]] || echo "0" > $states/custom_acc_hyprland_l
+
+
+
+delete_this_block_later () {
+
+# --- Notifications ---
+[[ -f $states/pop_notif_delay ]] || echo 0.8 > $states/pop_notif_delay
+}
+
+
+[[ -f $states/show_splash_d ]] || echo 1 > $states/show_splash_d
+[[ -f $states/show_splash_n ]] || echo 1 > $states/show_splash_n
+[[ -f $states/show_splash_l ]] || echo 1 > $states/show_splash_l
+
+
+[[ -f $states/splash_alpha_d ]] || echo 0 > $states/splash_alpha_d
+[[ -f $states/splash_alpha_n ]] || echo 0 > $states/splash_alpha_n
+[[ -f $states/splash_alpha_l ]] || echo 0 > $states/splash_alpha_l
+
+[[ -f $states/scheme_dd ]] || echo hdots_d > $states/scheme_dd
+[[ -f $states/scheme_ll ]] || echo hdots_l > $states/scheme_ll
+[[ -f $states/scheme_nl ]] || echo hdots_l > $states/scheme_nl
+[[ -f $states/scheme_nd ]] || echo hdots_d > $states/scheme_nd
+
+[[ -f $states/splash_bg_acc_d ]] || echo 0 > $states/splash_bg_acc_d
+[[ -f $states/splash_bg_acc_n ]] || echo 0 > $states/splash_bg_acc_n
+[[ -f $states/splash_bg_acc_l ]] || echo 0 > $states/splash_bg_acc_l
+
+[[ -f $states/font_size_n ]] || echo "16" > $states/font_size_n
+[[ -f $states/font_size_d ]] || echo "16" > $states/font_size_d
+[[ -f $states/font_size_l ]] || echo "16" > $states/font_size_l
+
+[[ -f $states/font_n ]] || echo "SF Pro" > $states/font_n
+[[ -f $states/font_d ]] || echo "SF Pro" > $states/font_d
+[[ -f $states/font_l ]] || echo "SF Pro" > $states/font_l
+
+
+
+[[ -f $states/splash_id_n ]] || echo 0 > $states/splash_id_n
+[[ -f $states/splash_id_d ]] || echo 0 > $states/splash_id_d
+[[ -f $states/splash_id_l ]] || echo 0 > $states/splash_id_l
+
+
+
+
+
+
+
+[[ -f $states/hyprsunset_state ]] || echo c > $states/hyprsunset_state
+[[ -f $states/hyprsunset_val ]] || echo "4500" > $states/hyprsunset_val
+
+
+
+
+
+
+
+
+[[ -f $states/acc_scrim_n ]] || echo "0" > $states/acc_scrim_n
+[[ -f $states/acc_scrim_d ]] || echo "0" > $states/acc_scrim_d
+[[ -f $states/acc_scrim_l ]] || echo "0" > $states/acc_scrim_l
+
+
+
+[[ -f $states/scrim_alpha_n ]] || echo "4c" > $states/scrim_alpha_n
+[[ -f $states/scrim_alpha_d ]] || echo "4c" > $states/scrim_alpha_d
+[[ -f $states/scrim_alpha_l ]] || echo "59" > $states/scrim_alpha_l
+
+
+[[ -f $states/acc_source_d ]] || echo d > $states/acc_source_d
+[[ -f $states/acc_source_n ]] || echo d > $states/acc_source_n
+[[ -f $states/acc_source_l ]] || echo d > $states/acc_source_l

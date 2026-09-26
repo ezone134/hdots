@@ -1,0 +1,78 @@
+#!/usr/bin/env luajit
+-- helper sync_etc_files
+
+if is_file(states2 .. "/etc_synced") then return end
+touch(states2 .. "/etc_synced")
+
+local function raw_read(p)
+    local f = io.open(p, "rb")
+    if not f then return nil end
+    local s = f:read("*a")
+    f:close()
+    return s
+end
+
+local function raw_write(p, s)
+    mkdir_p(dirname(p))
+    local f = io.open(p, "wb")
+    if not f then return false end
+    f:write(s)
+    f:close()
+    return true
+end
+
+function sync_it_file(l, r)
+    mkdir_p(dirname(r))
+    if not is_file(r) then
+        local content = raw_read(l)
+        if content then
+            raw_write(r, content)
+        end
+        return
+    end
+    local lc = raw_read(l)
+    local rc = raw_read(r)
+    if lc ~= rc then
+        raw_write(r, lc)
+    end
+end
+
+function sync_it_dir(l, r)
+    copy_dir_contents(l, r)
+end
+
+function sync_files_11()
+    local files_pairs = {
+        {"/etc/fstab", dots .. "/system-tumbleweed/etc/fstab"},
+        {"/etc/group", dots .. "/system-tumbleweed/etc/group"},
+        {"/etc/group-", dots .. "/system-tumbleweed/etc/group-"},
+        {"/etc/tlp.conf", dots .. "/system-tumbleweed/etc/tlp.conf"},
+        {"/etc/hosts", dots .. "/system-tumbleweed/etc/hosts"},
+        {"/etc/host.conf", dots .. "/system-tumbleweed/etc/host.conf"},
+        {"/etc/machine-id", dots .. "/system-tumbleweed/etc/machine-id"},
+        {"/etc/hostname", dots .. "/system-tumbleweed/etc/hostname"},
+        {"/usr/etc/sudoers", dots .. "/system-tumbleweed/usr/etc/sudoers"},
+        {"/etc/sudoers", dots .. "/system-tumbleweed/etc/sudoers"},
+        {"/etc/zypp/zypp.conf", dots .. "/system-tumbleweed/etc/zypp/zypp.conf"},
+        {"/etc/zypp/zypper.conf", dots .. "/system-tumbleweed/etc/zypp/zypper.conf"},
+        {"/etc/zypp/repos.d/oss.repo", dots .. "/system-tumbleweed/etc/zypp/repos.d/oss.repo"},
+    }
+    for _, pair in ipairs(files_pairs) do
+        local l, r = pair[1], pair[2]
+        run_bg("luajit -e 'dofile(" .. shq(arg[0]) .. "); sync_it_file(" .. shq(l) .. "," .. shq(r) .. ")'")
+    end
+end
+
+function sync_folders_11()
+    local folders_pairs = {
+        {"/etc/zypp/repos.d", dots .. "/system-tumbleweed/etc/zypp/repos.d"},
+    }
+    for _, pair in ipairs(folders_pairs) do
+        local l, r = pair[1], pair[2]
+        mkdir_p(l)
+        mkdir_p(r)
+        run_bg("luajit -e 'dofile(" .. shq(arg[0]) .. "); sync_it_dir(" .. shq(l) .. "," .. shq(r) .. ")'")
+    end
+end
+
+sync_files_11()

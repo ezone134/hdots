@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- audio_main — vol/mic/audio (wpctl/pactl) standalone CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/audio_body")
+audio_main_cmd(unpack(arg))

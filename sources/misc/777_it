@@ -1,0 +1,91 @@
+#!/usr/bin/env luajit
+
+local ffi = require("ffi")
+local bit = require("bit")
+
+-- Safe stat definition with buffer padding to prevent FFI layout crashes
+ffi.cdef[[
+    int chmod(const char *path, int mode);
+    int stat(const char *pathname, struct stat *buf);
+    int lstat(const char *pathname, struct stat *buf);
+
+    struct stat {
+        char __pad[256];
+    };
+]]
+
+local function path_exists(path)
+    local s = ffi.new("struct stat")
+    return ffi.C.stat(path, s) == 0 or ffi.C.lstat(path, s) == 0
+end
+
+local function get_stat_fields(path)
+    local s = ffi.new("struct stat")
+    if ffi.C.stat(path, s) ~= 0 then return nil, nil end
+
+    local mode_ptr = ffi.cast("unsigned int*", s.__pad + 24)
+    local st_mode = mode_ptr[0]
+
+    return st_mode
+end
+
+local function is_directory(path)
+    local mode = get_stat_fields(path)
+    if mode then
+        return bit.band(mode, 0170000) == 0040000 -- S_IFDIR
+    end
+    return false
+end
+
+local function get_permissions(path)
+    local mode = get_stat_fields(path)
+    if mode then
+        return bit.band(mode, 511)
+    end
+    return nil
+end
+
+local function parse_args(args)
+    local flags = { quiet = false }
+    local positional = {}
+
+    for _, arg in ipairs(args) do
+        if arg:sub(1, 1) == "-" and arg:sub(2, 2) ~= "-" then
+            for i = 2, #arg do
+                local char = arg:sub(i, i)
+                if char == "q" then flags.quiet = true end
+            end
+        elseif arg == "--quiet" then
+            flags.quiet = true
+        else
+            table.insert(positional, arg)
+        end
+    end
+    return flags, positional
+end
+
+local function main()
+    local flags, pos = parse_args(arg)
+    local target = pos[1]
+
+    if not target or target == "/" or target == "" then
+        return 0
+    end
+
+    if not path_exists(target) then
+        return 0
+    end
+
+    local current_perm = get_permissions(target)
+    if current_perm == 511 then
+        return 0
+    end
+
+    if is_directory(target) then
+        os.execute(string.format("chmod -R 777 %q", target))
+    else
+        ffi.C.chmod(target, 511)
+    end
+end
+
+main()

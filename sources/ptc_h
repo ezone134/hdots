@@ -1,0 +1,23 @@
+-- point_to_contents — loop dir entries, move aside, symlink.
+-- Mirrors legacy point_to_contents exactly: -ef skip, symlink dst moved to
+-- /tmp, existing dst moved to .$RANDOM, then ln -s. NO rm -rf anywhere.
+
+function ptc_run(src_dir, dest_dir)
+    mkdir_p(src_dir)
+    mkdir_p(dest_dir)
+    for _, base in ipairs(list_dir(src_dir)) do
+        local target = src_dir .. "/" .. base
+        local point = dest_dir .. "/" .. base
+        if not is_same_file(point, target) then
+            if is_symlink(point) then
+                if not mv(point, "/tmp/" .. base .. ".hypr_init_deleted_" .. tostring(math.random(0, 999999))) then
+                    rm(point)
+                end
+            end
+            if is_file(point) or is_dir(point) then
+                mv(point, point .. "." .. tostring(math.random(0, 999999)))
+            end
+            symlink(target, point)
+        end
+    end
+end

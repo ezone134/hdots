@@ -1,0 +1,3 @@
+# explicit qmldir for qs.osd — disables the synthesizer
+module qs.osd
+OsdToast 1.0 OsdToast.qml

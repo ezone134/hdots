@@ -1,0 +1,23 @@
+2026-08-03T16:14:49Z [INFO] Spawning terminal server process...
+2026-08-03T16:14:49Z [INFO] Running terminal server...
+2026-08-03T16:14:49Z [ERROR] thread 'main' panicked at 'should be able to create event loop: Os(OsError { line: 788, file: "/home/runner/.cargo/git/checkouts/winit-6b6d13ea8b42c599/a4e0ecb/src/platform_impl/linux/mod.rs", error: XNotSupported(XOpenDisplayFailed) })': /home/runner/work/warp-internal/warp-internal/crates/warpui/src/windowing/winit/app.rs:178
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: <unknown>
+  11: <unknown>
+  12: <unknown>
+  13: <unknown>
+  14: <unknown>
+  15: __libc_start_call_main
+  16: __libc_start_main@GLIBC_2.2.5
+  17: <unknown>
+
+2026-08-03T16:14:49Z [INFO] Received empty message; assuming the connection has been closed.

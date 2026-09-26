@@ -1,0 +1,7 @@
+{
+	"theme": "$sublime_theme",
+	"color_scheme": "$sublime_color_scheme",
+	"font_size": 20,
+	  "default_extension": "sh",
+	  	  	"reload_file_in_background": true,
+}

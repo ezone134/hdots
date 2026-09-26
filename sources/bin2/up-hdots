@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+base_name="hdots"
+. $sources/git_body
+up_hdots_func

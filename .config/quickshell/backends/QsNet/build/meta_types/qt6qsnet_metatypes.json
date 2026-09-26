@@ -1,0 +1,445 @@
+[
+    {
+        "classes": [
+            {
+                "className": "QsNet",
+                "lineNumber": 24,
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "url",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "timeoutMs",
+                                "type": "int"
+                            },
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 5,
+                        "lineNumber": 31,
+                        "name": "httpGet",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "url",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "timeoutMs",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 6,
+                        "isCloned": true,
+                        "lineNumber": 31,
+                        "name": "httpGet",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "url",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 7,
+                        "isCloned": true,
+                        "lineNumber": 31,
+                        "name": "httpGet",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 8,
+                        "lineNumber": 40,
+                        "name": "refreshWifiEnabled",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 9,
+                        "lineNumber": 42,
+                        "name": "toggleWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 10,
+                        "lineNumber": 45,
+                        "name": "scanWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 11,
+                        "isCloned": true,
+                        "lineNumber": 45,
+                        "name": "scanWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 12,
+                        "lineNumber": 48,
+                        "name": "wifiSignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 13,
+                        "isCloned": true,
+                        "lineNumber": 48,
+                        "name": "wifiSignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "ssid",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 14,
+                        "lineNumber": 51,
+                        "name": "connectWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "ssid",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "password",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 15,
+                        "isCloned": true,
+                        "lineNumber": 51,
+                        "name": "connectWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "ssid",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 16,
+                        "isCloned": true,
+                        "lineNumber": 51,
+                        "name": "connectWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 17,
+                        "lineNumber": 53,
+                        "name": "disconnectWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 18,
+                        "isCloned": true,
+                        "lineNumber": 53,
+                        "name": "disconnectWifi",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 19,
+                        "lineNumber": 59,
+                        "name": "refreshBluetoothEnabled",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 20,
+                        "lineNumber": 60,
+                        "name": "toggleBluetooth",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 21,
+                        "lineNumber": 62,
+                        "name": "scanBluetooth",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 22,
+                        "isCloned": true,
+                        "lineNumber": 62,
+                        "name": "scanBluetooth",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 23,
+                        "lineNumber": 64,
+                        "name": "btConnectedName",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 24,
+                        "isCloned": true,
+                        "lineNumber": 64,
+                        "name": "btConnectedName",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "address",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 25,
+                        "lineNumber": 65,
+                        "name": "connectBluetooth",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "address",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 26,
+                        "isCloned": true,
+                        "lineNumber": 65,
+                        "name": "connectBluetooth",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "address",
+                                "type": "QString"
+                            },
+                            {
+                                "name": "callback",
+                                "type": "QJSValue"
+                            }
+                        ],
+                        "index": 27,
+                        "lineNumber": 66,
+                        "name": "disconnectBluetooth",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "address",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 28,
+                        "isCloned": true,
+                        "lineNumber": 66,
+                        "name": "disconnectBluetooth",
+                        "returnType": "void"
+                    }
+                ],
+                "object": true,
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 0,
+                        "lineNumber": 34,
+                        "name": "wifiEnabled",
+                        "notify": "wifiEnabledChanged",
+                        "override": false,
+                        "read": "wifiEnabled",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 1,
+                        "lineNumber": 35,
+                        "name": "wifiScanning",
+                        "notify": "wifiScanningChanged",
+                        "override": false,
+                        "read": "wifiScanning",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 2,
+                        "lineNumber": 56,
+                        "name": "bluetoothEnabled",
+                        "notify": "bluetoothEnabledChanged",
+                        "override": false,
+                        "read": "bluetoothEnabled",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "virtual": false
+                    }
+                ],
+                "qualifiedClassName": "QsNet",
+                "signals": [
+                    {
+                        "access": "public",
+                        "index": 0,
+                        "lineNumber": 75,
+                        "name": "wifiEnabledChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 1,
+                        "lineNumber": 76,
+                        "name": "wifiScanningChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 2,
+                        "lineNumber": 77,
+                        "name": "bluetoothEnabledChanged",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "message",
+                                "type": "QDBusMessage"
+                            }
+                        ],
+                        "index": 3,
+                        "lineNumber": 71,
+                        "name": "onNmPropsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "message",
+                                "type": "QDBusMessage"
+                            }
+                        ],
+                        "index": 4,
+                        "lineNumber": 72,
+                        "name": "onBtPropsChanged",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "qsnet.hpp",
+        "outputRevision": 69
+    },
+    {
+        "classes": [
+            {
+                "className": "QsNetPlugin",
+                "lineNumber": 568,
+                "object": true,
+                "qualifiedClassName": "QsNetPlugin",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QQmlExtensionPlugin"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "qsnet.cpp",
+        "outputRevision": 69
+    }
+]

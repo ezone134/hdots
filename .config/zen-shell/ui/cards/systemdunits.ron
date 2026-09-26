@@ -1,0 +1,31 @@
+(
+    // systemdunits card — fully declarative (zero Ink): the failed-units
+    // list as newest-first raised chips (danger name, right ✕ glyph in
+    // danger — per-row surface from `sus_rows`), the "{n} failed" meta +
+    // state icon in the header, the "all services up" empty caption, and
+    // the bottom-right refresh Hit (key 31990).
+    items: [
+        Header(title: "Services", glyph: Some("{sus_icon}"), meta: Some("{sus_meta}"), pad: 12.0),
+        Text(x: 0.0, y: 0.0, center_x: true, center_y: true, text: "all services up", font_size: 9.0, color: Some(fg3), visible: Some("sus_empty")),
+        Rows(
+            name: "sus_rows",
+            y: 28.0,
+            row_h: 19.0,
+            pad: 12.0,
+            row_dy: 3.5,
+            bottom: 28.0,
+            visible: Some("sus_live"),
+            cols: [
+                (x: 6.0, dy: Some(0.0), size: 8.5, truncate: Some(20.0)),
+                (x: 0.0, w: 0.0, edge: Some(14.0), right: true, dy: Some(0.0), size: 9.0, icon: true),
+            ],
+        ),
+        Hit(
+            x: 15.0, y: 28.0, w: 30.0, h: 20.0, r: 6.0, right: true,
+            surface: Some(raised), surface_hover: Some(raised_hl),
+            icon: true, center: true, dy: 1.5,
+            text: "\u{f021}", font_size: 9.0, color: Some(fg3), color_hover: Some(acc),
+            key: 31990,
+        ),
+    ],
+)

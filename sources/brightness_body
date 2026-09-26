@@ -1,0 +1,177 @@
+#!/usr/bin/env luajit
+-- helper brightness_body
+
+-- sorted so discovery is deterministic when more than one backlight is present
+function _bri_dir()
+    local entries = list_dir("/sys/class/backlight")
+    table.sort(entries)
+    for _, d in ipairs(entries) do
+        local path = "/sys/class/backlight/" .. d
+        if is_file(path .. "/brightness") and is_file(path .. "/max_brightness") then
+            return path
+        end
+    end
+    return nil
+end
+
+function bri_get()
+    local d = _bri_dir()
+    if not d then return 0 end
+    local cur = tonumber(ff(d .. "/brightness")) or 0
+    local max = tonumber(ff(d .. "/max_brightness")) or 1
+    if max <= 0 then max = 1 end
+    return math.floor(cur * 100 / max)
+end
+
+function bri_raw()
+    local d = _bri_dir()
+    if not d then return 0 end
+    return tonumber(ff(d .. "/brightness")) or 0
+end
+
+function bri_max()
+    local d = _bri_dir()
+    if not d then return 65535 end
+    return tonumber(ff(d .. "/max_brightness")) or 1
+end
+
+function bri_write(raw)
+    raw = tonumber(raw) or 0
+    local dir = _bri_dir()
+    if not dir then return false end
+    local max = tonumber(ff(dir .. "/max_brightness")) or 1
+    if max <= 0 then max = 1 end
+    if raw < 1 then raw = 1 end
+    if raw > max then raw = max end
+
+    local bright_path = dir .. "/brightness"
+    local f = io.open(bright_path, "w")
+    if f then f:write(tostring(raw) .. "\n"); f:close(); return true end
+
+    -- direct write denied (root / video group / polkit ACL): ask logind
+    if command_v("busctl") then
+        local dev = basename(dir)
+        return run("busctl call org.freedesktop.login1 /org/freedesktop/login1/session/auto org.freedesktop.login1.Session SetBrightness ssu backlight " .. shq(dev) .. " " .. tostring(raw)) and true or false
+    end
+    return false
+end
+
+function bri_step(sign, step)
+    step = tonumber(step) or 5
+    local max_val = bri_max()
+    local cur = bri_raw()
+    local raw = math.floor(max_val * step / 100)
+    if raw < 1 then raw = 1 end
+    local new
+    if sign == "+" then
+        new = cur + raw
+        if new > max_val then new = max_val end
+    else
+        new = cur - raw
+        if new < 1 then new = 1 end
+    end
+    bri_write(new)
+end
+
+-- gamma above max backlight is owned by shader_main: it holds the id (1..19) in
+-- states/gamma_v, takes the mode to "g" in states/shader_m_$s and points
+-- ~/.config/hypr/luas/shader.lua at $shaders/gamma/<id>.frag. Only the id is
+-- read back here, to decide whether a down-press dims through gamma before
+-- touching backlight.
+function _gamma_get()
+    return tonumber(ff(states .. "/gamma_v")) or 0
+end
+
+function _gamma_apply(dir)
+    run("shader_main gamma-" .. dir)
+end
+
+-- gamma only counts while this channel is really running gamma (mode g, or m
+-- where it is one of the knobs); mode 0 means the screen has no shader, so a
+-- down-press goes to backlight instead
+function _gamma_active()
+    local ch = flagf_get(states2 .. "/s") or "n"
+    local m = tostring(ff(states .. "/shader_m_" .. ch) or "0")
+    return (m == "g" or m == "m") and _gamma_get() > 0
+end
+
+function gamma_up_func()
+    _gamma_apply("up")
+end
+
+function gamma_down_func()
+    _gamma_apply("down")
+end
+
+function bri_up_func(step)
+    step = tonumber(step) or 5
+    local max_val = bri_max()
+    local cur = bri_raw()
+    if cur == max_val then
+        run_bg("notify-send -a Brightness -t 800 'Brightness' 'Max brightness -- tweaking gamma'")
+        gamma_up_func()
+        return
+    end
+    bri_step("+", step)
+end
+
+function bri_down_func(step)
+    step = tonumber(step) or 5
+    -- while a gamma shader is active, dim via gamma first (mirror of up)
+    if _gamma_active() then
+        gamma_down_func()
+        return
+    end
+    bri_step("-", step)
+end
+
+function bri_lazy_up_func()
+    local max_val = bri_max()
+    local cur = bri_raw()
+    if cur == max_val then
+        gamma_up_func()
+        return
+    end
+    bri_step("+", 1)
+    local p = bri_get()
+    run_bg(string.format("notify-send -a Brightness -u low -h int:value:%s -t 2000 -h string:x-canonical-private-synchronous:brightness 'Brightness' '%s%%'", p, p))
+end
+
+function bri_lazy_down_func()
+    if _gamma_active() then
+        gamma_down_func()
+        return
+    end
+    bri_step("-", 1)
+    local p = bri_get()
+    run_bg(string.format("notify-send -a Brightness -u low -h int:value:%s -t 2000 -h string:x-canonical-private-synchronous:brightness 'Brightness' '%s%%'", p, p))
+end
+
+function bri_cmd(action, arg2)
+    if action == nil or action == "" then action = "get" end
+    if action == "get" or action == "cur" then
+        print(bri_get() .. "%")
+    elseif action == "set" then
+        local pct = tonumber(arg2)
+        if not pct then err("bri set: requires a percentage N"); return end
+        bri_write(math.floor(bri_max() * pct / 100))
+    elseif action == "up" then
+        bri_up_func(tonumber(arg2) or 5)
+    elseif action == "down" then
+        bri_down_func(tonumber(arg2) or 5)
+    elseif action == "lazy" then
+        local sub = arg2
+        if sub == "up" then bri_lazy_up_func()
+        elseif sub == "down" then bri_lazy_down_func()
+        else err("bri lazy: use up|down")
+        end
+    elseif action == "gamma" then
+        local sub = arg2
+        if sub == "up" then gamma_up_func()
+        elseif sub == "down" then gamma_down_func()
+        else err("bri gamma: use up|down")
+        end
+    else
+        err("bri: use get|set N|up [N]|down [N]|lazy up|down|gamma up|down")
+    end
+end

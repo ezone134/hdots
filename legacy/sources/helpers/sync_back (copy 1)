@@ -1,0 +1,36 @@
+# -*- mode: sh -*-
+
+    states="${states:-/home/user/data/states}"
+    hdots="${hdots:-/mnt/backup/server/aalu_pyaz}"
+
+if [[ $(<$states2/s) == n ]]; then
+echo 0 > $states/s
+    else
+echo 1 > $states/s
+fi
+
+{
+rsync -crv --inplace --no-whole-file --delete-before $states/ $hdots/states/
+# rsync -cr --inplace --no-whole-file $states/* $hdots/states/
+} &
+
+
+
+{
+rsync -crv --inplace --no-whole-file $hypr_global/states/ $hdots/states_global/
+} &
+
+
+{ type -p sync_extras && sync_extras; } >/dev/null 2>&1
+
+
+{
+        accent_caching=$(<$states/accent_caching)
+    (( accent_caching == 1 )) && {
+        mkdir -p $rcache/accent_files
+        mkdir -p $hdots/rcache/accent_files
+        rsync -cr --inplace --no-whole-file $rcache/accent_files/ $hdots/rcache/accent_files
+    }
+} &
+
+wait

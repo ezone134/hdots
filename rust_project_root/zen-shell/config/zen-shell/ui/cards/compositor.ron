@@ -1,0 +1,172 @@
+(
+    // compositor / effects card — fully declarative body (zero Ink; the Rust
+    // drawer is the fallback when this file is absent).
+    //
+    // Three effect tiles (Blur · Shadow · Opacity) in one equal-column `Row`,
+    // then the screenshot row (Area · Full) below it. Every tile is a `Stack`
+    // so the geometry is declared once and the row does the equal-width math
+    // on any card width — the drawer's
+    // `(w − 2·12 − 2·8) / 3` per tile, 40 px tall, 7 px corners.
+    //
+    // The tiles' four state-driven inks (fill, state dot, label, on/off
+    // caption) are per-frame values, not tokens: a lit tile's fill is the
+    // accent at 16% alpha, and hovering it lifts to 25% — blends a token
+    // cannot spell, exactly like the drawer's `if on … else if hov …` ladder.
+    // The screenshot row declares `min_card_h: 110` (78 px of rows + 30 px of
+    // buttons + the 2 px the drawer keeps clear), so on a short card the whole
+    // row stands down instead of overflowing.
+    items: [
+        Header(title: "Effects", glyph: Some("\u{e894}"), meta: Some("{comp_meta}"), pad: 12.0),
+        // ── the three effect tiles ──
+        Row(
+            x: 12.0, y: 30.0, w: -24.0, h: 40.0,
+            pad: 0.0, spacing: 8.0,
+            items: [
+                Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 7.0,
+                        color: value("comp_tile_0"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 31_400),
+                    Surface(
+                        // `center_x` lands the box's left edge on the tile
+                        // center, so the 5 px dot offsets by half its width
+                        x: -2.5, y: 7.0, w: 5.0, h: 5.0,
+                        r: 2.5,
+                        center_x: true,
+                        color: value("comp_dot_0"),
+                    ),
+                    Text(
+                        x: 0.0, y: 17.0, w: 0.0,
+                        text: "Blur",
+                        font_size: 9.5,
+                        center: true,
+                        color: Some(value("comp_ink_0")),
+                    ),
+                    Text(
+                        x: 0.0, y: 29.0, w: 0.0,
+                        text: "{comp_state_0}",
+                        font_size: 7.5,
+                        center: true,
+                        color: Some(fg3),
+                    ),
+                ]),
+                Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 7.0,
+                        color: value("comp_tile_1"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 31_401),
+                    Surface(
+                        // `center_x` lands the box's left edge on the tile
+                        // center, so the 5 px dot offsets by half its width
+                        x: -2.5, y: 7.0, w: 5.0, h: 5.0,
+                        r: 2.5,
+                        center_x: true,
+                        color: value("comp_dot_1"),
+                    ),
+                    Text(
+                        x: 0.0, y: 17.0, w: 0.0,
+                        text: "Shadow",
+                        font_size: 9.5,
+                        center: true,
+                        color: Some(value("comp_ink_1")),
+                    ),
+                    Text(
+                        x: 0.0, y: 29.0, w: 0.0,
+                        text: "{comp_state_1}",
+                        font_size: 7.5,
+                        center: true,
+                        color: Some(fg3),
+                    ),
+                ]),
+                Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 7.0,
+                        color: value("comp_tile_2"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 31_402),
+                    Surface(
+                        // `center_x` lands the box's left edge on the tile
+                        // center, so the 5 px dot offsets by half its width
+                        x: -2.5, y: 7.0, w: 5.0, h: 5.0,
+                        r: 2.5,
+                        center_x: true,
+                        color: value("comp_dot_2"),
+                    ),
+                    Text(
+                        x: 0.0, y: 17.0, w: 0.0,
+                        text: "Opacity",
+                        font_size: 9.5,
+                        center: true,
+                        color: Some(value("comp_ink_2")),
+                    ),
+                    Text(
+                        x: 0.0, y: 29.0, w: 0.0,
+                        text: "{comp_state_2}",
+                        font_size: 7.5,
+                        center: true,
+                        color: Some(fg3),
+                    ),
+                ]),
+            ],
+        ),
+        // ── the screenshot row (Area · Full) ──
+        Row(
+            x: 12.0, y: 78.0, w: -24.0, h: 30.0,
+            min_card_h: 110.0,
+            pad: 0.0, spacing: 8.0,
+            items: [
+                Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 7.0,
+                        color: value("comp_shot_0"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 31_403),
+                    Text(
+                        x: -30.0, y: 8.0, w: 0.0,
+                        text: "\u{f0c5}",
+                        font_size: 11.0,
+                        icon: true,
+                        center: true,
+                        color: Some(fg),
+                    ),
+                    Text(
+                        x: 2.0, y: 9.0, w: 0.0,
+                        text: "Area",
+                        font_size: 9.5,
+                        center: true,
+                        color: Some(fg),
+                    ),
+                ]),
+                Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+                    Surface(
+                        x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        r: 7.0,
+                        color: value("comp_shot_1"),
+                    ),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 31_404),
+                    Text(
+                        x: -30.0, y: 8.0, w: 0.0,
+                        text: "\u{f03d}",
+                        font_size: 11.0,
+                        icon: true,
+                        center: true,
+                        color: Some(fg),
+                    ),
+                    Text(
+                        x: 2.0, y: 9.0, w: 0.0,
+                        text: "Full",
+                        font_size: 9.5,
+                        center: true,
+                        color: Some(fg),
+                    ),
+                ]),
+            ],
+        ),
+    ],
+)

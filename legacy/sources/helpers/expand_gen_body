@@ -1,0 +1,9 @@
+# -*- mode: sh -*-
+expand_gen () {
+dir_path="${2%/*}"
+[[ -e "$dir_path" ]] || mkdir -p "$dir_path"
+eval "cat <<EOF
+$(<"$1")
+EOF
+" > $2
+}

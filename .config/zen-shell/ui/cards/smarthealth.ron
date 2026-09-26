@@ -1,0 +1,33 @@
+(
+    // smarthealth card — fully declarative (zero Ink): one row per disk —
+    // mono dev name (danger when the drive fails SMART), dim model caption
+    // at its second baseline, right-anchored mono temp (warn ≥ 55°) and the
+    // ok-green ✓ / danger ✕ status glyph at the card edge (inks ride
+    // `sm_rows` col_colors). Bottom-right refresh Hit (key 31980).
+    items: [
+        Header(title: "Disk health", glyph: Some("{sm_icon}"), meta: Some("{sm_meta}"), pad: 12.0),
+        Text(x: 0.0, y: 0.0, center_x: true, center_y: true, text: "no SMART disks", font_size: 9.0, color: Some(fg3), visible: Some("sm_empty")),
+        Rows(
+            name: "sm_rows",
+            y: 28.0,
+            row_h: 23.0,
+            pad: 12.0,
+            row_dy: 4.0,
+            bottom: 28.0,
+            visible: Some("sm_live"),
+            cols: [
+                (x: 0.0, dy: Some(0.0), size: 8.5, font: mono),
+                (x: 40.0, dy: Some(0.0), size: 8.5, truncate: Some(96.0)),
+                (x: 0.0, w: 0.0, edge: Some(56.0), right: true, dy: Some(0.0), size: 8.5, font: mono),
+                (x: 0.0, w: 0.0, edge: Some(10.0), right: true, dy: Some(-0.5), size: 10.0, icon: true),
+            ],
+        ),
+        Hit(
+            x: 15.0, y: 28.0, w: 30.0, h: 20.0, r: 6.0, right: true,
+            surface: Some(raised), surface_hover: Some(raised_hl),
+            icon: true, center: true, dy: 1.5,
+            text: "\u{f021}", font_size: 9.0, color: Some(fg3), color_hover: Some(acc),
+            key: 31980,
+        ),
+    ],
+)

@@ -1,0 +1,25 @@
+[package]
+name = "zen-wm"
+version = "0.1.0"
+edition.workspace = true
+description = "Max-efficiency Wayland window manager in Rust (smithay): hyprland-flavored keybinds, niri-style overview, saturation control."
+license.workspace = true
+
+[[bin]]
+name = "zen-wm"
+path = "src/main.rs"
+
+[dependencies]
+smithay = { version = "0.7", default-features = false, features = [
+    "backend_winit",
+    "wayland_frontend",
+    "desktop",
+    "renderer_gl",
+    # Expose EGL (wl_drm) to clients via the system libwayland-server backend, so
+    # GPU clients (e.g. alacritty) can render inside the nested compositor.
+    "use_system_lib",
+] }
+tracing = { version = "0.1", features = ["max_level_trace", "release_max_level_debug"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }

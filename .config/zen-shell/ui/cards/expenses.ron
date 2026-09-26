@@ -1,0 +1,59 @@
+(
+    // EXPENSES — fully declarative. Quick chips (1/5/10/20/50/100) + custom
+    // composer + clear-month on the same strip; top-3 per-category bars with
+    // a right mono amount; "nothing logged this month" empty caption. Chip,
+    // composer and clear regions dispatch by key in the Rust key handler —
+    // no Ink needed (the declarative scene fully owns the card body).
+    items: [
+        Header(
+            title: "Expenses",
+            meta: Some("{exp_meta}"),
+            meta_mono: true,
+            meta_color: Some(acc),
+        ),
+        // quick-amount chips — six equal shares (w: 0 fills the row)
+        Row(
+            x: 0.0, y: 28.0, w: 0.0, h: 26.0, pad: 12.0, spacing: 6.0, valign: middle,
+            items: [
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 6.0, surface: Some(hover), text: "1", font_size: 10.0, center: true, key: 31800),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 6.0, surface: Some(hover), text: "5", font_size: 10.0, center: true, key: 31801),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 6.0, surface: Some(hover), text: "10", font_size: 10.0, center: true, key: 31802),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 6.0, surface: Some(hover), text: "20", font_size: 10.0, center: true, key: 31803),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 6.0, surface: Some(hover), text: "50", font_size: 10.0, center: true, key: 31804),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 6.0, surface: Some(hover), text: "100", font_size: 10.0, center: true, key: 31805),
+            ],
+        ),
+        // custom composer (fills the row) + clear-month (fixed 70)
+        Row(
+            x: 0.0, y: 60.0, w: 0.0, h: 22.0, pad: 12.0, spacing: 6.0, valign: middle,
+            items: [
+                Composer(
+                    pad: 0.0, y: 0.0, w: 0.0, h: 22.0,
+                    text: Some("{exp_buf}"),
+                    focus: Some("exp_focus"),
+                    placeholder: "custom — 12.50 food",
+                    key: 31810,
+                ),
+                Hit(
+                    x: 0.0, y: 0.0, w: 70.0, h: 0.0, r: 6.0,
+                    surface: Some(hover),
+                    text: "clear mo", font_size: 8.5, center: true,
+                    color: Some(fg2), color_hover: Some(danger),
+                    key: 31811,
+                ),
+            ],
+        ),
+        // per-category bars (top 3) — group gated by exp_has_n
+        Text(x: 12.0, y: 90.0, text: "{exp_cat_1}", font_size: 8.0, color: Some(fg2), visible: Some("exp_has_1")),
+        Bar(x: 12.0, y: 101.0, w: 0.0, h: 4.0, r: 2.0, value: "{exp_bar_1}", fill: info, track: hover, reserve: 46.0, visible: Some("exp_has_1")),
+        Text(x: 12.0, y: 90.0, right: true, text: "{exp_val_1}", font_size: 8.0, font: mono, color: Some(fg), visible: Some("exp_has_1")),
+        Text(x: 12.0, y: 110.0, text: "{exp_cat_2}", font_size: 8.0, color: Some(fg2), visible: Some("exp_has_2")),
+        Bar(x: 12.0, y: 121.0, w: 0.0, h: 4.0, r: 2.0, value: "{exp_bar_2}", fill: info, track: hover, reserve: 46.0, visible: Some("exp_has_2")),
+        Text(x: 12.0, y: 110.0, right: true, text: "{exp_val_2}", font_size: 8.0, font: mono, color: Some(fg), visible: Some("exp_has_2")),
+        Text(x: 12.0, y: 130.0, text: "{exp_cat_3}", font_size: 8.0, color: Some(fg2), visible: Some("exp_has_3")),
+        Bar(x: 12.0, y: 141.0, w: 0.0, h: 4.0, r: 2.0, value: "{exp_bar_3}", fill: info, track: hover, reserve: 46.0, visible: Some("exp_has_3")),
+        Text(x: 12.0, y: 130.0, right: true, text: "{exp_val_3}", font_size: 8.0, font: mono, color: Some(fg), visible: Some("exp_has_3")),
+        // empty month — one centered dim caption
+        Text(x: 0.0, y: 96.0, center_x: true, text: "nothing logged this month", font_size: 8.5, color: Some(fg3), visible: Some("exp_empty")),
+    ],
+)

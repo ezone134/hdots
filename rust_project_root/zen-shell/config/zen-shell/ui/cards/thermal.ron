@@ -1,0 +1,25 @@
+(
+    // thermal card — fully declarative (zero Ink): the 3-wide zone chip grid
+    // with FIXED 24px cell rows (no stretch — a partial tail row leaves the
+    // rest open, Rust parity). Each chip: resting hover-well surface +
+    // zone caption on top, the temp reading under it (60°/80° warning
+    // ladder — per-cell sub/sub_color from `thermal_cells`).
+    items: [
+        Header(title: "Thermal zones", glyph: Some("\u{f2c9}"), meta: Some("{thermal_meta}"), pad: 12.0),
+        Text(x: 0.0, y: 0.0, center_x: true, center_y: true, text: "no /sys/class/thermal zones", font_size: 9.0, color: Some(fg3), visible: Some("thermal_empty")),
+        Grid(
+            name: "thermal_cells",
+            x: 0.0,
+            y: 26.0,
+            h: -2.0,
+            cols: 3,
+            gap: 2.0,
+            pad: 0.0,
+            cell_h: 24.0,
+            r: 5.0,
+            font_size: 7.5,
+            key_base: 0,
+            visible: Some("thermal_live"),
+        ),
+    ],
+)

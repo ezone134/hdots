@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+
+
+zypper packages --installed-only | awk '$1=="i+" {print $5}' | tee /tmp/pkg-list.txt
+
+
+
+

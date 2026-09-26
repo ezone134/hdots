@@ -1,0 +1,26 @@
+# -*- mode: sh -*-
+# gen_custom_acc_shell_cache — rebuild the custom-accent JSON list for zen-shell.
+# Sourced by gen_custom_acc_files after the color lists are generated.
+# Sources $custom_acc_master_list (name=hex assignment lines) so every color
+# becomes a shell var, then emits, for each listed name (expanding the var to
+# get its hex):
+#   $states2/custom_acc.json -> zen-shell Appearance custom-accent circle grid
+
+[[ -f "$custom_acc_master_list" ]] || return 0
+
+# shellcheck disable=SC1090
+. "$custom_acc_master_list" # defines $name = hex for every custom accent
+
+{
+    printf '['
+    first=1
+    while IFS='=' read -r name _; do
+        [[ -n "$name" ]] || continue
+        hex="${!name:-}"   # expand the sourced $color_name to its hex
+        [[ -n "$hex" ]] || continue
+        (( first == 0 )) && printf ','
+        printf '{"name":"%s","hex":"%s"}' "$name" "$hex"
+        first=0
+    done < "$custom_acc_master_list"
+    printf ']\n'
+} > "$states2/custom_acc.json"

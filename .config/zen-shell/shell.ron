@@ -1,0 +1,208 @@
+// zen-shell — whole-dashboard declarative scene (`~/.config/zen-shell/shell.ron`).
+//
+// Mirrors the structure of the built-in Rust layouts so a surface that is
+// declared here REPLACES its Rust draw path; a surface that is present but
+// not (yet) wired keeps its Rust body unchanged. Colors are tokens resolved
+// against the live theme (`ColorToken`); `{name}` placeholders interpolate
+// live shell values; `Ink(name)` hands the rest of a body to a Rust painter.
+//
+//   Build the cohesive structure with clean, quiet, warm tokens.
+//
+// Surfaces:
+//   - `settings` … live: the two-pane Settings app (chrome declared below,
+//     every section body routed to its Rust painter via `Ink("{settings_ink}")`).
+//   - `notif` … live: the Notifications pane (header chrome declared below
+//     incl. the STATE-DRIVEN DND chip via `value(...)` dynamic colors; the
+//     card list body routed to its Rust painter via `Ink("notif_list")`).
+//   - `lock` … live at the 1920×1080 reference height: the fullscreen hero
+//     chrome (dim backdrop, clock, date, avatar) declared below; the password
+//     field + hold-power buttons + hint stay Rust via `Ink("lock_screen")`.
+//   - `wallpaper` … live: the Backgrounds header chrome (back + title) below;
+//     the thumbnail grid + scrollbar stay Rust via `Ink("wallpaper_picker")`.
+//   - `dashboard` … declared alongside, with an `Ink` body; its mode layout
+//     starts consulting this surface in the next engine pass (the banner +
+//     card grid need live-scissor tokens before leaving Rust).
+
+ShellScene(
+    components: {
+        // ── Settings chrome pieces, stamped by the `settings` surface below ──
+        // Top-left pane header ("Settings" 17px primary).
+        "stitle": [ Text(x: 22.0, y: 14.0, text: "Settings", font_size: 17.0, color: Some(fg)) ],
+        // Close button: hit region that lights only on hover (`hover_only`),
+        // plus the ✕ glyph right-anchored at w−26 — byte-for-byte the Rust
+        // header strip.
+        "sclose": [
+            Hit(x: 0.0, y: 4.0, w: 36.0, h: 30.0, r: 6.0, key: 1,
+                surface: Some(hover_hl), hover_only: true),
+            Text(x: 26.0, y: 13.0, text: "\u{2715}", font_size: 12.0, right: true, color: Some(fg2)),
+        ],
+        // The 1px right edge of the left sidebar (from y=44 down to the floor).
+        "srail": [ Surface(x: 179.0, y: 44.0, w: 1.0, h: 0.0, color: hairline) ],
+        // Left nav: one `settings_nav` row per tab (keys 200…204, 219). The
+        // per-frame `surface` + `col_colors` carry selected/hover states, and
+        // `w` + `pitch` bound the rows to the 180px sidebar's 46px stride.
+        "snav": [ Rows(name: "settings_nav", y: 54.0, row_h: 40.0, pitch: Some(46.0), w: 168.0,
+                      pad: 6.0, row_dy: 15.0, r: 8.0,
+                      cols: [
+                          (x: 10.0, icon: true, size: 14.0),
+                          (x: 36.0, size: 12.5),
+                      ]) ],
+        // The right content pane: the active tab's section, routed to its Rust
+        // painter by the interpolated Ink name (`settings_<tab>`).
+        "scontent": [ Ink(name: "{settings_ink}", x: 0.0, y: 0.0, w: 0.0, h: 0.0) ],
+        // ── Notifications chrome, stamped by the `notif` surface below ──
+        // header title (byte-for-byte the Rust strip).
+        "ntitle": [ Text(x: 16.0, y: 12.0, text: "Notifications", font_size: 15.0) ],
+        // Clear chip: right-anchored at w−196 (84 × 30, right margin 112), rests
+        // `raised`, lifts to `raised_hl` on hover — key 2. The label is
+        // left-anchored at 230 (6 px inside the chip's 224 left edge), exactly
+        // the Rust inset; the notif pane is a fixed 420 wide surface, so the
+        // absolute x is stable (only the chip needs the right anchor).
+        // Declared-lite: no hairline outline on the chip.
+        "nclear": [
+            Hit(x: 112.0, y: 10.0, w: 84.0, h: 30.0, r: 15.0, key: 2, right: true,
+                surface: Some(raised), surface_hover: Some(raised_hl)),
+            Text(x: 230.0, y: 17.0, text: "Clear", font_size: 11.0,
+                 color: Some(fg), weight: semibold),
+        ],
+        // DND chip: right-anchored at w−104 (88 × 30, right margin 16), key 3.
+        // The whole chip is STATE-DRIVEN through `value(...)` dynamic colors
+        // resolved per frame from the live theme in `scene_values()`: fill =
+        // accent when DND is on (hover whitens the accent), quiet hover
+        // surface when off; `surface_hover` carries the exact on-hover fill
+        // (mix(acc, fg, 0.15) when on, hover_hl off). Label left-anchored at
+        // 324 (8 px inside the chip's 316 left edge) — the Rust inset.
+        "ndnd": [
+            Hit(x: 16.0, y: 10.0, w: 88.0, h: 30.0, r: 15.0, key: 3, right: true,
+                surface: Some(value("dnd_chip")), surface_hover: Some(value("dnd_chip_hover"))),
+            Text(x: 324.0, y: 17.0, text: "\u{f2dc} DND", font_size: 11.0,
+                 color: Some(value("dnd_chip_fg")), weight: semibold),
+        ],
+        // ── Lock-screen hero, stamped by the `lock` surface below ──
+        // Authored for the 1920×1080 dev target: every piece is anchored to
+        // the FULLSCREEN surface's center via `center_x`/`center_y` (offsets
+        // are base px relative to that center — computed from the Rust layout's
+        // h·0.20 hero block at h=1080). The surface is only consulted at that
+        // monitor height; every other size runs the Rust layout. The password
+        // field + hold-power buttons + hint stay Rust via the `lock_screen`
+        // Ink. The dim backdrop + the avatar fill are `value(...)` dynamic
+        // colors resolved per frame in `scene_values()`.
+        "lhero": [
+            // fullscreen dim (Rust: 0x00000059 ABGR)
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 0.0, color: value("lock_dim")),
+            // hero clock (Rust: centered at cx, y = h·0.20 = 216 → −324)
+            Text(x: 0.0, center_x: true, center_y: true, y: -324.0, center: true, text: "{clock}",
+                 font_size: 64.0, color: Some(fg)),
+            // date (Rust: y = 216 + 74 = 290 → −250; %d day, zero-padded)
+            Text(x: 0.0, center_x: true, center_y: true, y: -250.0, center: true, text: "{lock_date}",
+                 font_size: 16.0, color: Some(fg3)),
+            // avatar disc (Rust: cx−26, ay−26 = 334 → −206; 52² r26;
+            // fill mix(hover, acc, 0.35) → `value("lock_avatar")`)
+            Surface(x: 0.0, center_x: true, center_y: true, y: -206.0, w: 52.0, h: 52.0, r: 26.0,
+                    color: value("lock_avatar")),
+            // initial (Rust: ay−12 = 348 → −192)
+            Text(x: 0.0, center_x: true, center_y: true, y: -192.0, center: true, text: "{user_init}",
+                 font_size: 22.0, color: Some(fg)),
+            // username (Rust: ay+30 = 390 → −150)
+            Text(x: 0.0, center_x: true, center_y: true, y: -150.0, center: true, text: "{username}",
+                 font_size: 15.0, color: Some(fg2)),
+        ],
+        // ── Wallpaper header chrome, stamped by the `wallpaper` surface ──
+        // Back button (key 1, hover-only fill — a lift the Rust header lacks)
+        // + "Backgrounds" title, byte-for-byte the Rust strip positions; the
+        // thumbnail grid + scrollbar stay Rust via the `wallpaper_picker` Ink.
+        "wphead": [
+            Hit(x: 12.0, y: 8.0, w: 28.0, h: 28.0, r: 6.0, key: 1,
+                hover_only: true, surface: Some(hover_hl)),
+            Text(x: 22.0, y: 16.0, text: "\u{f053}", font_size: 14.0, icon: true,
+                 color: Some(fg)),
+            Text(x: 48.0, y: 16.0, text: "Backgrounds", font_size: 15.0, color: Some(fg)),
+        ],
+        // ── Dashboard viewing strip band, stamped by the `dashboard` surface ──
+        // The opaque band that covers scrolled board slides under the banner:
+        // y = BASE_BANNER_Y (12), h = BASE_BANNER_H (26), top corners CONCAVE
+        // into the screen edge following the panel shaping (r = panel radius,
+        // bottom corners square via tr: -r — the RectConcave encoding), fill
+        // = opaque theme bg. Only drawn while the strip holds chips
+        // (`banner_shown`); the empty strip collapses the band so the board
+        // rises. Suppresses the Rust band via `dash_band_via_scene`.
+        "dband": [
+            Surface(x: 0.0, y: 12.0, w: 0.0, h: 26.0, r: 16.0, tr: -16.0,
+                    color: value("dash_opaque"),
+                    visible: Some("banner_shown")),
+        ],
+        // ── Dashboard viewing strip CHIPS, stamped by the `dashboard` surface ──
+        // The strip's chips are fully data-driven: `publish_banner_cells`
+        // publishes geometry/inks/labels per frame (straight from
+        // `banner_cells`, so hit-testing and rendering can never disagree)
+        // and the `BannerRow` paints them with the Rust drawer's exact
+        // per-chip recipes (text bias, icon+label insets, tray sub-regions,
+        // overflow/zone scissors). Rides the dash_banner Ink's dispatch slot
+        // (authored after it — pre items attach to the FOLLOWING ink) so the
+        // chips draw over the band and over the board. Gated on the viewing
+        // state; suppresses the Rust chip painter via `dash_chips_via_scene`.
+        "dchips": [
+            BannerRow(cells: "banner_cells_v", x: 0.0, y: 12.0, w: 0.0, h: 26.0,
+                      visible: Some("banner_shown"),
+                      overflow: Some("banner_overflow"),
+                      zones: Some("banner_zones")),
+        ],
+    },
+    surfaces: [
+        (name: "settings",
+         items: [
+            Comp(name: "stitle"),
+            Comp(name: "sclose"),
+            Comp(name: "srail"),
+            Comp(name: "snav"),
+            Comp(name: "scontent"),
+         ]),
+        // ---- dashboard — LIVE (viewing state): board (dash_grid Ink) + top
+        //      banner strip (dash_banner Ink) route to their exact Rust
+        //      painters; the scrollbars overlay stays Rust inline. The
+        //      declared viewing strip band (the `dband` component above)
+        //      layers between the Inks. Edit-mode chrome + the system ⋮ menu
+        //      are skipped in Rust while they lay out.
+        (name: "dashboard",
+         items: [
+            Ink(name: "dash_grid", x: 0.0, y: 0.0, w: 0.0, h: 0.0),
+            // authored AFTER dash_grid / BEFORE dash_banner → drawn at the
+            // dash_banner dispatch slot: OVER the card grid, UNDER the chips
+            Comp(name: "dband"),
+            Ink(name: "dash_banner", x: 0.0, y: 0.0, w: 0.0, h: 0.0),
+            // authored AFTER dash_banner → also rides its dispatch slot,
+            // drawing after the Ink painter: the chips sit ON the band.
+            // (Nothing Rust draws after the banner Ink in the viewing path,
+            // so z-order is: grid → band → Rust banner Ink = edit chrome /
+            // suppressed chip loop → declarative chips.)
+            Comp(name: "dchips"),
+         ]),
+        // ---- notif — LIVE: header chrome declared above (title + Clear +
+        //      dynamic DND chip); the card list body is routed to its Rust
+        //      painter via the `notif_list` Ink (chrome/body split, the
+        //      `settings` pattern).
+        (name: "notif",
+         items: [
+            Comp(name: "ntitle"),
+            Comp(name: "nclear"),
+            Comp(name: "ndnd"),
+            Ink(name: "notif_list", x: 0.0, y: 0.0, w: 0.0, h: 0.0),
+         ]),
+        // ---- lock — LIVE at the 1920×1080 reference height: hero chrome
+        //      above (`lhero`); the password field + hold-power buttons + hint
+        //      are routed to their Rust painter via the `lock_screen` Ink.
+        (name: "lock",
+         items: [
+            Comp(name: "lhero"),
+            Ink(name: "lock_screen", x: 0.0, y: 0.0, w: 0.0, h: 0.0),
+         ]),
+        // ---- wallpaper — LIVE: header chrome above (`wphead`); the thumbnail
+        //      grid + scrollbar are routed to their Rust painter via the
+        //      `wallpaper_picker` Ink.
+        (name: "wallpaper",
+         items: [
+            Comp(name: "wphead"),
+            Ink(name: "wallpaper_picker", x: 0.0, y: 0.0, w: 0.0, h: 0.0),
+         ]),
+    ],
+)

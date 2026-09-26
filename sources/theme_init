@@ -1,0 +1,615 @@
+-- helper theme_init
+
+dofile(sources .. "/themes")
+dofile(sources .. "/theme_is_dark")
+
+function theme_ref(active_theme_name)
+    return themes[active_theme_name]
+end
+
+-- ==============================================================================
+-- MODES ARE DERIVED, NEVER STORED
+-- ==============================================================================
+-- Each entry no longer carries a mode field.  ref now is:
+--   [1] sort   [2] flags   [3..] colors (see layout below)
+--   singles store a 2-char flags ("00"|"01"|"10"|"11")
+--   duals   store a 4-char flags ("0000".."1111": de ds le ls)
+-- A dual theme is detected by flags length (4 or 1); its dark/light sides are
+-- the two halves of the entry (dark block at [3], then the light block).
+-- A single theme's dark/light answer comes from its own bg luminance via
+-- is_dark_theme (theme_is_dark) — bg is ref[3].
+-- This file sets NO theme_mode global — readers (scheme_body,
+-- fetch_color_scheme, gen_theme_cards) derive the d/l/b answer themselves
+-- from flags length + bg luminance.
+-- sfg (on-accent text) is never stored either: it is derived at runtime from
+-- $acc via getBestContrastColor(acc, sfg_d, sfg_l) (sources/sfg_calc) — the
+-- sfg_d/sfg_l pair is fixed per side by the extras tier or the defaults.
+--
+-- ==============================================================================
+-- DEFAULT COLORS (used when a side's flag is 0)
+-- ==============================================================================
+-- Side block layout — the BASE tier is always stored on every side:
+--   core   (always)  bg bg2 bg3 fg fg2 fg3 acc                    (7 fields)
+--   base   (always)  acc_us acc_hc acc_ec border                  (4 fields)
+--   tier   (extras=1)hover focus disabled sfg_d sfg_l             (5 fields)
+--   series (series=1)series1..series6                              (6 fields)
+-- The extras TIER (hover/focus/disabled/sfg_d/sfg_l) and series are the only
+-- conditional blocks.  Base fallbacks (default_base_*) no longer exist because
+-- the base tier is part of every theme's stored identity.
+
+function default_extras_dark()
+    hover = "#1c1a20"
+    focus = "#6a6d75"
+    disabled = "#6a6d75"
+    sfg_d = "#1a1a1e"
+    sfg_l = "#f3f4f6"
+end
+
+function default_extras_light()
+    hover = "#1c1a20"
+    focus = "#6a6d75"
+    disabled = "#6a6d75"
+    sfg_d = "#1a1a1e"
+    sfg_l = "#f3f4f6"
+end
+
+function default_series_dark()
+    series1 = "#4ea1ff"; series2 = "#ffa94d"; series3 = "#5fd68a"
+    series4 = "#b07cff"; series5 = "#ff79c6"; series6 = "#35d0e8"
+end
+
+function default_series_light()
+    series1 = "#2f6fd8"; series2 = "#e07b2a"; series3 = "#2f9e5f"
+    series4 = "#7a3fd6"; series5 = "#d63d9d"; series6 = "#1793a8"
+end
+
+-- Semantic globals — hardcoded constants, never stored in themes.  Two sets
+-- matching the current surface (like default_extras_* / default_series_*):
+-- dark surfaces pick the bright set, light surfaces pick the deep set.  Set
+-- per side on every resolve so downstream readers (theme_save_hex etc.)
+-- always find them defined for the side being materialized.
+function set_global_semantic_dark()
+    success = "#9ece6a"
+    warning = "#ff9e64"
+    danger  = "#f7768e"
+    info    = "#7dcfff"
+end
+
+function set_global_semantic_light()
+    success = "#2f9e5f"
+    warning = "#e07b2a"
+    danger  = "#d6435f"
+    info    = "#2f6fd8"
+end
+
+-- ==============================================================================
+-- FIRST-SIDE EXTRACTORS (single themes only)
+-- ==============================================================================
+-- One parser per single flag combo ("00" | "01" | "10" | "11"):
+--   extract_first_00(ref, is_light)   core+base, extras tier + series default
+--   extract_first_01(ref, is_light)   core+base+series, extras tier defaults
+--   extract_first_10(ref, is_light)   core+base+extras tier, series defaults
+--   extract_first_11(ref, is_light)   core+base+extras tier+series (full)
+--   core    (always)   ref[3]..ref[9]   : 7 colors (no sfg_mode)
+--   base    (always)   ref[10]..ref[13] : acc_us acc_hc acc_ec border
+--   tier    (flag e=1) ref[14]..ref[18] : hover focus disabled sfg_d sfg_l
+--   series  (flag s=1) ref[19]..ref[24] (extras tier present, unshifted)
+--   series  (flag "01")ref[14]..ref[19] (extras tier missing -> shifted left)
+
+function extract_first_base(ref)
+    bg  = ref[3];  bg2 = ref[4];  bg3 = ref[5]
+    fg  = ref[6];  fg2 = ref[7];  fg3 = ref[8]
+    acc = ref[9]
+end
+
+function extract_first_base_extra(ref)
+    acc_us = ref[10]
+    acc_hc = ref[11]
+    acc_ec = ref[12]
+    border = ref[13]
+end
+
+function extract_first_extra_tier(ref)
+    hover   = ref[14]; focus  = ref[15]
+    disabled = ref[16]
+    sfg_d   = ref[17]
+    sfg_l   = ref[18]
+end
+
+-- full-layout series (extras tier present) at 19..24
+function extract_first_series(ref)
+    series1 = ref[19]; series2 = ref[20]; series3 = ref[21]
+    series4 = ref[22]; series5 = ref[23]; series6 = ref[24]
+end
+
+-- "01": extras tier missing, series shifted left (14..19)
+function extract_first_series_01(ref)
+    series1 = ref[14]; series2 = ref[15]; series3 = ref[16]
+    series4 = ref[17]; series5 = ref[18]; series6 = ref[19]
+end
+
+-- One single-theme parser per flag combo ("00" | "01" | "10" | "11").
+-- Core and base are always present; whichever block is missing (extras tier,
+-- series) falls back to the defaults for the side's luminance, and the
+-- side-appropriate semantic set is applied.  e2/s2 stay 0 (no second/light
+-- side).
+
+function extract_first_00(ref, is_light)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    if is_light then default_extras_light() else default_extras_dark() end
+    if is_light then default_series_light() else default_series_dark() end
+    if is_light then set_global_semantic_light() else set_global_semantic_dark() end
+    e1 = 0
+    s1 = 0
+    e2 = 0
+    s2=0
+end
+
+function extract_first_01(ref, is_light)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_series_01(ref) -- extras tier missing, series shifted left
+    if is_light then default_extras_light() else default_extras_dark() end
+    if is_light then set_global_semantic_light() else set_global_semantic_dark() end
+    e1 = 0
+    s1 = 1
+    e2 = 0
+    s2=0
+end
+
+function extract_first_10(ref, is_light)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    if is_light then default_series_light() else default_series_dark() end
+    if is_light then set_global_semantic_light() else set_global_semantic_dark() end
+    e1 = 1
+    s1 = 0
+    e2 = 0
+    s2=0
+end
+
+function extract_first_11(ref, is_light)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    extract_first_series(ref)
+    if is_light then set_global_semantic_light() else set_global_semantic_dark() end
+    e1 = 1
+    s1 = 1
+    e2 = 0
+    s2=0
+end
+
+function resolve(active_theme_name)
+    ACTIVE_THEME = active_theme_name
+    found = 0
+    dual = 0
+    local ref = theme_ref(ACTIVE_THEME)
+    if not ref then return end
+
+    sort_index = ref[1]
+    flags = ref[2]
+
+    local dlen = #(flags or "")
+
+    if dlen == 1 or dlen == 4 then
+        found = 1
+        dual = 1
+            return
+        end
+
+    if dlen == 2 then
+        found = 1
+        local is_light = not is_dark_theme(ref[3])
+        if flags == "00" then extract_first_00(ref, is_light)
+        elseif flags == "01" then extract_first_01(ref, is_light)
+        elseif flags == "10" then extract_first_10(ref, is_light)
+        elseif flags == "11" then extract_first_11(ref, is_light)
+    end
+    end
+end
+
+-- ==============================================================================
+-- DUAL THEME SIDES
+-- ==============================================================================
+-- Header: [1]=sort [2]=flags (4 chars: de ds le ls). The dark (first) side
+-- starts at [3]; the light block follows the dark block's length:
+--   dark de ds  dark len   light block starts at
+--     0 0         11                   14
+--     0 1         17                   20
+--     1 0         16                   19
+--     1 1         22                   25
+-- Each side = core(7) + base(4) + [tier(5) if e] + [series(6) if s].
+-- Each light function below is fully hardcoded for its exact array indices.
+
+-- ============================= DARK SIDE =============================
+-- dispatching on the full 4-char combo (dual themes always have 4 digits)
+-- e1/s1 encode the dark side, e2/s2 the light side, from the combo chars.
+
+function dark_side_0000(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    default_extras_dark()
+    default_series_dark()
+    e1=0
+    s1=0
+    e2=0
+    s2=0
+end
+
+function dark_side_0001(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    default_extras_dark()
+    default_series_dark()
+    e1=0
+    s1=0
+    e2=0
+    s2=1
+end
+
+function dark_side_0010(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    default_extras_dark()
+    default_series_dark()
+    e1=0
+    s1=0
+    e2=1
+    s2=0
+end
+
+function dark_side_0011(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    default_extras_dark()
+    default_series_dark()
+    e1=0
+    s1=0
+    e2=1
+    s2=1
+end
+
+function dark_side_0100(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_series_01(ref)
+    default_extras_dark()
+    e1=0
+    s1=1
+    e2=0
+    s2=0
+end
+
+function dark_side_0101(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_series_01(ref)
+    default_extras_dark()
+    e1=0
+    s1=1
+    e2=0
+    s2=1
+end
+
+function dark_side_0110(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_series_01(ref)
+    default_extras_dark()
+    e1=0
+    s1=1
+    e2=1
+    s2=0
+end
+
+function dark_side_0111(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_series_01(ref)
+    default_extras_dark()
+    e1=0
+    s1=1
+    e2=1
+    s2=1
+end
+
+function dark_side_1000(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    default_series_dark()
+    e1=1
+    s1=0
+    e2=0
+    s2=0
+end
+
+function dark_side_1001(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    default_series_dark()
+    e1=1
+    s1=0
+    e2=0
+    s2=1
+end
+
+function dark_side_1010(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    default_series_dark()
+    e1=1
+    s1=0
+    e2=1
+    s2=0
+end
+
+function dark_side_1011(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    default_series_dark()
+    e1=1
+    s1=0
+    e2=1
+    s2=1
+end
+
+function dark_side_1100(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    extract_first_series(ref)
+    e1=1
+    s1=1
+    e2=0
+    s2=0
+end
+
+function dark_side_1101(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    extract_first_series(ref)
+    e1=1
+    s1=1
+    e2=0
+    s2=1
+end
+
+function dark_side_1110(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    extract_first_series(ref)
+    e1=1
+    s1=1
+    e2=1
+    s2=0
+end
+
+function dark_side_1111(ref)
+    extract_first_base(ref)
+    extract_first_base_extra(ref)
+    extract_first_extra_tier(ref)
+    extract_first_series(ref)
+    e1=1
+    s1=1
+    e2=1
+    s2=1
+end
+
+function d_side()
+    local ref = theme_ref(ACTIVE_THEME)
+    if not ref then return end
+    set_global_semantic_dark()
+    if ref[2] == "0" then dark_side_0000(ref)
+    elseif ref[2] == "1" then dark_side_1111(ref)
+    elseif ref[2] == "0000" then dark_side_0000(ref)
+    elseif ref[2] == "0001" then dark_side_0001(ref)
+    elseif ref[2] == "0010" then dark_side_0010(ref)
+    elseif ref[2] == "0011" then dark_side_0011(ref)
+    elseif ref[2] == "0100" then dark_side_0100(ref)
+    elseif ref[2] == "0101" then dark_side_0101(ref)
+    elseif ref[2] == "0110" then dark_side_0110(ref)
+    elseif ref[2] == "0111" then dark_side_0111(ref)
+    elseif ref[2] == "1000" then dark_side_1000(ref)
+    elseif ref[2] == "1001" then dark_side_1001(ref)
+    elseif ref[2] == "1010" then dark_side_1010(ref)
+    elseif ref[2] == "1011" then dark_side_1011(ref)
+    elseif ref[2] == "1100" then dark_side_1100(ref)
+    elseif ref[2] == "1101" then dark_side_1101(ref)
+    elseif ref[2] == "1110" then dark_side_1110(ref)
+    elseif ref[2] == "1111" then dark_side_1111(ref)
+    end
+end
+
+-- ============================= LIGHT SIDE =============================
+
+function light_side_0000(ref)
+    bg = ref[14]; bg2 = ref[15]; bg3 = ref[16]
+    fg = ref[17]; fg2 = ref[18]; fg3 = ref[19]; acc = ref[20]
+    acc_us = ref[21]; acc_hc = ref[22]; acc_ec = ref[23]; border = ref[24]
+    default_extras_light()
+    default_series_light()
+end
+
+function light_side_0001(ref)
+    bg = ref[14]; bg2 = ref[15]; bg3 = ref[16]
+    fg = ref[17]; fg2 = ref[18]; fg3 = ref[19]; acc = ref[20]
+    acc_us = ref[21]; acc_hc = ref[22]; acc_ec = ref[23]; border = ref[24]
+    series1 = ref[25]; series2 = ref[26]; series3 = ref[27]
+    series4 = ref[28]; series5 = ref[29]; series6 = ref[30]
+    default_extras_light()
+end
+
+function light_side_0010(ref)
+    bg = ref[14]; bg2 = ref[15]; bg3 = ref[16]
+    fg = ref[17]; fg2 = ref[18]; fg3 = ref[19]; acc = ref[20]
+    acc_us = ref[21]; acc_hc = ref[22]; acc_ec = ref[23]; border = ref[24]
+    hover = ref[25]; focus = ref[26]
+    disabled = ref[27]
+    sfg_d = ref[28]; sfg_l = ref[29]
+    default_series_light()
+end
+
+function light_side_0011(ref)
+    bg = ref[14]; bg2 = ref[15]; bg3 = ref[16]
+    fg = ref[17]; fg2 = ref[18]; fg3 = ref[19]; acc = ref[20]
+    acc_us = ref[21]; acc_hc = ref[22]; acc_ec = ref[23]; border = ref[24]
+    hover = ref[25]; focus = ref[26]
+    disabled = ref[27]
+    sfg_d = ref[28]; sfg_l = ref[29]
+    series1 = ref[30]; series2 = ref[31]; series3 = ref[32]
+    series4 = ref[33]; series5 = ref[34]; series6 = ref[35]
+end
+
+-- dark 01 -> light block at [20]
+
+function light_side_0100(ref)
+    bg = ref[20]; bg2 = ref[21]; bg3 = ref[22]
+    fg = ref[23]; fg2 = ref[24]; fg3 = ref[25]; acc = ref[26]
+    acc_us = ref[27]; acc_hc = ref[28]; acc_ec = ref[29]; border = ref[30]
+    default_extras_light()
+    default_series_light()
+end
+
+function light_side_0101(ref)
+    bg = ref[20]; bg2 = ref[21]; bg3 = ref[22]
+    fg = ref[23]; fg2 = ref[24]; fg3 = ref[25]; acc = ref[26]
+    acc_us = ref[27]; acc_hc = ref[28]; acc_ec = ref[29]; border = ref[30]
+    series1 = ref[31]; series2 = ref[32]; series3 = ref[33]
+    series4 = ref[34]; series5 = ref[35]; series6 = ref[36]
+    default_extras_light()
+end
+
+function light_side_0110(ref)
+    bg = ref[20]; bg2 = ref[21]; bg3 = ref[22]
+    fg = ref[23]; fg2 = ref[24]; fg3 = ref[25]; acc = ref[26]
+    acc_us = ref[27]; acc_hc = ref[28]; acc_ec = ref[29]; border = ref[30]
+    hover = ref[31]; focus = ref[32]
+    disabled = ref[33]
+    sfg_d = ref[34]; sfg_l = ref[35]
+    default_series_light()
+end
+
+function light_side_0111(ref)
+    bg = ref[20]; bg2 = ref[21]; bg3 = ref[22]
+    fg = ref[23]; fg2 = ref[24]; fg3 = ref[25]; acc = ref[26]
+    acc_us = ref[27]; acc_hc = ref[28]; acc_ec = ref[29]; border = ref[30]
+    hover = ref[31]; focus = ref[32]
+    disabled = ref[33]
+    sfg_d = ref[34]; sfg_l = ref[35]
+    series1 = ref[36]; series2 = ref[37]; series3 = ref[38]
+    series4 = ref[39]; series5 = ref[40]; series6 = ref[41]
+end
+
+-- dark 10 -> light block at [19]
+
+function light_side_1000(ref)
+    bg = ref[19]; bg2 = ref[20]; bg3 = ref[21]
+    fg = ref[22]; fg2 = ref[23]; fg3 = ref[24]; acc = ref[25]
+    acc_us = ref[26]; acc_hc = ref[27]; acc_ec = ref[28]; border = ref[29]
+    default_extras_light()
+    default_series_light()
+end
+
+function light_side_1001(ref)
+    bg = ref[19]; bg2 = ref[20]; bg3 = ref[21]
+    fg = ref[22]; fg2 = ref[23]; fg3 = ref[24]; acc = ref[25]
+    acc_us = ref[26]; acc_hc = ref[27]; acc_ec = ref[28]; border = ref[29]
+    series1 = ref[30]; series2 = ref[31]; series3 = ref[32]
+    series4 = ref[33]; series5 = ref[34]; series6 = ref[35]
+    default_extras_light()
+end
+
+function light_side_1010(ref)
+    bg = ref[19]; bg2 = ref[20]; bg3 = ref[21]
+    fg = ref[22]; fg2 = ref[23]; fg3 = ref[24]; acc = ref[25]
+    acc_us = ref[26]; acc_hc = ref[27]; acc_ec = ref[28]; border = ref[29]
+    hover = ref[30]; focus = ref[31]
+    disabled = ref[32]
+    sfg_d = ref[33]; sfg_l = ref[34]
+    default_series_light()
+end
+
+function light_side_1011(ref)
+    bg = ref[19]; bg2 = ref[20]; bg3 = ref[21]
+    fg = ref[22]; fg2 = ref[23]; fg3 = ref[24]; acc = ref[25]
+    acc_us = ref[26]; acc_hc = ref[27]; acc_ec = ref[28]; border = ref[29]
+    hover = ref[30]; focus = ref[31]
+    disabled = ref[32]
+    sfg_d = ref[33]; sfg_l = ref[34]
+    series1 = ref[35]; series2 = ref[36]; series3 = ref[37]
+    series4 = ref[38]; series5 = ref[39]; series6 = ref[40]
+end
+
+-- dark 11 -> light block at [25]
+
+function light_side_1100(ref)
+    bg = ref[25]; bg2 = ref[26]; bg3 = ref[27]
+    fg = ref[28]; fg2 = ref[29]; fg3 = ref[30]; acc = ref[31]
+    acc_us = ref[32]; acc_hc = ref[33]; acc_ec = ref[34]; border = ref[35]
+    default_extras_light()
+    default_series_light()
+end
+
+function light_side_1101(ref)
+    bg = ref[25]; bg2 = ref[26]; bg3 = ref[27]
+    fg = ref[28]; fg2 = ref[29]; fg3 = ref[30]; acc = ref[31]
+    acc_us = ref[32]; acc_hc = ref[33]; acc_ec = ref[34]; border = ref[35]
+    series1 = ref[36]; series2 = ref[37]; series3 = ref[38]
+    series4 = ref[39]; series5 = ref[40]; series6 = ref[41]
+    default_extras_light()
+end
+
+function light_side_1110(ref)
+    bg = ref[25]; bg2 = ref[26]; bg3 = ref[27]
+    fg = ref[28]; fg2 = ref[29]; fg3 = ref[30]; acc = ref[31]
+    acc_us = ref[32]; acc_hc = ref[33]; acc_ec = ref[34]; border = ref[35]
+    hover = ref[36]; focus = ref[37]
+    disabled = ref[38]
+    sfg_d = ref[39]; sfg_l = ref[40]
+    default_series_light()
+end
+
+function light_side_1111(ref)
+    bg = ref[25]; bg2 = ref[26]; bg3 = ref[27]
+    fg = ref[28]; fg2 = ref[29]; fg3 = ref[30]; acc = ref[31]
+    acc_us = ref[32]; acc_hc = ref[33]; acc_ec = ref[34]; border = ref[35]
+    hover = ref[36]; focus = ref[37]
+    disabled = ref[38]
+    sfg_d = ref[39]; sfg_l = ref[40]
+    series1 = ref[41]; series2 = ref[42]; series3 = ref[43]
+    series4 = ref[44]; series5 = ref[45]; series6 = ref[46]
+end
+
+function l_side()
+    local ref = theme_ref(ACTIVE_THEME)
+    if not ref then return end
+    set_global_semantic_light()
+    if ref[2] == "0" then light_side_0000(ref)
+    elseif ref[2] == "1" then light_side_1111(ref)
+    elseif ref[2] == "0000" then light_side_0000(ref)
+    elseif ref[2] == "0001" then light_side_0001(ref)
+    elseif ref[2] == "0010" then light_side_0010(ref)
+    elseif ref[2] == "0011" then light_side_0011(ref)
+    elseif ref[2] == "0100" then light_side_0100(ref)
+    elseif ref[2] == "0101" then light_side_0101(ref)
+    elseif ref[2] == "0110" then light_side_0110(ref)
+    elseif ref[2] == "0111" then light_side_0111(ref)
+    elseif ref[2] == "1000" then light_side_1000(ref)
+    elseif ref[2] == "1001" then light_side_1001(ref)
+    elseif ref[2] == "1010" then light_side_1010(ref)
+    elseif ref[2] == "1011" then light_side_1011(ref)
+    elseif ref[2] == "1100" then light_side_1100(ref)
+    elseif ref[2] == "1101" then light_side_1101(ref)
+    elseif ref[2] == "1110" then light_side_1110(ref)
+    elseif ref[2] == "1111" then light_side_1111(ref)
+    end
+end

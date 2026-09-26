@@ -1,0 +1,36 @@
+-- array symlink_dirs
+-- ported from bash sources/symlink_dirs
+-- dirs pairs are not exec'd in bg; only files are in bg — no worries
+
+local home = os.getenv("HOME")
+
+dirs_pairs = {
+    {dots .. "/.config/glib-2.0", home .. "/.config/glib-2.0"},
+    {dots .. "/.config/Thunar", home .. "/.config/Thunar"},
+    {dots .. "/.config/xfce4", home .. "/.config/xfce4"},
+    {dots .. "/.config/xarchiver", home .. "/.config/xarchiver"},
+    {dots .. "/.config/xsettingsd", home .. "/.config/xsettingsd"},
+    {dots .. "/.config/Mousepad", home .. "/.config/Mousepad"},
+    {dots .. "/.config/gtk-3.0", home .. "/.config/gtk-3.0"},
+    {dots .. "/.config/gtk-4.0", home .. "/.config/gtk-4.0"},
+    {dots .. "/.config/nwg-look", home .. "/.config/nwg-look"},
+    {dots .. "/.local/share/nwg-look", home .. "/.local/share/nwg-look"},
+    {dots .. "/.config/warp-terminal", home .. "/.config/warp-terminal"},
+    {dots .. "/.local/state/warp-terminal", home .. "/.local/state/warp-terminal"},
+    {dots .. "/.config/geany/colorschemes", home .. "/.config/geany/colorschemes"},
+    {rconfig .. "/matugen", home .. "/.config/matugen"},
+    {home .. "/Wallpapers", home .. "/Pictures/Wallpapers"},
+    {home .. "/.local/share/fonts", home .. "/.fonts"},
+    {home .. "/.local/share/icons", home .. "/.icons"},
+    {home .. "/.local/share/themes", home .. "/.themes"},
+    {rconf .. "/gtk_theme/gtk_d", home .. "/.themes/gtk_d"},
+    {rconf .. "/gtk_theme/gtk_d_alt", home .. "/.themes/gtk_d_alt"},
+    {rconf .. "/gtk_theme/gtk_l", home .. "/.themes/gtk_l"},
+    {rconf .. "/gtk_theme/gtk_l_alt", home .. "/.themes/gtk_l_alt"},
+
+    {rconfig .. "/hypr/hyprlock", home .. "/.config/hypr/hyprlock"},
+    {rconfig .. "/hypr/luas", home .. "/.config/hypr/luas"},
+    {rconfig .. "/hypr/shaders", home .. "/.config/hypr/shaders"},
+    {dots .. "/.config/quickshell", home .. "/.config/quickshell"},
+    {dots .. "/.config/zen-shell", home .. "/.config/zen-shell"},
+}

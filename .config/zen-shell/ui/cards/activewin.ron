@@ -1,0 +1,19 @@
+(
+    // ACTIVE WIN — fully declarative twin-state hero. Empty → dim ACTIVE
+    // glyph + centered "No window"; live → app class (13, top-anchored),
+    // 28-char title (9.5) and a bottom-anchored per-app RAM pill ({aw_rss}).
+    // `active_win_empty`/`active_win_has`/`aw_has_rss` gate the pieces.
+    items: [
+        Text(x: 0.0, y: 14.0, w: 0.0, icon: true, text: "\u{f2d0}", font_size: 20.0,
+             center_x: true, center: true, color: Some(fg), visible: Some("active_win_empty")),
+        Text(x: 0.0, y: 10.0, w: 0.0, text: "No window", font_size: 10.0,
+             center_x: true, center_y: true, center: true, color: Some(fg),
+             visible: Some("active_win_empty")),
+        Text(x: 0.0, y: 14.0, w: 0.0, text: "{aw_class}", font_size: 13.0,
+             center_x: true, center: true, color: Some(fg), visible: Some("active_win_has")),
+        Text(x: 0.0, y: 36.0, w: 0.0, text: "{aw_title}", font_size: 9.5,
+             center_x: true, center: true, color: Some(fg), visible: Some("active_win_has")),
+        Text(x: 0.0, y: 16.0, w: 0.0, bottom: true, text: "{aw_rss}", font_size: 9.0,
+             center_x: true, center: true, color: Some(fg2), visible: Some("aw_has_rss")),
+    ],
+)

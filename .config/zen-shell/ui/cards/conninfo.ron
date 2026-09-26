@@ -1,0 +1,32 @@
+(
+    // conninfo card — fully declarative (zero Ink): iface/gateway/dns metric
+    // rows (label fg2 caption left, mono value right-aligned at the card pad
+    // — gateway/dns dimmed via `conn_rows_v` col_colors), the "{n} addrs"
+    // meta, the centered "no network interfaces" empty caption, and the
+    // bottom-right refresh Hit (key 31960, 22px well — exact Rust insets:
+    // bottom edge 10 above the card bottom).
+    items: [
+        Header(title: "Network", glyph: Some("\u{e250}"), meta: Some("{conn_meta}"), pad: 12.0),
+        Text(x: 0.0, y: 0.0, center_x: true, center_y: true, text: "no network interfaces", font_size: 9.0, color: Some(fg3), visible: Some("conn_empty")),
+        Rows(
+            name: "conn_rows_v",
+            y: 30.0,
+            row_h: 18.0,
+            pad: 12.0,
+            row_dy: 1.0,
+            bottom: 32.0,
+            visible: Some("conn_live"),
+            cols: [
+                (x: 0.0, dy: Some(0.0), size: 8.5),
+                (x: 0.0, w: 0.0, edge: Some(14.0), right: true, dy: Some(0.0), size: 8.5, font: mono),
+            ],
+        ),
+        Hit(
+            x: 15.0, y: 32.0, w: 30.0, h: 22.0, r: 6.0, right: true,
+            surface: Some(raised), surface_hover: Some(raised_hl),
+            icon: true, center: true, dy: 2.5,
+            text: "\u{f021}", font_size: 9.0, color: Some(fg3), color_hover: Some(acc),
+            key: 31960,
+        ),
+    ],
+)

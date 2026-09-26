@@ -1,0 +1,363 @@
+#!/usr/bin/env luajit
+-- helper shader_body
+-- Single owner of the whole screen-shader path (gamma included).
+--
+-- $states/shader_m_$s is the one switch:
+--   0  nothing applied
+--   g  gamma only      -- id $states/gamma_v, 0..19
+--   s  saturation only -- id $states/shader_val_$s, 0..200
+--   m  master          -- all three knobs in one $shaders/master.glsl
+-- g and s are mutually exclusive (g leaves saturation normal, s leaves gamma
+-- normal); m is the only mode that runs both plus colour temperature.
+-- Ids survive a mode switch, only the mode decides what runs.
+--
+-- EVERY id reads 0 as NORMAL -- "leave the colours alone", never "0 Kelvin" or
+-- "0% mix". All three at 0 means there is nothing to do, so shader.lua is
+-- cleared and the mode falls back to 0. Saturation also accepts 100 (the plain
+-- pool entry) as normal, so 0 and 100 mean the same thing.
+--
+-- Every state file holds a BARE id, never a path -- the file is derived:
+--   gamma  -> $shaders/gamma/<id>.frag        (shaders_gen, 1..19)
+--   shader -> $shaders/saturations/<id>.glsl  (shaders_gen, 0..200, 100 = plain)
+--   master -> $shaders/master.glsl            (generated here, ids baked in)
+-- ~/.config/hypr/luas/shader.lua points hyprland at the picked file, so every
+-- apply diffs the target and reloads only when it really changed (keeps OSD
+-- ticks from reloading for nothing).
+
+GAMMA_MAX   = 19
+SAT_MAX     = 200
+SAT_NEUTRAL = 100
+TEMP_NEUTRAL = 6500
+TEMP_MAX    = 6500
+
+s = flagf_get(states2 .. "/s") or "n"
+
+-- ------------------------------------------------------------- state files --
+
+function _shader_frag_path()
+    return os.getenv("shaders") .. "/gamma/" .. gamma_get_func() .. ".frag"
+end
+
+function _shader_sat_path()
+    return os.getenv("shaders") .. "/saturations/" .. shader_sat_get() .. ".glsl"
+end
+
+function _shader_master_path()
+    return os.getenv("shaders") .. "/master.glsl"
+end
+
+function _shader_lua_path()
+    return os.getenv("HOME") .. "/.config/hypr/luas/shader.lua"
+end
+
+function shader_m_get()
+    local m = tostring(ff(states .. "/shader_m_" .. s) or "0"):gsub("%s", "")
+    if m == "g" or m == "s" or m == "m" then return m end
+    return "0"
+end
+
+function shader_m_set(m)
+    if m ~= "g" and m ~= "s" and m ~= "m" then m = "0" end
+    tf(states .. "/shader_m_" .. s, m)
+    return m
+end
+
+-- state files are ids only; a stray path is read as its trailing id so a
+-- hand-edited file still lands on a real shader
+local function _id(raw, max, neutral)
+    raw = tostring(raw or ""):match("^%s*(.-)%s*$")
+    local n = tonumber(raw) or tonumber(raw:match("(%d+)"))
+    if not n then return neutral end
+    if n < 0 then n = 0 end
+    if n > max then n = max end
+    return n
+end
+
+-- Every id reads 0 as NORMAL ("leave the colours alone"), never as "0 Kelvin"
+-- or "0% mix". Saturation also treats the plain pool entry 100 as normal, so
+-- 0 and 100 both mean "no change" and the two never disagree.
+--
+-- saturation id 0..200 -- 0 (or 100) = normal, else $shaders/saturations/<id>.glsl
+function shader_sat_get()
+    return _id(ff(states .. "/shader_val_" .. s), SAT_MAX, 0)
+end
+
+-- gamma id 0..19 -- 0 = normal, else $shaders/gamma/<id>.frag
+function gamma_get_func()
+    return _id(ff(states .. "/gamma_v"), GAMMA_MAX, 0)
+end
+
+-- temperature id 0..6500 -- 0 = normal, else Kelvin. hyprsunset owns the colour
+-- temperature in c/a, so only a manual pick (state "m") is read here; anything
+-- else is 0 so the shader and the daemon never double-apply.
+function temp_get_func()
+    local st = tostring(ff(states .. "/hyprsunset_state") or "c"):gsub("%s", "")
+    if st ~= "m" then return 0 end
+    return _id(ff(states .. "/hyprsunset_val"), TEMP_MAX, 0)
+end
+
+-- raw id -> the value the GLSL wants (0 normalises to the neutral constant)
+function shader_sat_eff()
+    local v = shader_sat_get()
+    if v == 0 then return SAT_NEUTRAL end
+    return v
+end
+
+function temp_eff()
+    local t = temp_get_func()
+    if t == 0 then return TEMP_NEUTRAL end
+    return t
+end
+
+-- true when a saturation id asks for no colour change
+function shader_sat_plain()
+    local v = shader_sat_get()
+    return v == 0 or v == SAT_NEUTRAL
+end
+
+-- ------------------------------------------------------------------ glsl --
+
+local GLSL_TEMPLATE = [[#version 300 es
+precision highp float;
+in vec2 v_texcoord;
+layout(location = 0) out vec4 fragColor;
+uniform sampler2D tex;
+
+#define SATURATION_VAL %d.0
+#define GAMMA_VAL %d.0
+#define TEMP_VAL %d.0
+
+vec3 kelvinToRGB(float kelvin) {
+    float t = clamp(kelvin, 1000.0, 40000.0) / 100.0;
+    vec3 result;
+    if (t <= 66.0) {
+        result.r = 255.0;
+    } else {
+        float r = t - 60.0;
+        result.r = 329.698727446 * pow(r, -0.1332047592);
+    }
+    if (t <= 66.0) {
+        result.g = 99.4708025861 * log(max(t, 1.0)) - 161.1195681661;
+    } else {
+        float g = t - 60.0;
+        result.g = 288.1221695283 * pow(g, -0.0755148492);
+    }
+    if (t >= 66.0) {
+        result.b = 255.0;
+    } else if (t <= 19.0) {
+        result.b = 0.0;
+    } else {
+        float b = t - 10.0;
+        result.b = 138.5177312231 * log(b) - 305.0447927307;
+    }
+    return clamp(result / 255.0, 0.0, 1.0);
+}
+
+void main() {
+    vec4 rgba = texture(tex, v_texcoord);
+    vec3 color = rgba.rgb;
+    color *= kelvinToRGB(TEMP_VAL) / kelvinToRGB(6500.0);
+    float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    color = mix(vec3(luma), color, SATURATION_VAL / 100.0);
+    color = pow(max(color, 0.0), vec3((20.0 - GAMMA_VAL) / 20.0));
+    fragColor = vec4(color, rgba.a);
+}]]
+
+-- ------------------------------------------------------------------ apply --
+
+local LUA_TEMPLATE = [[hl.config({
+    decoration = {
+        screen_shader = "%s"
+    }
+})]]
+
+-- aim hyprland at one of the generated shaders; reloads only on a real change
+-- (force = the target file's CONTENT moved, so a reload is needed even when
+-- shader.lua already names it)
+function _shader_point(path, force)
+    local lua = _shader_lua_path()
+    local want = string.format(LUA_TEMPLATE, path)
+    if not force and ff(lua) == want then return false end
+    tf(lua, want)
+    run_bg("hyprctl reload")
+    return true
+end
+
+-- master mode: bake the three ids into master.glsl, then aim at it
+function _shader_master_push(sat, gam, temp)
+    local path = _shader_master_path()
+    local glsl = string.format(GLSL_TEMPLATE, sat, gam, temp)
+    local moved = ff(path) ~= glsl
+    if moved then tf(path, glsl) end
+    return _shader_point(path, moved)
+end
+
+-- hand the screen back to hyprland's own pipeline
+function _shader_drop()
+    local lua = _shader_lua_path()
+    local cur = ff(lua)
+    if cur == nil or cur == "" then return false end
+    tf(lua, "")
+    run_bg("hyprctl reload")
+    return true
+end
+
+function shader_reset_func()
+    shader_m_set("0")
+    local changed = _shader_drop()
+    flagf_set(states2 .. "/shader_done", "1")
+    if changed then
+        run_bg("notify-send -a Shader 'Shader' 'Turned off / Reset'")
+    end
+    return changed
+end
+
+-- run whatever the mode says; a knob left at 0 is NORMAL, so an all-normal
+-- setup has no shader to keep and the mode drops back to 0 instead of parking
+-- a no-op on the screen. The done flag is written on every path (theme_body_run's
+-- inotify wait needs the edge even when nothing changed).
+function shader_restore_func()
+    flagf_set(states2 .. "/shader_done", "1")
+    local m = shader_m_get()
+    if m == "g" then
+        local g = gamma_get_func()
+        if g == 0 then return shader_reset_func() end
+        local frag = _shader_frag_path()
+        if not is_file(frag) then
+            err("shader_main: missing gamma shader " .. frag)
+            return shader_reset_func()
+        end
+        local changed = _shader_point(frag)
+        run_bg("notify-send -a Shader 'Shader' 'Gamma  " .. g .. "'")
+        return changed
+    elseif m == "s" then
+        local v = shader_sat_get()
+        if shader_sat_plain() then return shader_reset_func() end
+        local glsl = _shader_sat_path()
+        if not is_file(glsl) then
+            err("shader_main: missing saturation shader " .. glsl)
+            return shader_reset_func()
+        end
+        local changed = _shader_point(glsl)
+        run_bg("notify-send -a Shader 'Shader' 'Saturation  " .. v .. "'")
+        return changed
+    elseif m == "m" then
+        local sat, gam, temp = shader_sat_get(), gamma_get_func(), temp_get_func()
+        if shader_sat_plain() and gam == 0 and temp == 0 then
+            return shader_reset_func()
+        end
+        local changed = _shader_master_push(shader_sat_eff(), gam, temp_eff())
+        run_bg(string.format("notify-send -a Shader 'Shader' 'Master  sat %d · gamma %d · %dK'",
+            sat, gam, temp))
+        return changed
+    end
+    return _shader_drop()
+end
+
+function shader_on_func()
+    shader_m_set("s")
+    shader_restore_func()
+end
+
+function shader_toggle_func()
+    if shader_m_get() == "0" then
+        shader_on_func()
+    else
+        shader_reset_func()
+    end
+end
+
+-- master: every knob at once (saturation id + gamma id + Kelvin)
+function shader_master_func()
+    shader_m_set("m")
+    shader_restore_func()
+end
+
+-- accepts a bare id (0..200); a path or "N.glsl" is reduced to its id, only
+-- the id is ever stored
+function shader_set_func(n_str)
+    n_str = tostring(n_str):gsub("\r", ""):match("^%s*(.-)%s*$")
+    n_str = n_str:gsub("%.glsl$", ""):match("[^/]+$")
+    if n_str == "" or not n_str:match("^%d+$") then
+        err("shader_main set: need integer 0.." .. SAT_MAX .. ", got: " .. tostring(n_str))
+        return false
+    end
+    local n = tonumber(n_str)
+    if n > SAT_MAX then
+        err("shader_main set: " .. n_str .. " out of range 0.." .. SAT_MAX)
+        return false
+    end
+    tf(states .. "/shader_val_" .. s, n)
+    -- master already runs saturation: re-bake it, keep the mode
+    if shader_m_get() ~= "m" then shader_m_set("s") end
+    shader_restore_func()
+end
+
+-- ------------------------------------------------------------------ gamma --
+
+-- gamma takes the screen: level 0 has nothing left to show, so it drops the
+-- mode instead of parking a no-op shader on the display. In master mode gamma
+-- is just one of the knobs, so the mode stays and master.glsl is re-baked.
+function gamma_set_func(level)
+    level = tonumber(level) or 0
+    if level > GAMMA_MAX then level = GAMMA_MAX end
+    if level < 0 then level = 0 end
+    tf(states .. "/gamma_v", level)
+    if shader_m_get() == "m" then
+        if level == 0 and shader_sat_plain() and temp_get_func() == 0 then
+            return shader_reset_func()
+        end
+        return shader_restore_func()
+    end
+    if level == 0 then
+        return shader_reset_func()
+    end
+    shader_m_set("g")
+    shader_restore_func()
+end
+
+function gamma_up_func()
+    gamma_set_func(gamma_get_func() + 1)
+end
+
+function gamma_down_func()
+    gamma_set_func(gamma_get_func() - 1)
+end
+
+-- -------------------------------------------------------------------- cli --
+
+function shader_cmd(cmd, val)
+    if cmd == "toggle" then
+        shader_toggle_func()
+    elseif cmd == "on" then
+        shader_on_func()
+    elseif cmd == "off" or cmd == "reset" then
+        shader_reset_func()
+    elseif cmd == "restore" then
+        shader_restore_func()
+    elseif cmd == "terminal" then
+        shader_on_func()
+    elseif cmd == "set" or cmd == "val" or cmd == "select" then
+        shader_set_func(val)
+    elseif cmd == "master" or cmd == "m" then
+        shader_master_func()
+    elseif cmd == "gamma-up" or cmd == "up" then
+        gamma_up_func()
+    elseif cmd == "gamma-down" or cmd == "down" then
+        gamma_down_func()
+    elseif cmd == "gamma-set" then
+        gamma_set_func(val)
+    elseif cmd == "gamma-reset" or cmd == "gamma-off" then
+        gamma_set_func(0)
+    elseif cmd == "status" then
+        -- "<mode> <sat>" — mode 0|g|s|m, saturation id 0..200 (100 = default)
+        local m = shader_m_get()
+        local sat = shader_sat_get()
+        if m ~= "s" and m ~= "m" then sat = SAT_NEUTRAL end
+        print(m .. " " .. sat)
+    else
+        err("usage: shader_main {toggle|on|off|restore|reset|set N|master|status}")
+        err("               shader_main {gamma-up|gamma-down|gamma-set N|gamma-reset}")
+        os.exit(2)
+    end
+end

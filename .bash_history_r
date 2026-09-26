@@ -1,0 +1,38 @@
+#1789987042
+/home/tw/.config/hdots/sources/misc/boot
+#1789987232
+echo $HOME
+#1789987285
+echo ~
+#1790054886
+link-all
+#1790065801
+/acc/common/misc/boot
+#1790067375
+/acc/common/misc/boot
+#1790067384
+exit
+#1790067815
+own_it /tmp/user-tw
+#1790067838
+chown -R /home/tw/
+#1790067844
+chown -R tw:tw /home/tw/
+#1790067865
+chown -R tw:tw /tmp/user-tw
+#1790069229
+own_it /tmp/aa
+#1790069438
+own_it /tmp/user-tw
+#1790069544
+/acc/common/misc/boot
+#1790071284
+vim 
+#1790071293
+vim /etc/systemd/system/boot.service
+#1790071470
+/acc/common/misc/boot
+#1790071490
+link-all
+#1790071700
+/acc/common/misc/boot

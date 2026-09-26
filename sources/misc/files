@@ -1,0 +1,20 @@
+# -*- mode: sh -*-
+
+files_array=(
+    $home_dir/.bashrc:$dots/.bashrc
+    $home_dir/.profile:$dots/.profile
+    $home_dir/.bash_history:$dots/.bash_history
+    /root/.bashrc:$dots/.bashrc_r # for root user
+    /root/.bash_history:$dots/.bash_history_r
+    /root/.profile:$dots/.profile_r
+
+    $home_dir/.zsh_history:$dots/.zsh_history
+    $home_dir/.zshrc:$dots/.zshrc
+    /root/.zshrc:$dots/.zshrc_r # for root user
+    /root/.zsh_history:$dots/.zsh_history_r # for root user
+
+    /home/tmp/.bashrc:$dots/.bashrc # for tmp user
+    /home/tmp/.profile:$dots/.profile # for tmp user
+    /home/tmp/.bash_history:$dots/.bash_history
+    /var/log/zypp/history:/var-p/log/zypp/history
+)

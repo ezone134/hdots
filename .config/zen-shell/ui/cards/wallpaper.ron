@@ -1,0 +1,6 @@
+(
+    items: [
+        Header(title: "Backgrounds", glyph: Some("\u{f03e}"), meta: Some("{wp_meta}"), pad: 12.0),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "wallpaper"),
+    ],
+)

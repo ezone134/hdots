@@ -1,0 +1,4 @@
+# explicit qmldir for qs.notifications — disables the synthesizer
+module qs.notifications
+NotificationPanel 1.0 NotificationPanel.qml
+ToastDaemon 1.0 ToastDaemon.qml

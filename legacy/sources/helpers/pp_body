@@ -1,0 +1,26 @@
+# -*- mode: sh -*-
+# pp_body — functions for the pp_main CLI: pp
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- power profile (power-profiles-daemon) --------------------------------
+
+pp_cycle() {
+    local cur
+    cur="$(powerprofilesctl get 2>/dev/null)" || { err "power-profiles-daemon unavailable"; return 1; }
+    case "$cur" in
+        power-saver) powerprofilesctl set balanced;;
+        balanced)    powerprofilesctl set performance;;
+        performance) powerprofilesctl set power-saver;;
+        *)           powerprofilesctl set balanced;;
+    esac
+}
+
+pp_cmd() {
+    case "${1:-get}" in
+        get|cur)         powerprofilesctl get 2>/dev/null || err "power-profiles-daemon unavailable";;
+        set)             powerprofilesctl set "$2" 2>/dev/null || err "pp set: unknown profile '$2'";;
+        cycle|toggle)    pp_cycle;;
+        *)               err "pp: use get|set PROFILE|cycle";;
+    esac
+}
+

@@ -1,0 +1,20 @@
+-- helper theme_logic_l
+-- ported from bash sources/theme_logic_l
+bg_tint_strength = tonumber(ff(states .. "/" .. "bg_tint_strength_" .. s))
+local function shade(n)
+    return _G["shade_" .. tostring(n)]
+end
+bg_accented = shade(math.floor(bg_tint_strength * accent_anchor / 100))
+acc = shade(math.floor(accent_anchor * 100 / 100))
+acc_us = shade(math.floor(accent_anchor * 80 / 100))
+acc_hc = shade(math.floor(accent_anchor * 140 / 100))
+acc_ec = shade(math.floor(accent_anchor * 190 / 100))
+border = acc
+border8 = border .. tostring(border_alpha)
+focus = shade(math.floor(accent_anchor * 80 / 100))
+if start_icon_flag == 1 then
+    start_icon = shade(accent_anchor - start_icon_contrast)
+end
+bg2 = shade(math.floor(accent_anchor * 195 / 100))
+bg2_8 = bg2 .. "ff"
+common_sfg_assign_func()

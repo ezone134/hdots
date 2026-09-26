@@ -1,0 +1,44 @@
+-- point_to_contents_rel — loop dir entries, move aside, relative symlink
+
+function ptc_runr(src_dir, dest_dir)
+    -- strip trailing slashes
+    src_dir = src_dir:gsub("/+$", "")
+    dest_dir = dest_dir:gsub("/+$", "")
+
+    if not is_dir(src_dir) then mkdir_p(src_dir) end
+    if not is_dir(dest_dir) then mkdir_p(dest_dir) end
+
+    local entries = list_dir(src_dir)
+    for _, base in ipairs(entries) do
+        local target = src_dir .. "/" .. base
+        local point = dest_dir .. "/" .. base
+
+        -- if point and target are not the same file
+        if is_file(point) or is_dir(point) then
+            if is_file(point) then
+                mv(point, "/tmp/" .. base .. ".hypr_init_deleted_" .. tostring(math.random(0, 999999)))
+            else
+                mv(point, point .. "." .. tostring(math.random(0, 999999)))
+            end
+        end
+
+        -- compute relative path from dest_dir to target
+        -- count common prefix
+        local src_parts = {}
+        for p in src_dir:gmatch("[^/]+") do src_parts[#src_parts + 1] = p end
+        local dst_parts = {}
+        for p in dest_dir:gmatch("[^/]+") do dst_parts[#dst_parts + 1] = p end
+        local common = 0
+        while common < #src_parts and common < #dst_parts and src_parts[common + 1] == dst_parts[common + 1] do
+            common = common + 1
+        end
+        local ups = #dst_parts - common
+        local rel = string.rep("../", ups > 0 and ups or 0)
+        for i = common + 1, #src_parts do
+            rel = rel .. src_parts[i] .. "/"
+        end
+        rel = rel .. base
+
+        symlink(rel, point)
+    end
+end

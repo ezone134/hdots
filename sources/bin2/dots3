@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+base_name="dots3"
+. $sources/git_body
+up_hdots_func

@@ -1,0 +1,26 @@
+-- helper pull_colors_val
+-- this script will only be called by theme body, not hypr-init
+
+m = flagf_get(states2 .. "/" .. "m")
+s = flagf_get(states2 .. "/" .. "s")
+bg = flagf_get(states2 .. "/" .. "bg")
+fg = flagf_get(states2 .. "/" .. "fg")
+bg8 = flagf_get(states2 .. "/" .. "bg8")
+fg8 = flagf_get(states2 .. "/" .. "fg8")
+border8 = flagf_get(states2 .. "/" .. "border8")
+border = flagf_get(states2 .. "/" .. "border")
+acc8 = flagf_get(states2 .. "/" .. "acc8")
+acc = flagf_get(states2 .. "/" .. "acc")
+acc_ec = flagf_get(states2 .. "/" .. "acc_ec")
+acc_ec8 = flagf_get(states2 .. "/" .. "acc_ec8")
+sfg = flagf_get(states2 .. "/" .. "sfg")
+bg2 = flagf_get(states2 .. "/" .. "bg2")
+
+rofi_font_size = ff(states .. "/" .. "rofi_font_size_" .. s)
+rofi_font = ff(states .. "/" .. "rofi_font_" .. s)
+
+-- this does not contain hash #
+bg_1 = bg:gsub("^#", "")
+fg_1 = fg:gsub("^#", "")
+
+bg_alpha = ff(states .. "/" .. "bg_alpha_" .. s)

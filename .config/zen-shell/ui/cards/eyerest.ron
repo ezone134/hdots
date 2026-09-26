@@ -1,0 +1,63 @@
+(
+    // eye rest card — 20-20-20 focus/rest ring, fully declarative.
+    //
+    // Geometry of record (draw_eyerest_card):
+    //   header pad 12 · ring at x + 40, y + 50 (24 header + 26), r 23, dot 3
+    //   hero mm:ss LEFT-aligned at x + 75 (ring + r + 12), y + 43, 21px
+    //   state caption at x + 75, y + 60 · hint chip at x + 12, y + 79
+    //   toggle (accent) + reset buttons: 52×22, 12px in, 10px above the bottom
+    items: [
+        Header(title: "Eye rest", glyph: Some("\u{f573}"), meta: Some("{er_meta}"), pad: 12.0),
+        Ring(
+            name: "er_frac",
+            max: 1.0,
+            cx: 40.0,
+            cy: 50.0,
+            radius: 23.0,
+            dot: 3.0,
+            fill: value("er_ring_ink"),
+            track: fg3,
+        ),
+        Text(
+            x: 75.0, y: 43.0,
+            text: "{er_hero}", font_size: 21.0,
+            font: display, weight: medium,
+            color: Some(value("er_hero_ink")),
+        ),
+        Text(
+            x: 75.0, y: 60.0,
+            text: "{er_state}", font_size: 8.5,
+            font: ui, weight: regular, color: Some(fg3),
+        ),
+        Text(
+            x: 12.0, y: 79.0,
+            text: "20 min focus \u{b7} 20 s rest", font_size: 8.0,
+            font: ui, weight: regular, color: Some(fg3),
+        ),
+        Hit(
+            x: 12.0, y: 10.0, w: 52.0, h: 22.0, r: 6.0,
+            bottom: true,
+            key: 31900,
+            text: "{er_tog_lbl}",
+            center: true,
+            dy: 6.25,
+            font_size: 9.5,
+            font: ui,
+            color: Some(acc),
+            surface: Some(value("er_tog_bg")),
+        ),
+        Hit(
+            x: 12.0, y: 10.0, w: 52.0, h: 22.0, r: 6.0,
+            right: true,
+            bottom: true,
+            key: 31901,
+            text: "Reset",
+            center: true,
+            dy: 6.25,
+            font_size: 9.5,
+            font: ui,
+            color: Some(fg),
+            surface: Some(value("er_rst_bg")),
+        ),
+    ],
+)

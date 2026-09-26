@@ -1,0 +1,24 @@
+# -*- mode: sh -*-
+# ws_body — functions for the ws_main CLI: ws
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- Hyprland workspaces ------------------------------------------------
+
+ws_cur() {
+    local out
+    out="$(hyprctl activeworkspace -j 2>/dev/null)" || { printf '?\n'; return; }
+    out="${out#*\"id\":}"
+    out="${out//[[:space:]]/}"
+    out="${out%%,*}"
+    printf '%s\n' "${out:-?}"
+}
+
+ws_cmd() {
+    case "${1:-cur}" in
+        cur|current) ws_cur;;
+        next)        hyprctl dispatch "hl.dsp.focus({workspace='next'})";;
+        prev|previous) hyprctl dispatch "hl.dsp.focus({workspace='prev'})";;
+        goto)        hyprctl dispatch "hl.dsp.focus({workspace='${2:-1}'})";;
+        *)           hyprctl dispatch "hl.dsp.focus({workspace='$1'})";;
+    esac
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+-- gen-exp — dump the list of installed packages to /tmp/pkg-list.txt.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+run([[zypper packages --installed-only | awk '$1=="i+" {print $5}' | tee /tmp/pkg-list.txt]])

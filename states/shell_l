@@ -1,0 +1,585 @@
+dash_tray = ["mirror"]
+news_feeds = []
+mirror_fps = 60
+mirror_show_fps = true
+show_balance = true
+show_saturation = true
+audiorec_confirm_delete = true
+audiorec_show_mic = true
+card_show_title = true
+card_show_glyph = true
+viz_style = 0
+app_shortcuts = []
+
+[fonts]
+family = "Inter"
+display = ""
+mono = ""
+icon = "Material Symbols Rounded"
+icon_style = ""
+
+[bar]
+height = 38
+floating = true
+expanded = false
+floating_offset = 25
+collapsed_width = 0
+expanded_width = 1120
+reserve = false
+expand_on_hover = true
+cc_instead_of_dash = false
+show_clock = true
+show_battery = true
+show_battery_pct = true
+show_ws = true
+show_ws_long = false
+show_ws_short = false
+show_wifi = false
+show_bluetooth = false
+show_volume = false
+show_wallpaper = false
+show_themes = false
+show_brand = false
+show_tray = true
+show_viz = false
+settings_on_pill = true
+show_notif = true
+show_user = false
+show_watts = false
+show_brightness = true
+pill_order = [
+    "workspaces",
+    "clock",
+    "battery",
+    "watts",
+    "visualizer",
+    "settings",
+    "bell",
+    "tray",
+    "user",
+    "workspaces_long",
+    "workspaces_short",
+    "wifi",
+    "bluetooth",
+    "volume",
+    "wallpaper",
+    "themes",
+    "branding",
+]
+anchor = "bottom"
+grid_scale = 1.0
+pill_margin_x = 18.0
+pill_alpha = 176
+dash_card_alpha = 204
+power_hold_delay = 1.5
+allow_over_100 = true
+max_vol = 100
+banner_order = [
+    "workspaces",
+    "title",
+    "date",
+    "clock",
+    "zone:1",
+    "app_search",
+    "tray",
+    "zone:2",
+    "settings",
+    "power",
+    "connectivity",
+    "wifi",
+    "bluetooth",
+]
+dash_enabled = true
+dash_scroll_dir = false
+ui_pad = 12.0
+win_radius = 20.0
+card_radius = 20.0
+card_radius_sync = true
+
+[animation]
+duration_ms = 240.0
+collapse_delay_ms = 0.0
+
+[colors]
+fg = "#cdd6f4"
+bg = "#1e1e2e"
+acc = "#89b4fa"
+hover = "#313244"
+
+[weather]
+latitude = 0.0
+longitude = 0.0
+city = ""
+interval_s = 600
+
+[wallpaper]
+dir = "~/Wallpapers"
+command = "set_wall {path}"
+cell = 96.0
+
+[world]
+data_url = ""
+save_data = false
+
+[backends]
+power = "sysfs"
+brightness = "sysfs"
+audio = "wpctl"
+lockscreen = "native"
+wallpaper = "command"
+
+[notifications]
+position = "top-right"
+timeout_ms = 5000
+max_visible = 5
+max_history = 64
+show_on_lock = false
+
+[notifications.per_app]
+
+[[dash_cards]]
+card = "system"
+x = 0
+y = 0
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "weather"
+x = 6
+y = 0
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "media"
+x = 12
+y = 0
+w = 8
+h = 4
+
+[[dash_cards]]
+card = "network"
+x = 0
+y = 4
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "cpugpu"
+x = 6
+y = 4
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "gauges"
+x = 12
+y = 4
+w = 8
+h = 4
+
+[[dash_cards]]
+card = "toggles"
+x = 0
+y = 8
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "todo"
+x = 6
+y = 8
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "sliders"
+x = 12
+y = 8
+w = 8
+h = 4
+
+[[dash_cards]]
+card = "disk"
+x = 0
+y = 12
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "procmon"
+x = 5
+y = 12
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "mem"
+x = 10
+y = 12
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "activewin"
+x = 0
+y = 16
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "clipboard"
+x = 5
+y = 16
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "notes"
+x = 10
+y = 16
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "pkgupdates"
+x = 0
+y = 20
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "sshvpn"
+x = 5
+y = 20
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "docker"
+x = 10
+y = 20
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "kblayout"
+x = 15
+y = 20
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "wallpaper"
+x = 0
+y = 24
+w = 20
+h = 4
+
+[[dash_cards]]
+card = "news"
+x = 0
+y = 28
+w = 10
+h = 4
+
+[[dash_cards]]
+card = "calendar"
+x = 10
+y = 28
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "accent"
+x = 15
+y = 28
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "viz"
+x = 0
+y = 32
+w = 8
+h = 4
+
+[[dash_cards]]
+card = "sensors"
+x = 8
+y = 32
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "lyrics"
+x = 0
+y = 36
+w = 10
+h = 8
+
+[[dash_cards]]
+card = "wifi"
+x = 0
+y = 44
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "bluetooth"
+x = 6
+y = 44
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "speedtest"
+x = 12
+y = 44
+w = 8
+h = 4
+
+[[dash_cards]]
+card = "quote"
+x = 0
+y = 48
+w = 10
+h = 3
+
+[[dash_cards]]
+card = "currency"
+x = 10
+y = 48
+w = 8
+h = 3
+
+[[dash_cards]]
+card = "ticker"
+x = 0
+y = 51
+w = 10
+h = 3
+
+[[dash_cards]]
+card = "recent"
+x = 10
+y = 51
+w = 8
+h = 3
+
+[[dash_cards]]
+card = "gpu"
+x = 0
+y = 54
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "thermal"
+x = 6
+y = 54
+w = 12
+h = 4
+
+[[dash_cards]]
+card = "clock"
+x = 0
+y = 58
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "batteryv"
+x = 6
+y = 58
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "batteryh"
+x = 11
+y = 58
+w = 7
+h = 4
+
+[[dash_cards]]
+card = "worldmap"
+x = 0
+y = 62
+w = 10
+h = 9
+
+[[dash_cards]]
+card = "weatherv2"
+x = 0
+y = 71
+w = 8
+h = 6
+
+[[dash_cards]]
+card = "pomodoro"
+x = 8
+y = 71
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "fans"
+x = 14
+y = 71
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "workspaces"
+x = 0
+y = 77
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "worldclock"
+x = 6
+y = 77
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "water"
+x = 12
+y = 77
+w = 4
+h = 4
+
+[[dash_cards]]
+card = "moon"
+x = 16
+y = 77
+w = 4
+h = 4
+
+[[dash_cards]]
+card = "compositor"
+x = 0
+y = 81
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "countdown"
+x = 6
+y = 81
+w = 7
+h = 4
+
+[[dash_cards]]
+card = "alarms"
+x = 13
+y = 81
+w = 7
+h = 4
+
+[[dash_cards]]
+card = "snippets"
+x = 0
+y = 85
+w = 10
+h = 4
+
+[[dash_cards]]
+card = "expenses"
+x = 10
+y = 85
+w = 10
+h = 4
+
+[[dash_cards]]
+card = "eyerest"
+x = 0
+y = 89
+w = 6
+h = 4
+
+[[dash_cards]]
+card = "micmeter"
+x = 6
+y = 89
+w = 4
+h = 4
+
+[[dash_cards]]
+card = "audiodevice"
+x = 10
+y = 89
+w = 10
+h = 4
+
+[[dash_cards]]
+card = "conninfo"
+x = 0
+y = 93
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "latency"
+x = 5
+y = 93
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "powerdraw"
+x = 10
+y = 93
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "smarthealth"
+x = 15
+y = 93
+w = 5
+h = 4
+
+[[dash_cards]]
+card = "systemdunits"
+x = 0
+y = 97
+w = 7
+h = 4
+
+[[dash_cards]]
+card = "journaltail"
+x = 7
+y = 97
+w = 13
+h = 4
+
+[[dash_cards]]
+card = "branding"
+x = 0
+y = 101
+w = 20
+h = 4
+
+[cards.audiorec]
+rec_surface = "raised"
+rec_active_surface = "danger"
+rec_dot = "danger"
+row_ink = "fg2"
+row_hover = "raised_hl"
+play_hover = "acc"
+del_hover = "danger"
+del_armed = "danger"
+rec_pad_bottom = 12.0
+row_h = 24.0
+
+[dashboard.banner]
+run = []
+parked = []
+
+[dashboard.cards]
+run = []
+parked = []

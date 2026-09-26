@@ -1,0 +1,13 @@
+(
+    // CLOCK — hero time + date, both live values from scene_values().
+    // center_x/center_y adapt to whatever cell the clock sits in.
+    items: [
+        // big time, hero style, centered slightly above the middle
+        Text(x: 0.0, y: -4.0, w: 0.0, text: "{clock}", font_size: 30.0,
+             font: display, weight: medium, center_x: true, center_y: true,
+             center: true, color: Some(fg)),
+        // date line, centered at the bottom
+        Text(x: 0.0, y: -22.0, w: 0.0, text: "{date}", font_size: 10.0,
+             center_x: true, center_y: true, center: true, color: Some(fg2)),
+    ],
+)

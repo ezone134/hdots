@@ -1,0 +1,53 @@
+#!/usr/bin/env luajit
+-- helper hypr_idle_lock_conf_gen
+
+dofile(sources .. "/hypridle_vars")
+dofile(sources .. "/expand_gen_body")
+
+expand_gen(templates .. "/hypr/hypridle.conf", rconfig .. "/hypr/hypridle.conf")
+
+mkdir_p(rconfig .. "/hypr/hyprlock")
+
+tf(rconfig .. "/hypr/hyprlock/check-capslock.sh", [=[#!/bin/env bash
+
+MAIN_KB_CAPS=$(hyprctl devices | grep -B 6 "main: yes" | grep "capsLock" | head -1 | awk '{print $2}')
+
+if [[ "$MAIN_KB_CAPS" = "yes" ]]; then
+    echo "Caps Lock active"
+else
+    echo ""
+fi
+]=])
+chmod(rconfig .. "/hypr/hyprlock/check-capslock.sh", "755")
+
+tf(rconfig .. "/hypr/hyprlock/status.sh", [=[#!/usr/bin/env zsh
+
+############ Variables ############
+enable_battery=false
+battery_charging=false
+
+####### Check availability ########
+for battery in /sys/class/power_supply/*BAT*; do
+  if [[ -f "$battery/uevent" ]]; then
+    enable_battery=true
+    if [[ $(cat /sys/class/power_supply/*/status | head -1) == "Charging" ]]; then
+      battery_charging=true
+    fi
+    break
+  fi
+done
+
+############# Output #############
+if [[ $enable_battery == true ]]; then
+  if [[ $battery_charging == true ]]; then
+    echo -n "(+) "
+  fi
+  echo -n "$(cat /sys/class/power_supply/*/capacity | head -1)"%
+  if [[ $battery_charging == false ]]; then
+    echo -n " remaining"
+  fi
+fi
+
+echo ''
+]=])
+chmod(rconfig .. "/hypr/hyprlock/status.sh", "755")

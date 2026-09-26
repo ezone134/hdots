@@ -1,0 +1,9 @@
+[Default Applications]
+application/x-shellscript=zed.desktop
+text/x-lua=zed.desktop
+text/plain=zed.desktop
+
+[Added Associations]
+application/x-shellscript=zed.desktop;
+text/x-lua=zed.desktop;
+text/plain=zed.desktop;

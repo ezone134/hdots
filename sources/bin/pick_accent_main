@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- pick_accent_main — screen color picker for the shell's accent color.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/pick_accent_body")
+pick_accent_cmd(arg[1])

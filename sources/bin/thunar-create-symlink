@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- thunar-create-symlink — create an absolute symlink "<path>_" next to it.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/asym_body")
+asym_cmd(arg[1])

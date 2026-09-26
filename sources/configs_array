@@ -1,0 +1,26 @@
+#!/usr/bin/env luajit
+-- array configs_array
+-- ported from bash sources/configs_array
+
+templates = os.getenv("templates")
+
+configs_array_1 = {
+    templates .. "/mako",
+    templates .. "/dunst",
+    templates .. "/branding",
+}
+
+configs_array_2 = {
+    templates .. "/sublime-text/Packages/User",
+    templates .. "/zed",
+    templates .. "/swayimg",
+    templates .. "/kitty",
+    templates .. "/lapce-stable",
+    templates .. "/lite-xl",
+    templates .. "/wofi",
+    templates .. "/foot",
+    templates .. "/alacritty",
+    templates .. "/geany",
+    templates .. "/fuzzel",
+    templates .. "/rofi",
+}

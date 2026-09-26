@@ -1,0 +1,26 @@
+(
+    // CLIPBOARD — fully declarative list: one row per clip (32-char cap in
+    // the Rust value), the previously-copied row keeps a persistent hover_hl
+    // well + accent name, hover lifts any row the same way; the empty state
+    // is a centered caption. `start: "clip_scroll"` keys regions at
+    // CLIP_KEY_BASE + visible index for the click-to-copy plumbing.
+    items: [
+        Header(title: "Clipboard"),
+        Rows(
+            name: "clip_rows",
+            y: 32.0,
+            row_h: 22.0,
+            r: 6.0,
+            pad: 10.0,
+            row_dy: 0.5,
+            hover_surface: Some(hover_hl),
+            start: Some("clip_scroll"),
+            key_base: Some(80),
+            cols: [
+                (x: 4.0, dy: Some(0.0), size: 9.0),
+            ],
+        ),
+        Text(x: 0.0, y: -6.0, center_x: true, center_y: true, text: "Empty",
+             font_size: 9.5, color: Some(fg), visible: Some("clip_empty")),
+    ],
+)

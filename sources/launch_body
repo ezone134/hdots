@@ -1,0 +1,46 @@
+#!/usr/bin/env luajit
+-- helper prelaunch_body
+
+function sync_sources()
+    copy_dir_contents(dots .. "/sources",   sources)
+end
+
+function splash_func()
+    dofile(dots .. "/sources/splash_init")
+end
+
+function launch_final_func()
+    mkdir_p(states2)
+
+    s = ff(dots .. "/states/s") or "n"
+
+    gtk_theme_name = out("gsettings get org.gnome.desktop.interface gtk-theme")
+    if gtk_theme_name:find("gtk_d", 1, true) or gtk_theme_name:find("dark", 1, true) then
+        m_init = "d"
+        theme_panic = "no"
+    elseif gtk_theme_name:find("gtk_l", 1, true) or gtk_theme_name:find("light", 1, true) then
+        m_init = "l"
+        theme_panic = "no"
+    else
+        m_init = "l"
+        theme_panic = "yes"
+    end
+
+    if s == "n" then
+        s_init = "n"
+    else
+        s_init = m_init
+    end
+
+    show_splash = ff(dots .. "/states/show_splash_" .. s_init) or "1"
+    if show_splash == "1" then
+        local ok, e = pcall(splash_func)
+        if not ok then err("splash_func failed: " .. tostring(e)) end
+    end
+
+    mkdir_p(sources)
+    sync_sources()
+
+    dofile(sources .. "/init_logic")
+    err("end of launch_body")
+end

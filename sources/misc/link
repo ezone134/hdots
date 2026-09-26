@@ -1,0 +1,145 @@
+#!/usr/bin/env luajit
+
+local ffi = require("ffi")
+local bit = require("bit")
+
+-- Safe stat definition using a padded buffer to prevent FFI size mismatches and segfaults
+ffi.cdef[[
+    int symlink(const char *path1, const char *path2);
+    int mkdir(const char *pathname, int mode);
+    int rename(const char *oldpath, const char *newpath);
+
+    struct stat {
+        char __pad[256];
+    };
+
+    int stat(const char *pathname, struct stat *buf);
+    int lstat(const char *pathname, struct stat *buf);
+]]
+
+-- Helper to safely extract st_mode, st_ino, st_dev from raw stat buffer on Linux x86_64
+local function get_stat_fields(path, is_lstat)
+    local s = ffi.new("struct stat")
+    local res = (is_lstat and ffi.C.lstat(path, s) or ffi.C.stat(path, s))
+    if res ~= 0 then return nil end
+
+    -- Cast the padded buffer to pointer types to read fields safely without layout crashes
+    local ptr = ffi.cast("unsigned long*", s.__pad)
+    local st_dev = ptr[0]
+    local st_ino = ptr[1]
+
+    -- st_mode is typically at offset 24 on 64-bit Linux (depending on dev/ino sizes)
+    local mode_ptr = ffi.cast("unsigned int*", s.__pad + 24)
+    local st_mode = mode_ptr[0]
+
+    return st_dev, st_ino, st_mode
+end
+
+local function dirname(path)
+    return path:match("^(.*)/[^/]*$") or ""
+end
+
+local function mkdir_p(path)
+    local curr = ""
+    if path:sub(1, 1) == "/" then curr = "/" end
+    for part in path:gmatch("[^/]+") do
+        curr = (curr == "" or curr == "/") and (curr .. part) or (curr .. "/" .. part)
+        ffi.C.mkdir(curr, 511)
+    end
+end
+
+local function path_exists(path)
+    local s = ffi.new("struct stat")
+    return ffi.C.stat(path, s) == 0 or ffi.C.lstat(path, s) == 0
+end
+
+local function is_symlink(path)
+    local _, _, mode = get_stat_fields(path, true)
+    if mode then
+        return bit.band(mode, 0170000) == 0120000 -- S_IFLNK
+    end
+    return false
+end
+
+local function are_same_file(path1, path2)
+    local dev1, ino1 = get_stat_fields(path1, false)
+    local dev2, ino2 = get_stat_fields(path2, false)
+    if not dev1 or not dev2 then return false end
+    return dev1 == dev2 and ino1 == ino2
+end
+
+local function parse_args(args)
+    local flags = { symbolic = false, relative = false, force = false, quiet = false }
+    local positional = {}
+
+    for _, arg in ipairs(args) do
+        if arg:sub(1, 1) == "-" and arg:sub(2, 2) ~= "-" then
+            for i = 2, #arg do
+                local char = arg:sub(i, i)
+                if char == "s" then flags.symbolic = true
+                elseif char == "r" then flags.relative = true
+                elseif char == "f" then flags.force = true
+                elseif char == "q" then flags.quiet = true
+                end
+            end
+        elseif arg:sub(1, 2) == "--" then
+            if arg == "--symbolic" then flags.symbolic = true
+            elseif arg == "--relative" then flags.relative = true
+            elseif arg == "--force" then flags.force = true
+            elseif arg == "--quiet" then flags.quiet = true
+            end
+        else
+            table.insert(positional, arg)
+        end
+    end
+    return flags, positional
+end
+
+local function link_main()
+    local flags, pos = parse_args(arg)
+    local src, dst = pos[1], pos[2]
+
+    if not src or not dst then
+        if not flags.quiet then
+            print("Usage: link [-srfq] <src> <dst>")
+        end
+        return
+    end
+
+    mkdir_p(dirname(dst))
+    mkdir_p(src)
+
+    if path_exists(dst) and are_same_file(src, dst) then
+        if not flags.quiet then
+            print(string.format("Already %s -> %s", dst, src))
+        end
+        return
+    end
+
+    if path_exists(dst) then
+        if flags.force then
+            if is_symlink(dst) then
+                os.remove(dst)
+            else
+                os.rename(dst, string.format("%s_%d", dst, os.time()))
+            end
+        else
+            if is_symlink(dst) then
+                os.rename(dst, string.format("/tmp/stale_symlink_moved_deleted_%d", os.time()))
+            end
+            pcall(os.rename, dst, string.format("%s_%d", dst, os.time()))
+        end
+    end
+
+    local m = string.format("Linked %s -> %s", dst, src)
+    if flags.relative then
+        os.execute(string.format("ln -sr %q %q", src, dst))
+        if not flags.quiet then print(m) end
+    else
+        if ffi.C.symlink(src, dst) == 0 then
+            if not flags.quiet then print(m) end
+        end
+    end
+end
+
+link_main()

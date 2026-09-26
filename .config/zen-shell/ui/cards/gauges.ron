@@ -1,0 +1,121 @@
+(
+    // gauges card — memory + disk bead rings, fully declarative.
+    //
+    // Geometry of record (draw_gauges_card):
+    //   ring_r 30 (card_h ≥ 116) else 22 · dot 5 / 4 · cy = card center
+    //   two columns at x + w·0.27 / 0.73 when w ≥ 170, else one centered
+    //   hero % at cy − 8 (13px big ring, 11px small), label at cy + r + 15,
+    //   capacity line at cy + r + 28 — the last two only when the card clears
+    //   ring_r·2 + 50, which for either radius is h ≥ 94.
+    items: [
+        When(
+            min_w: 170.0,
+            items: [
+                Ring(
+                    name: "mem_pct_f",
+                    cx_pct: 0.27,
+                    cy: 0.0,
+                    center_y: true,
+                    fit: Some(Ladder([(116.0, 30.0), (0.0, 22.0)])),
+                    dot_ladder: [(30.0, 5.0), (0.0, 4.0)],
+                    fill: acc,
+                    track: value("gau_dim"),
+                ),
+                Text(
+                    x: 0.0, y: -8.0, w: 90.0, center: true, center_y: true, cx_pct: 0.27,
+                    text: "{gau_mem_pct}", font_size: 13.0,
+                    font: display, weight: medium,
+                    size_ladder: [(116.0, 13.0), (0.0, 11.0)],
+                ),
+                When(
+                    min_h: 94.0,
+                    items: [
+                        Text(
+                            x: 0.0, y: 37.0, w: 90.0, center: true, center_y: true, cx_pct: 0.27,
+                            text: "Memory", font_size: 10.0,
+                            font: ui, weight: regular,
+                            y_ladder: [(116.0, 45.0), (0.0, 37.0)],
+                        ),
+                        Text(
+                            x: 0.0, y: 58.0, w: 90.0, center: true, center_y: true, cx_pct: 0.27,
+                            text: "{gau_mem_gb}", font_size: 8.0,
+                            font: mono, weight: regular, color: Some(fg2),
+                            y_ladder: [(116.0, 58.0), (0.0, 50.0)],
+                        ),
+                    ],
+                ),
+                Ring(
+                    name: "disk_pct_f",
+                    cx_pct: 0.73,
+                    cy: 0.0,
+                    center_y: true,
+                    fit: Some(Ladder([(116.0, 30.0), (0.0, 22.0)])),
+                    dot_ladder: [(30.0, 5.0), (0.0, 4.0)],
+                    fill: ok,
+                    track: value("gau_dim"),
+                ),
+                Text(
+                    x: 0.0, y: -8.0, w: 90.0, center: true, center_y: true, cx_pct: 0.73,
+                    text: "{gau_disk_pct}", font_size: 13.0,
+                    font: display, weight: medium,
+                    size_ladder: [(116.0, 13.0), (0.0, 11.0)],
+                ),
+                When(
+                    min_h: 94.0,
+                    items: [
+                        Text(
+                            x: 0.0, y: 37.0, w: 90.0, center: true, center_y: true, cx_pct: 0.73,
+                            text: "Disk", font_size: 10.0,
+                            font: ui, weight: regular,
+                            y_ladder: [(116.0, 45.0), (0.0, 37.0)],
+                        ),
+                        Text(
+                            x: 0.0, y: 58.0, w: 90.0, center: true, center_y: true, cx_pct: 0.73,
+                            text: "{gau_disk_gb}", font_size: 8.0,
+                            font: mono, weight: regular, color: Some(fg2),
+                            y_ladder: [(116.0, 58.0), (0.0, 50.0)],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        When(
+            max_w: 170.0,
+            items: [
+                Ring(
+                    name: "mem_pct_f",
+                    cy: 0.0,
+                    center_x: true,
+                    center_y: true,
+                    fit: Some(Ladder([(116.0, 30.0), (0.0, 22.0)])),
+                    dot_ladder: [(30.0, 5.0), (0.0, 4.0)],
+                    fill: acc,
+                    track: value("gau_dim"),
+                ),
+                Text(
+                    x: 0.0, y: -8.0, w: 90.0, center: true, center_x: true, center_y: true,
+                    text: "{gau_mem_pct}", font_size: 13.0,
+                    font: display, weight: medium,
+                    size_ladder: [(116.0, 13.0), (0.0, 11.0)],
+                ),
+                When(
+                    min_h: 94.0,
+                    items: [
+                        Text(
+                            x: 0.0, y: 37.0, w: 90.0, center: true, center_x: true, center_y: true,
+                            text: "Memory", font_size: 10.0,
+                            font: ui, weight: regular,
+                            y_ladder: [(116.0, 45.0), (0.0, 37.0)],
+                        ),
+                        Text(
+                            x: 0.0, y: 58.0, w: 90.0, center: true, center_x: true, center_y: true,
+                            text: "{gau_mem_gb}", font_size: 8.0,
+                            font: mono, weight: regular, color: Some(fg2),
+                            y_ladder: [(116.0, 58.0), (0.0, 50.0)],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ],
+)

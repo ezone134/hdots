@@ -1,0 +1,1292 @@
+{
+  "comment": "hdots settings schema. Each section maps to the dotfiles state files and apply scripts. scope: channel = $states/<file>_<channel>, global = $states/<file>, cm = $states/<file><channel><mode>, states2 = $states2/<file>, power = $hypr_global/states/<file>. Placeholders {channel} {mode} are resolved by SettingEngine. Rows mirror the rofi master-menu tree (waybar settings excluded). kind alpha = percent slider stored as 2-hex-digit alpha (p*255/100 floored, like the rofi alpha submenus).",
+  "sections": [
+    {
+      "name": "theme",
+      "scope": "channel",
+      "rows": [
+        {
+          "type": "header",
+          "key": "hscheme",
+          "label": "Color Scheme"
+        },
+        {
+          "type": "combo",
+          "key": "scheme",
+          "label": "Color Scheme",
+          "hint": "Saved per channel + mode",
+          "scope": "cm",
+          "file": "scheme",
+          "kind": "scheme",
+          "entriesDynamic": "scheme",
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "header",
+          "key": "hacc",
+          "label": "Accent"
+        },
+        {
+          "type": "toggle",
+          "key": "acc_from_wall",
+          "label": "Accent from wallpaper",
+          "hint": "Derive accent colors from the current wallpaper",
+          "scope": "channel",
+          "file": "acc_from_wall",
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "button",
+          "key": "acc_defaults",
+          "label": "Use theme default accent",
+          "hint": "Disables wallpaper / custom accent for this channel",
+          "kind": "defaults"
+        },
+        {
+          "type": "button",
+          "key": "reload_theme",
+          "label": "Reload Theme",
+          "hint": "Regenerates every config from the current state files",
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        }
+      ]
+    },
+    {
+      "name": "general",
+      "scope": "channel",
+      "apply": {
+        "script": "general_main",
+        "arg": "restore"
+      },
+      "rows": [
+        {
+          "type": "slider",
+          "key": "gaps_in",
+          "label": "Inner Gaps",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "gaps_out",
+          "label": "Outer Gaps",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "rounding",
+          "label": "Window Rounding",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "rounding_power",
+          "label": "Rounding Power",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "border_size",
+          "label": "Border Size",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "toggle",
+          "key": "resize_on_border",
+          "label": "Resize on Border",
+          "hint": "Allow resizing by dragging the border"
+        },
+        {
+          "type": "toggle",
+          "key": "allow_tearing",
+          "label": "Allow Tearing"
+        },
+        {
+          "type": "combo",
+          "key": "layout",
+          "label": "Window Layout",
+          "entries": [
+            {
+              "label": "Dwindle",
+              "value": "dwindle"
+            },
+            {
+              "label": "Master",
+              "value": "master"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "key": "gen_recommended",
+          "label": "Apply Recommended Values",
+          "hint": "gaps in 5 / out 10 \u00b7 border 3 \u00b7 rounding 10 (power 2) \u00b7 dwindle",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "gaps_in",
+              "value": "5"
+            },
+            {
+              "scope": "channel",
+              "file": "gaps_out",
+              "value": "10"
+            },
+            {
+              "scope": "channel",
+              "file": "border_size",
+              "value": "3"
+            },
+            {
+              "scope": "channel",
+              "file": "resize_on_border",
+              "value": "1"
+            },
+            {
+              "scope": "channel",
+              "file": "allow_tearing",
+              "value": "1"
+            },
+            {
+              "scope": "channel",
+              "file": "rounding",
+              "value": "10"
+            },
+            {
+              "scope": "channel",
+              "file": "rounding_power",
+              "value": "2"
+            },
+            {
+              "scope": "channel",
+              "file": "layout",
+              "value": "dwindle"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "key": "gen_reload",
+          "label": "Apply & Reload",
+          "hint": "Re-runs general_main restore to apply everything live",
+          "apply": {
+            "script": "general_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "button",
+          "key": "gen_reset",
+          "label": "Restore Defaults",
+          "hint": "Runs general_main reset \u2014 clears general.lua",
+          "apply": {
+            "script": "general_main",
+            "arg": "reset"
+          }
+        }
+      ]
+    },
+    {
+      "name": "opacity",
+      "scope": "channel",
+      "apply": {
+        "script": "opacity_main",
+        "arg": "restore"
+      },
+      "rows": [
+        {
+          "type": "slider",
+          "key": "opacity_active",
+          "label": "Active Window Opacity",
+          "min": 0.1,
+          "max": 1.0,
+          "step": 0.1,
+          "hint": "1.0 disables transparency"
+        },
+        {
+          "type": "slider",
+          "key": "opacity_inactive",
+          "label": "Inactive Window Opacity",
+          "min": 0.1,
+          "max": 1.0,
+          "step": 0.1
+        },
+        {
+          "type": "button",
+          "key": "opacity_reset",
+          "label": "Reset Values",
+          "hint": "Active 0.8 \u00b7 Inactive 0.5, then reloads",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "opacity_active",
+              "value": "0.8"
+            },
+            {
+              "scope": "channel",
+              "file": "opacity_inactive",
+              "value": "0.5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blur",
+      "scope": "channel",
+      "apply": {
+        "script": "blur_main",
+        "arg": "restore"
+      },
+      "rows": [
+        {
+          "type": "toggle",
+          "key": "hypr_blur",
+          "label": "Blur",
+          "file": "hypr_blur"
+        },
+        {
+          "type": "slider",
+          "key": "hypr_blur_size",
+          "label": "Blur Size",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "hypr_blur_passes",
+          "label": "Blur Passes",
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "hypr_blur_vibrancy",
+          "label": "Blur Vibrancy",
+          "min": 0.0,
+          "max": 1.0,
+          "step": 0.1
+        },
+        {
+          "type": "button",
+          "key": "blur_reload",
+          "label": "Reload Changes",
+          "hint": "Re-applies blur_main restore",
+          "apply": {
+            "script": "blur_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "button",
+          "key": "blur_defaults",
+          "label": "Restore Defaults",
+          "hint": "Empties configs/blur.lua (blur_main reset)",
+          "apply": {
+            "script": "blur_main",
+            "arg": "reset"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shadow",
+      "scope": "channel",
+      "apply": {
+        "script": "shadow_main",
+        "arg": "restore"
+      },
+      "rows": [
+        {
+          "type": "toggle",
+          "key": "shadow_enabled",
+          "label": "Shadows",
+          "file": "shadow_enabled"
+        },
+        {
+          "type": "slider",
+          "key": "shadow_range",
+          "label": "Shadow Range",
+          "min": 1,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "shadow_render_power",
+          "label": "Render Power",
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "file": "shadow_render_power"
+        },
+        {
+          "type": "combo",
+          "key": "shadow_rgba",
+          "label": "Shadow Color",
+          "file": "shadow_rgba",
+          "entries": [
+            {
+              "label": "Just Black",
+              "value": "0xee1a1a1a"
+            },
+            {
+              "label": "Deep Black",
+              "value": "0xee000000"
+            },
+            {
+              "label": "Green",
+              "value": "0xaa4caf50"
+            },
+            {
+              "label": "Blue",
+              "value": "0xaa42a5f5"
+            },
+            {
+              "label": "Cyan",
+              "value": "0xaa00bcd4"
+            },
+            {
+              "label": "Purple",
+              "value": "0xaa9c27b0"
+            },
+            {
+              "label": "Rose",
+              "value": "0xaae91e63"
+            },
+            {
+              "label": "Orange",
+              "value": "0xaaff9800"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "key": "shadow_reset",
+          "label": "Reset Values",
+          "hint": "shadow_main reset to defaults",
+          "apply": {
+            "script": "shadow_main",
+            "arg": "reset"
+          }
+        }
+      ]
+    },
+    {
+      "name": "fonts",
+      "scope": "channel",
+      "apply": {
+        "script": "theme_main",
+        "arg": "{mode}"
+      },
+      "rows": [
+        {
+          "type": "combo",
+          "key": "font",
+          "label": "Font Family",
+          "entriesDynamic": "fonts"
+        },
+        {
+          "type": "slider",
+          "key": "font_size",
+          "label": "Font Size",
+          "min": 10,
+          "max": 30,
+          "step": 1
+        },
+        {
+          "type": "combo",
+          "key": "rofi_font",
+          "label": "Rofi Font Family",
+          "entriesDynamic": "fonts"
+        },
+        {
+          "type": "slider",
+          "key": "rofi_font_size",
+          "label": "Rofi Font Size",
+          "min": 10,
+          "max": 30,
+          "step": 1
+        },
+        {
+          "type": "button",
+          "key": "font_recommended",
+          "label": "Apply Recommended Values",
+          "hint": "SF Pro Text 17 \u00b7 Rofi Roboto 13",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "font",
+              "value": "SF Pro Text"
+            },
+            {
+              "scope": "channel",
+              "file": "font_size",
+              "value": "17"
+            },
+            {
+              "scope": "channel",
+              "file": "rofi_font",
+              "value": "Roboto"
+            },
+            {
+              "scope": "channel",
+              "file": "rofi_font_size",
+              "value": "13"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "key": "font_reload",
+          "label": "Apply & Reload",
+          "hint": "Regenerates the theme for the active mode",
+          "apply": {
+            "script": "theme_main",
+            "arg": "{mode}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "saturation",
+      "scope": "channel",
+      "rows": [
+        {
+          "type": "combo",
+          "key": "shader_saturation",
+          "label": "Saturation",
+          "hint": "Applies a screen shader",
+          "kind": "saturation",
+          "entriesDynamic": "saturations"
+        },
+        {
+          "type": "button",
+          "key": "shader_mix",
+          "label": "Try Mix Shaders",
+          "hint": "Super + Shift + H resets the shader",
+          "apply": {
+            "script": "shader-mix-shaders"
+          }
+        }
+      ]
+    },
+    {
+      "name": "sunset",
+      "scope": "global",
+      "rows": [
+        {
+          "type": "combo",
+          "key": "sunstate",
+          "label": "Eye Care Filter",
+          "kind": "sunstate",
+          "file": "hyprsunset_state",
+          "entries": [
+            {
+              "label": "Disabled",
+              "value": "c"
+            },
+            {
+              "label": "Manual",
+              "value": "m"
+            },
+            {
+              "label": "Auto (sunset)",
+              "value": "a"
+            }
+          ]
+        },
+        {
+          "type": "slider",
+          "key": "sunval",
+          "label": "Color Temperature",
+          "kind": "sunval",
+          "file": "hyprsunset_val",
+          "min": 1200,
+          "max": 6500,
+          "step": 100
+        }
+      ]
+    },
+    {
+      "name": "wallpaper",
+      "scope": "channel",
+      "rows": [
+        {
+          "type": "combo",
+          "key": "wall_anim",
+          "label": "Wallpaper Transition",
+          "entries": [
+            {
+              "label": "None",
+              "value": "none"
+            },
+            {
+              "label": "Simple",
+              "value": "simple"
+            },
+            {
+              "label": "Fade",
+              "value": "fade"
+            },
+            {
+              "label": "Center",
+              "value": "center"
+            },
+            {
+              "label": "Grow",
+              "value": "grow"
+            },
+            {
+              "label": "Outer",
+              "value": "outer"
+            },
+            {
+              "label": "Wipe",
+              "value": "wipe"
+            },
+            {
+              "label": "Wave",
+              "value": "wave"
+            },
+            {
+              "label": "Left",
+              "value": "left"
+            },
+            {
+              "label": "Right",
+              "value": "right"
+            },
+            {
+              "label": "Top",
+              "value": "top"
+            },
+            {
+              "label": "Bottom",
+              "value": "bottom"
+            },
+            {
+              "label": "Any",
+              "value": "any"
+            },
+            {
+              "label": "Random",
+              "value": "random"
+            }
+          ]
+        },
+        {
+          "type": "slider",
+          "key": "wall_anim_dur",
+          "label": "Transition Duration (s)",
+          "min": 0,
+          "max": 10,
+          "step": 1
+        },
+        {
+          "type": "button",
+          "key": "wall_recommended",
+          "label": "Apply Recommended Values",
+          "hint": "Fade \u00b7 5s",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "wall_anim",
+              "value": "fade"
+            },
+            {
+              "scope": "channel",
+              "file": "wall_anim_dur",
+              "value": "5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "accent",
+      "scope": "channel",
+      "rows": [
+        {
+          "type": "header",
+          "key": "h_acc_src",
+          "label": "Accent Source"
+        },
+        {
+          "type": "combo",
+          "key": "custom_acc_name",
+          "label": "Custom Accent",
+          "hint": "Pick from the predefined accent list (cached by the dotfiles launcher)",
+          "entriesDynamic": "accents",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "custom_acc",
+              "value": "1"
+            },
+            {
+              "scope": "channel",
+              "file": "acc_from_wall",
+              "value": "0"
+            },
+            {
+              "scope": "channel",
+              "file": "acc_from_hex",
+              "value": "0"
+            },
+            {
+              "scope": "states2",
+              "file": "acc_changed",
+              "value": "1"
+            }
+          ],
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "combo",
+          "key": "custom_acc_fav",
+          "label": "Favourite Accents",
+          "hint": "Pick from your saved favourites list",
+          "file": "custom_acc_name",
+          "entriesDynamic": "favorites",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "custom_acc",
+              "value": "1"
+            },
+            {
+              "scope": "channel",
+              "file": "acc_from_wall",
+              "value": "0"
+            },
+            {
+              "scope": "channel",
+              "file": "acc_from_hex",
+              "value": "0"
+            },
+            {
+              "scope": "states2",
+              "file": "acc_changed",
+              "value": "1"
+            }
+          ],
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "toggle",
+          "key": "acc_from_hex",
+          "label": "Use Defined Hex",
+          "hint": "Apply the hex saved for this channel",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "custom_acc",
+              "value": "0"
+            },
+            {
+              "scope": "channel",
+              "file": "acc_from_wall",
+              "value": "0"
+            },
+            {
+              "scope": "states2",
+              "file": "acc_changed",
+              "value": "1"
+            }
+          ],
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "combo",
+          "key": "def_hex_mode",
+          "label": "Hex Apply Mode",
+          "hint": "What the defined hex tints",
+          "file": "def_hex_mode",
+          "entries": [
+            {
+              "label": "Accent only",
+              "value": "a"
+            },
+            {
+              "label": "Accent and borders",
+              "value": "d"
+            },
+            {
+              "label": "Borders only",
+              "value": "b"
+            }
+          ]
+        },
+        {
+          "type": "combo",
+          "key": "defined_hex",
+          "label": "Pick Hex from Saved List",
+          "hint": "Pick a color saved in ~/Documents/saved_random_hex",
+          "entriesDynamic": "hexlist",
+          "extraWrites": [
+            {
+              "scope": "channel",
+              "file": "acc_from_hex",
+              "value": "1"
+            },
+            {
+              "scope": "channel",
+              "file": "custom_acc",
+              "value": "0"
+            },
+            {
+              "scope": "channel",
+              "file": "acc_from_wall",
+              "value": "0"
+            },
+            {
+              "scope": "states2",
+              "file": "acc_changed",
+              "value": "1"
+            }
+          ],
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        },
+        {
+          "type": "button",
+          "key": "hex_file",
+          "label": "Read Hex from File",
+          "hint": "Reads ~/Documents/defined_hex and applies it",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "hex_file"
+          }
+        },
+        {
+          "type": "button",
+          "key": "hex_random",
+          "label": "Use Random Hex",
+          "hint": "Generates a fresh random hex and applies it",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "hex_random"
+          }
+        },
+        {
+          "type": "button",
+          "key": "hex_cycle",
+          "label": "Cycle Saved Hex",
+          "hint": "Applies a random color from the saved list",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "hex_cycle"
+          }
+        },
+        {
+          "type": "button",
+          "key": "hex_copy",
+          "label": "Copy Active Hex",
+          "hint": "Copies the active hex to the clipboard",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "hex_copy"
+          }
+        },
+        {
+          "type": "button",
+          "key": "hex_save",
+          "label": "Save Active Hex",
+          "hint": "Appends the active hex to the saved list",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "hex_save"
+          }
+        },
+        {
+          "type": "header",
+          "key": "h_acc_mode",
+          "label": "Accent Mode"
+        },
+        {
+          "type": "toggle",
+          "key": "acc_scrim",
+          "label": "Scrim Mode",
+          "hint": "Overlays the shade over panels with a scrim strength"
+        },
+        {
+          "type": "slider",
+          "key": "scrim_alpha",
+          "label": "Scrim Strength",
+          "kind": "alpha",
+          "min": 5,
+          "max": 100,
+          "step": 1,
+          "hint": "Transparency of the scrim shade"
+        },
+        {
+          "type": "button",
+          "key": "clean_scrim",
+          "label": "Clean up Shades Cache",
+          "hint": "Removes the cached scrim shades",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "clean_scrim"
+          }
+        },
+        {
+          "type": "header",
+          "key": "h_acc_to",
+          "label": "Apply Accent To"
+        },
+        {
+          "type": "toggle",
+          "key": "custom_acc_hyprland",
+          "label": "Hyprland Window Borders"
+        },
+        {
+          "type": "toggle",
+          "key": "custom_acc_app_border",
+          "label": "App Borders"
+        },
+        {
+          "type": "toggle",
+          "key": "custom_acc_start_icon",
+          "label": "Start Icon"
+        },
+        {
+          "type": "toggle",
+          "key": "custom_acc_gtk",
+          "label": "Tinted GTK Apps"
+        },
+        {
+          "type": "toggle",
+          "key": "custom_acc_normal_app",
+          "label": "Tinted Normal Apps"
+        },
+        {
+          "type": "toggle",
+          "key": "splash_alpha",
+          "label": "Splash has Alpha"
+        },
+        {
+          "type": "toggle",
+          "key": "splash_bg_acc",
+          "label": "Accent to Splash BG"
+        },
+        {
+          "type": "button",
+          "key": "acc_toggles_rec",
+          "label": "Apply Recommended Values",
+          "hint": "Sensible accent-tint defaults",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "acc_toggles_rec"
+          }
+        },
+        {
+          "type": "header",
+          "key": "h_alphas",
+          "label": "Alpha & Tint Strength"
+        },
+        {
+          "type": "slider",
+          "key": "border_alpha",
+          "label": "Border Alpha",
+          "kind": "alpha",
+          "min": 0,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "type": "slider",
+          "key": "acc_alpha",
+          "label": "Accent Alpha",
+          "kind": "alpha",
+          "min": 30,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "type": "slider",
+          "key": "bg_alpha",
+          "label": "BG Alpha (Certain Apps)",
+          "kind": "alpha",
+          "min": 30,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "type": "slider",
+          "key": "bg_alpha_gtk",
+          "label": "GTK Apps Alpha",
+          "kind": "alpha",
+          "min": 30,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "type": "slider",
+          "key": "bg_tint_strength",
+          "label": "BG Tint Strength",
+          "min": 1,
+          "max": 20,
+          "step": 1
+        },
+        {
+          "type": "slider",
+          "key": "start_icon_tone",
+          "label": "Start Icon Contrast",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "hint": "Range depends on the accent anchor value"
+        },
+        {
+          "type": "button",
+          "key": "acc_alphas_rec",
+          "label": "Apply Recommended Values",
+          "hint": "bf / bf / bf alphas \u00b7 tint 3 \u00b7 computed start icon tone",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "acc_alphas_rec"
+          }
+        },
+        {
+          "type": "header",
+          "key": "h_alpha_dd",
+          "label": "Alpha Dropdowns"
+        },
+        {
+          "type": "combo",
+          "key": "acc_alpha_dd",
+          "label": "Accent Alpha",
+          "hint": "Writes $states/acc_alpha_$ch and regenerates via alpha_main",
+          "file": "acc_alpha",
+          "entries": [
+            {
+              "label": "25% \u00b7 0x40",
+              "value": "40"
+            },
+            {
+              "label": "40% \u00b7 0x66",
+              "value": "66"
+            },
+            {
+              "label": "55% \u00b7 0x8c",
+              "value": "8c"
+            },
+            {
+              "label": "70% \u00b7 0xb2",
+              "value": "b2"
+            },
+            {
+              "label": "85% \u00b7 0xd8",
+              "value": "d8"
+            },
+            {
+              "label": "100% \u00b7 0xff",
+              "value": "ff"
+            }
+          ],
+          "apply": {
+            "script": "alpha_main",
+            "arg": "acc_alpha {value}"
+          }
+        },
+        {
+          "type": "combo",
+          "key": "border_alpha_dd",
+          "label": "Border Alpha",
+          "hint": "Writes $states/border_alpha_$ch and regenerates via alpha_main",
+          "file": "border_alpha",
+          "entries": [
+            {
+              "label": "25% \u00b7 0x40",
+              "value": "40"
+            },
+            {
+              "label": "40% \u00b7 0x66",
+              "value": "66"
+            },
+            {
+              "label": "55% \u00b7 0x8c",
+              "value": "8c"
+            },
+            {
+              "label": "70% \u00b7 0xb2",
+              "value": "b2"
+            },
+            {
+              "label": "85% \u00b7 0xd8",
+              "value": "d8"
+            },
+            {
+              "label": "100% \u00b7 0xff",
+              "value": "ff"
+            }
+          ],
+          "apply": {
+            "script": "alpha_main",
+            "arg": "border_alpha {value}"
+          }
+        },
+        {
+          "type": "header",
+          "key": "h_caching",
+          "label": "Caching"
+        },
+        {
+          "type": "toggle",
+          "key": "accent_caching",
+          "label": "Save Cached Data",
+          "scope": "global",
+          "file": "accent_caching"
+        },
+        {
+          "type": "button",
+          "key": "clear_accent_cache",
+          "label": "Clear Accent Cache",
+          "hint": "Wipes $hdots/rcache",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "clear_accent_cache"
+          }
+        },
+        {
+          "type": "button",
+          "key": "accent_reload",
+          "label": "Reload Theme",
+          "hint": "Regenerates everything from the state files",
+          "apply": {
+            "script": "theme_main",
+            "arg": "restore"
+          }
+        }
+      ]
+    },
+    {
+      "name": "notif",
+      "scope": "global",
+      "rows": [
+        {
+          "type": "header",
+          "key": "h_notif_filters_note",
+          "label": "Category filters \u2192 Settings \u203a Notifications"
+        },
+        {
+          "type": "header",
+          "key": "h_notif_pop",
+          "label": "Popup Alerts"
+        },
+        {
+          "type": "header",
+          "key": "h_notif_beh",
+          "label": "Behaviour"
+        },
+        {
+          "type": "slider",
+          "key": "pop_notif_delay",
+          "label": "Pop Notification Delay (s)",
+          "min": 0.5,
+          "max": 2.0,
+          "step": 0.1
+        },
+        {
+          "type": "combo",
+          "key": "splash_id",
+          "label": "Login Splash ID",
+          "hint": "Splash variant for this channel (a..s)",
+          "scope": "channel",
+          "file": "splash_id",
+          "entries": [
+            {
+              "label": "a",
+              "value": "a"
+            },
+            {
+              "label": "b",
+              "value": "b"
+            },
+            {
+              "label": "c",
+              "value": "c"
+            },
+            {
+              "label": "d",
+              "value": "d"
+            },
+            {
+              "label": "e",
+              "value": "e"
+            },
+            {
+              "label": "f",
+              "value": "f"
+            },
+            {
+              "label": "g",
+              "value": "g"
+            },
+            {
+              "label": "h",
+              "value": "h"
+            },
+            {
+              "label": "i",
+              "value": "i"
+            },
+            {
+              "label": "j",
+              "value": "j"
+            },
+            {
+              "label": "k",
+              "value": "k"
+            },
+            {
+              "label": "l",
+              "value": "l"
+            },
+            {
+              "label": "m",
+              "value": "m"
+            },
+            {
+              "label": "n",
+              "value": "n"
+            },
+            {
+              "label": "o",
+              "value": "o"
+            },
+            {
+              "label": "p",
+              "value": "p"
+            },
+            {
+              "label": "q",
+              "value": "q"
+            },
+            {
+              "label": "r",
+              "value": "r"
+            },
+            {
+              "label": "s",
+              "value": "s"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "power",
+      "scope": "power",
+      "rows": [
+        {
+          "type": "toggle",
+          "key": "enable_power_script",
+          "label": "Power Tune",
+          "hint": "Master toggle for the CPU power tuning script",
+          "file": "enable_power_script"
+        },
+        {
+          "type": "combo",
+          "key": "power_plan_ac",
+          "label": "Power Plan on AC",
+          "file": "power_plan_ac",
+          "entries": [
+            {
+              "label": "powersave",
+              "value": "powersave"
+            },
+            {
+              "label": "performance",
+              "value": "performance"
+            }
+          ]
+        },
+        {
+          "type": "combo",
+          "key": "power_plan_bat",
+          "label": "Power Plan on Battery",
+          "file": "power_plan_bat",
+          "entries": [
+            {
+              "label": "powersave",
+              "value": "powersave"
+            },
+            {
+              "label": "performance",
+              "value": "performance"
+            }
+          ]
+        },
+        {
+          "type": "combo",
+          "key": "max_ac_freq_mhz",
+          "label": "Max AC CPU Freq (MHz)",
+          "hint": "Steps cached from cpuinfo",
+          "file": "max_ac_freq_mhz",
+          "entriesDynamic": "freqcache"
+        },
+        {
+          "type": "combo",
+          "key": "max_bat_freq_mhz",
+          "label": "Max Battery CPU Freq (MHz)",
+          "hint": "Steps cached from cpuinfo",
+          "file": "max_bat_freq_mhz",
+          "entriesDynamic": "freqcache"
+        },
+        {
+          "type": "slider",
+          "key": "fire_delay",
+          "label": "Waiting Time (s)",
+          "hint": "Delay before the new limits apply",
+          "file": "fire_delay",
+          "min": 2,
+          "max": 30,
+          "step": 1
+        },
+        {
+          "type": "button",
+          "key": "power_fire",
+          "label": "Apply / Reload",
+          "hint": "Bumps fire_count so the watcher re-applies",
+          "apply": {
+            "script": "qk_settings",
+            "arg": "power_fire"
+          }
+        }
+      ]
+    }
+  ]
+}

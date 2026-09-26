@@ -1,0 +1,40 @@
+[package]
+name = "sp"
+version = "0.1.0"
+edition = "2021"
+description = "GPU-accelerated Wayland splash screen / pop window."
+license = "MIT"
+
+[[bin]]
+name = "sp"
+path = "src/main.rs"
+
+[dependencies]
+smithay-client-toolkit = { version = "0.21.1", default-features = false, features = ["calloop", "xkbcommon", "system"] }
+wayland-client = { version = "0.31.15", features = ["dlopen"] }
+wayland-egl = "0.32"
+egl = "0.1"
+glow = "0.16"
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+fontdb = { version = "0.24", features = ["fontconfig"] }
+ttf-parser = "0.25"
+libc = "0.2.158"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.dev]
+# Debug builds were shipping huge DWARF blobs; opt-level 1 keeps iteration
+# fast and runtime reasonable, and stripping keeps the deployed binary small.
+opt-level = 1
+strip = "debuginfo"
+
+[profile.release]
+# Shipped binary: opt-level "z" (the whole job is painting a few text quads
+# once — code size beats instruction count here), fat LTO, and
+# panic = "abort" which is safe because sp has no catch_unwind net anywhere
+# and tears the process down with process::exit on every error path.
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,4 @@
+-- restore_defaults — source gen_flags_master and glyphs/restore_defaults
+
+dofile(sources .. "/gen_flags_master")
+dofile(sources .. "/glyphs/restore_defaults")

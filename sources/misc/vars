@@ -1,0 +1,122 @@
+# -*- mode: sh -*-
+
+global_vars () {
+    SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
+    export u
+    p_ur=/home/persist-ur
+    p_rr=/home/persist-rr
+
+    p_user="${p_ur}/user"
+    p_root="${p_rr}/root"
+
+    u_ur=/home/user-ur
+    u_rr=/home/user-rr
+
+    u_user="${u_ur}/$u"
+    u_root="${u_rr}/root"
+    home_dir="/home/$u"
+    media_dir="/home/media"
+
+    c_ur=/home/common-ur
+    c_rr=/home/common-rr
+    c_user="${c_ur}/user"
+    c_root="${c_rr}/root"
+
+    config_dir="/home/$u/.config"
+    local_dir="/home/$u/.local"
+    cache_dir="/home/$u/.cache"
+    boss_bin="/tmp/boss-bins"
+    busy_box="/tmp/busybox/bin"
+    garbage="/tmp/garbage_$u"
+
+case $u in
+    (tw)    distro=opensuse; de=hypr ;;
+    (tx)    distro=debian;   de=xfce ;;
+    (arch)  distro=arch;     de=hypr ;;
+    (a1)    distro=arch;     de=kde  ;;
+    (gnt)   distro=gentoo;   de=hypr ;;
+esac
+
+export SCRIPT_DIR="$SCRIPT_DIR"
+export PATH="$boss_bin:$PATH:$busy_box"
+
+}
+
+
+none_root_vars () {
+    u="$USER"
+    path=("$HOME"/.config/*/sources)
+    d_id="${path[0]#$HOME/.config/}"
+    d_id="${d_id%/sources}"
+    export d_id
+    export dots="/home/$u/.config/${d_id}"
+    global_vars
+    export PATH="$HOME/.cargo/target/debug:$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$HOME/.pixi/bin:$PATH"
+    HISTSIZE=10000
+    HISTFILESIZE=20000
+
+      [[ -n "$BASH_VERSION" ]] && {
+          shopt -s histappend
+          PROMPT_COMMAND="history -a; ${PROMPT_COMMAND:-}"
+      }
+
+      [[ -n "$ZSH_VERSION" ]] && {
+          setopt APPEND_HISTORY
+          setopt INC_APPEND_HISTORY
+          setopt SHARE_HISTORY
+          SAVEHIST=20000
+      }
+
+      link_boot_script() {
+          mkdir -p /acc/common/c-user/$d_id
+          [[ -L /acc/common/misc ]] && rm -f /acc/common/misc
+          ln -sr /acc/common/c-user/$d_id/sources/misc /acc/common/misc
+      }
+      [[ -e /acc/common/misc ]] || link_boot_script
+
+
+    rsync_flag="-cax --progress --inplace --fsync --delete-before --no-whole-file"
+    . "$SCRIPT_DIR/common"
+    [[ -f "$SCRIPT_DIR/$distro" ]] && . "$SCRIPT_DIR/$distro"
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+
+    pat_file="/tmp/pat_${USER}"
+    [[ -e $pat_file ]] || {
+        echo "$(<$HOME/Documents/pat)" > $pat_file
+        chmod 600 $pat_file
+    }
+    export pat=$(<$pat_file)
+
+    [[ -e ~/.gitconfig ]] || {
+        echo "[user]
+        name = Ezone Solutions
+        email = ezonesolutions22@gmail.com" > ~/.gitconfig
+    }
+    [[ -f "$HOME/.config/google-chrome/Local State" ]] || {
+        [[ -e $HOME/.config/google-chrome ]] || mkdir -p $HOME/.config/google-chrome
+        cp "$p_ur/Local State" "$HOME/.config/google-chrome/Local State"
+        > "$HOME/.config/google-chrome/First Run"
+    }
+    . "$HOME/.cargo/env"
+}
+
+root_vars () {
+    local user_options_pattern="(tw|tx|a1|arch|gnt|mc|debian|leap)"
+    local shell_pattern="(bash|sh|zsh)"
+    while IFS=: read -r name password uid gid info home shell; do
+        if [[ "$name" != "root" ]] && [[ "$name" =~ $user_options_pattern ]] && [[ "$shell" =~ $shell_pattern ]]; then
+            u="$name"
+            echo "u=$u"
+            break
+        fi
+    done < /etc/passwd
+    global_vars
+}
+
+if (( EUID == 0 )); then
+    root_vars
+else
+    none_root_vars
+fi
+. "$SCRIPT_DIR/functions"

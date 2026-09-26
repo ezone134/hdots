@@ -1,0 +1,69 @@
+(
+    // water card — daily hydration tracker, fully declarative.
+    //
+    // Geometry of record (draw_water_card):
+    //   header pad 12 · body top = y + 24 · body_h = card_h − 24 − 38
+    //   r = (body_h / 2).clamp(20, 34) → the `Half` fit, offset 62 (= 24 + 38)
+    //   dot 4px from r ≥ 26 (card_h ≥ 114) else 3.5px · cx = card center
+    //   cy = body top + body_h/2 = y + 24 + (card_h − 62)/2
+    //   hero at cy − 6 (14px, else 12px) + "of N glasses" caption at cy + 8
+    //   − / + glass buttons: 46×22, 6px apart, 10px above the card bottom
+    items: [
+        Header(title: "Water", glyph: Some("\u{e430}"), meta: Some("{water_meta}"), pad: 12.0),
+        Ring(
+            name: "water_frac",
+            max: 1.0,
+            cx: 0.0,
+            cy: -7.0,
+            center_x: true,
+            cy_pct: 0.5,
+            fit: Some(Half(offset: 62.0, min: 20.0, max: 34.0)),
+            dot_ladder: [(26.0, 4.0), (0.0, 3.5)],
+            fill: value("water_ring_ink"),
+            track: value("water_dim"),
+        ),
+        Text(
+            x: 0.0, y: -13.0, w: 120.0, center: true, cy_pct: 0.5,
+            text: "{water_hero}", font_size: 14.0,
+            font: display, weight: medium,
+            color: Some(value("water_hero_ink")),
+            size_ladder: [(114.0, 14.0), (0.0, 12.0)],
+        ),
+        Text(
+            x: 0.0, y: 1.0, w: 120.0, center: true, cy_pct: 0.5,
+            text: "{water_goal_txt}", font_size: 7.5,
+            font: ui, weight: regular, color: Some(fg3),
+        ),
+        // the − / + glass pair, centered on the card 10px above its bottom
+        Row(
+            x: 0.0, y: 10.0, w: 0.0, h: 22.0,
+            bottom: true,
+            spacing: 12.0,
+            halign: center,
+            items: [
+                Hit(
+                    x: 0.0, y: 0.0, w: 46.0, h: 22.0, r: 6.0,
+                    key: 31301,
+                    text: "\u{2212}",
+                    center: true,
+                    dy: 6.25,
+                    font_size: 9.5,
+                    font: ui,
+                    color: Some(fg),
+                    surface: Some(value("water_dec_bg")),
+                ),
+                Hit(
+                    x: 0.0, y: 0.0, w: 46.0, h: 22.0, r: 6.0,
+                    key: 31300,
+                    text: "+ glass",
+                    center: true,
+                    dy: 6.25,
+                    font_size: 9.5,
+                    font: ui,
+                    color: Some(acc),
+                    surface: Some(value("water_inc_bg")),
+                ),
+            ],
+        ),
+    ],
+)

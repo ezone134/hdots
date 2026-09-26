@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cursor
+Comment=AI-powered code editor built on VS Code
+Exec=cursor --no-sandbox %U
+Icon=cursor
+Type=Application
+Categories=Development;IDE;
+StartupNotify=true
+StartupWMClass=Cursor
+MimeType=x-scheme-handler/cursor;text/plain;inode/directory;
