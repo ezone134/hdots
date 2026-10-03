@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+-- helper hypr_idle_lock_conf_gen
+dofile(sources .. "/hypridle_vars")
+dofile(sources .. "/expand_gen_body")
+expand_gen(templates .. "/hypr/hypridle.conf", rconfig .. "/hypr/hypridle.conf")

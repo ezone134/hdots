@@ -1,0 +1,85 @@
+(
+    // weather card — fully declarative (zero Ink), two panes behind the usual
+    // pagination rule. Pane 0 is the current conditions: the condition glyph
+    // and the temperature as a centered PAIR (the temp's x is the measured
+    // centering of glyph+temp, so it rides `x`), the description, the city
+    // and a bottom detail line. Pane 1 is the 7-day lookahead as a `Rows`
+    // list (glyph / weekday / rain % / right-aligned mono high-low) whose row
+    // count AND top are the drawer's own height arithmetic, published as a
+    // pre-clamped row list + a `y` anchor.
+    //
+    // The squat card (h < 60) collapses to the drawer's one dense line, and a
+    // card with no data yet keeps its centered "waiting…" placeholder.
+    items: [
+        // ── pane 0: current conditions ──
+        Text(
+            x: 0.0, y: 16.0, center_x: true,
+            text: "{wx_glyph}", font_size: 20.0, icon: true, color: fg,
+            visible: "wx_pane_0",
+        ),
+        Text(
+            x: "wx_temp_x", y: 16.0,
+            text: "{wx_temp}", font_size: 20.0,
+            font: display, weight: medium, color: fg,
+            visible: "wx_pane_0",
+        ),
+        Text(
+            x: 0.0, y: 48.0, center_x: true,
+            text: "{wx_desc}", font_size: 11.0, color: fg2,
+            visible: "wx_pane_0",
+        ),
+        Text(
+            x: 0.0, y: 66.0, center_x: true,
+            text: "{wx_city_text}", font_size: 9.5, color: fg3,
+            visible: "wx_pane0_city",
+        ),
+        // the drawer's detail line rides 26 px above the bottom, and only on a
+        // card tall enough for it (`h >= s(100)`) with something to say — both
+        // halves ride one published Toggle
+        Text(
+            x: 0.0, y: 26.0, center_x: true, bottom: true,
+            text: "{wx_detail_text}", font_size: 9.5, color: fg2,
+            visible: "wx_pane0_detail",
+        ),
+
+        // ── pane 1: the 7-day lookahead ──
+        Rows(
+            name: "wx_fc_rows",
+            y: "wx_rows_y",
+            row_h: 24.0,
+            pad: 0.0,
+            row_dy: 4.8,
+            visible: "wx_pane_1",
+            cols: [
+                // the condition glyph, then the weekday, then the rain chance
+                (x: 14.0, size: 12.0, icon: true, color: fg2),
+                (x: 40.0, size: 9.5, color: fg),
+                (x: 110.0, size: 9.0, color: fg2),
+                // the high/low pair, mono, right-anchored 14 px in
+                (x: 0.0, edge: 14.0, right: true, font: mono, size: 9.5, color: fg),
+            ],
+        ),
+
+        // ── the squat card (h < 60): one dense line, nothing else ──
+        Text(
+            x: 0.0, y: -8.0, center_x: true, center_y: true,
+            text: "{wx_squat_text}", font_size: 13.0, icon: true, color: fg,
+            visible: "wx_squat",
+        ),
+        // ── no data yet: the centered placeholder ──
+        Text(
+            x: 0.0, y: -8.0, center_x: true, center_y: true,
+            // ICON_SUNNY \u{f042} — the drawer's own no-data glyph
+            text: "\u{f042}", font_size: 20.0, icon: true, color: fg2,
+            visible: "wx_none",
+        ),
+        Text(
+            x: 0.0, y: 16.0, center_x: true, center_y: true,
+            text: "waiting…", font_size: 9.5, color: fg2,
+            visible: "wx_none",
+        ),
+
+        // ── pagination dots (one per pane, active = accent, hover-gated) ──
+        Dots(active: "wx_pane", when: "wx_hover", dy: 3.5, step: 7.0, panes: 2),
+    ],
+)

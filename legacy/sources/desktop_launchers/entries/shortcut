@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Keyboard Shortcuts
+GenericName=Hotkey Reference
+Comment=View system keybindings and shortcuts
+Exec=quickshell ipc call panel keybinds
+Icon=preferences-desktop-keyboard-shortcuts
+Terminal=false
+Type=Application
+Categories=Utility;Documentation;System;
+StartupNotify=true
+Keywords=shortcuts;hotkeys;keys;binds;help;cheatsheet;hyprland;
+StartupWMClass=rofi

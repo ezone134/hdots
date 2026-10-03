@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# ws_main — Hyprland workspace CLI. Was: qs-ctl ws.
+set -u
+. "$hypr_sources/helpers/ws_body"
+ws_cmd "$@"

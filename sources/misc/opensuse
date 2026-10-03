@@ -1,0 +1,34 @@
+# -*- mode: sh -*-
+alias zp='zypper '
+alias zyp='zypper '
+alias zpr='zypper '
+alias zypp='zypper '
+alias ref='sudo zypper -vvv ref; sudo chown -R $u:$u /var/cache/zypp; up-zypp '
+alias dup='sudo zypper dup '
+alias up='sudo zypper up '
+alias ff='fastfetch '
+alias nf='neofetch '
+alias mm='master-menu '
+
+clean-deps () {
+	sudo zypper rm $(zypper packages --unneeded | grep ^i | cut -d '|' -f 3)
+}
+
+rmd () {
+	sudo zypper rm --clean-deps "$@"
+}
+
+chroot_dir () {
+dir="${1%/}"
+sudo mkdir -p $dir/proc $dir/sys $dir/dev $dir/run $dir/dev
+sudo mount --types proc /proc $dir/proc
+sudo mount --rbind /sys $dir/sys
+sudo mount --make-rslave $dir/sys
+sudo mount --rbind /dev $dir/dev
+sudo mount --make-rslave $dir/dev
+sudo mount --bind /run $dir/run
+sudo mount --make-slave $dir/run
+sudo chroot $dir /bin/bash
+source /etc/profile
+export PS1="(chroot) ${PS1}"
+}

@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- caps_lock_trigger — caps-lock OSD toggle (mirrors the bar vol/mic/mute OSD).
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/caps_body")
+caps_cmd()

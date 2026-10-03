@@ -1,0 +1,21 @@
+# -*- mode: sh -*-
+# shot_body — functions for the shot_main CLI: shot
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- screenshot -----------------------------------------------------------
+
+shot_cmd() {
+    local dir f
+    dir="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
+    mkdir -p "$dir"
+    f="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+    case "${1:-region}" in
+        full)   grim "$f";;
+        region) grim -g "$(slurp 2>/dev/null)" "$f";;
+        *)      err "shot: use full|region"; return 1;;
+    esac
+    # Fire the bar's screenshot toast (best-effort; no output on failure).
+    quickshell ipc call osd screenshot_toast "$(basename "$f")" 2>/dev/null || true
+    printf 'saved %s\n' "$f"
+}
+

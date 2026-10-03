@@ -1,0 +1,458 @@
+-- pulse_body -- libpulse FFI. Absolute volume + L/R balance, zero subprocesses.
+--
+-- WHY IT LOOKS LIKE THIS
+--   libpulse.so.0 exports the volume *setters* but not the getters (verified
+--   with nm -D + readelf on both the lib and what pactl itself imports).
+--   Reads therefore have to go through the pa_sink_info struct plus a callback;
+--   writes need nothing but the 132-byte pa_cvolume.
+--
+--   So: read once (at init) to seed $states2, and have everything else read
+--   the state file. Writes publish the value they just set and never read.
+--
+-- SCALE
+--   libpulse volume is a uint32 where 65536 == 100%. Everything above and
+--   below this file speaks integer percent (40, 50, 100, 150) to match the
+--   $states2/vol family, which is already integer percent.
+
+local ffi = require("ffi")
+
+-- PA_VOLUME_NORM; PA_CHANNELS_MAX is baked into the struct declarations below.
+local NORM = 65536
+local CHANNELS_MAX = 32
+
+if not _G.pulse_cdef then
+    ffi.cdef[[
+    typedef struct pa_context pa_context;
+    typedef struct pa_operation pa_operation;
+    typedef struct pa_mainloop pa_mainloop;
+
+    typedef uint32_t pa_volume_t;
+    typedef uint32_t pa_version_t;
+    typedef uint64_t pa_usec_t;
+    typedef struct pa_proplist pa_proplist;
+
+    /* The one struct writes need. channels==1 means a mono sink. */
+    typedef struct pa_cvolume {
+        uint8_t channels;
+        pa_volume_t values[32];
+    } pa_cvolume;
+
+    /* Used only to reach default_sink_name/default_source_name. The library
+       allocates this struct too, so the tail is deliberately omitted: we
+       never read past the two name fields, and a wrong sizeof here is
+       harmless (unlike pa_sink_info, which used to be caller-allocated). */
+    typedef struct pa_sample_spec {
+        int      format;
+        uint32_t rate;
+        uint8_t  channels;
+    } pa_sample_spec;
+
+    typedef struct pa_server_info {
+        const char       *user_name;
+        const char       *host_name;
+        const char       *server_version;
+        const char       *server_name;
+        pa_sample_spec    sample_spec;
+        const char       *default_sink_name;
+        const char       *default_source_name;
+    } pa_server_info;
+
+    /* Full pa_sink_info. Only `volume` is read, but the tail must be declared
+       so the library can write the whole struct into our allocation -- a
+       short struct here would be a heap overflow, hence the ABI gate below.
+       pa_source_info has an identical layout, so it is reused for sources.
+       Fields named spec_ and cm_ are the inlined pa_sample_spec and
+       pa_channel_map. */
+    /* Offsets verified against the real libpulse-devel headers for
+       PA 17.0 (volume@172, sizeof 416). Note there is NO leading `version`
+       field, and `mute` is a plain int at 304 -- mute is readable after all,
+       no proplist spelunking required. */
+    typedef struct pa_sink_info {
+        const char *name;
+        uint32_t index;
+        const char *description;
+        int      spec_format;
+        uint32_t spec_rate;
+        uint8_t  spec_channels;
+        int      cm_channels;
+        int      cmap[32];
+        uint32_t owner_module;
+        pa_cvolume volume;
+        int      mute;
+        uint32_t monitor_source;
+        const char *monitor_source_name;
+        pa_usec_t latency;
+        const char *driver;
+        uint32_t flags;
+        pa_proplist *proplist;
+        pa_usec_t configured_latency;
+        pa_volume_t base_volume;
+        int state;
+        uint32_t n_volume_steps;
+        uint32_t card;
+        uint32_t n_ports;
+        void **ports;
+        void *active_port;
+        uint8_t n_formats;
+        void **formats;
+    } pa_sink_info;
+
+    /* A PLAIN mainloop, driven by us from the Lua thread. The threaded one
+       dispatches callbacks on a background thread, which would call into the
+       Lua VM from a foreign thread -- so it is not an option here. */
+    pa_mainloop *pa_mainloop_new(void);
+    void *pa_mainloop_get_api(pa_mainloop *m);
+    int pa_mainloop_iterate(pa_mainloop *m, int block_timeout, int *retval);
+    int pa_mainloop_dispatch(pa_mainloop *m, int block_timeout);
+    void pa_mainloop_free(pa_mainloop *m);
+
+    typedef void (*pa_context_notify_cb_t)(pa_context *c, void *userdata);
+
+    pa_context *pa_context_new(void *mainloop_api, const char *name);
+    int pa_context_set_state_callback(pa_context *c, pa_context_notify_cb_t cb, void *ud);
+    int pa_context_connect(pa_context *c, const char *server, uint32_t flags, void *spawn_api);
+    int pa_context_get_state(pa_context *c);
+    int pa_context_errno(pa_context *c);
+    const char *pa_strerror(int error);
+    void pa_context_disconnect(pa_context *c);
+    void pa_context_unref(pa_context *c);
+
+    /* Reads. There is no getter FUNCTION for volume in this library, so the
+       only way in is the introspection struct. Signatures verified against
+       libpulse-devel 17.0 headers:
+         - NO trailing pa_operation** out-param; these RETURN pa_operation*
+         - the info callbacks take a LEADING pa_context* as arg 1
+         - eol==0 carries an item, eol!=0 means end of list
+       pa_sink_info_free is not exported, which is fine: these callers are
+       short-lived CLI processes. Values are copied out in the callback. */
+    typedef void (*pa_server_info_cb_t)(pa_context *c, const pa_server_info *i, void *ud);
+    typedef void (*pa_sink_info_cb_t)(pa_context *c, const pa_sink_info *i, int eol, void *ud);
+    typedef void (*pa_context_success_cb_t)(pa_context *c, int success, void *ud);
+
+    pa_operation *pa_context_get_server_info(pa_context *c, pa_server_info_cb_t cb, void *ud);
+    pa_operation *pa_context_get_sink_info_by_name(pa_context *c, const char *name,
+        pa_sink_info_cb_t cb, void *ud);
+    pa_operation *pa_context_get_source_info_by_name(pa_context *c, const char *name,
+        pa_sink_info_cb_t cb, void *ud);
+    /* Writes -- callback may be NULL (fire and forget) */
+    pa_operation *pa_context_set_sink_volume_by_name(pa_context *c, const char *name,
+        const pa_cvolume *v, pa_context_success_cb_t cb, void *ud);
+    pa_operation *pa_context_set_source_volume_by_name(pa_context *c, const char *name,
+        const pa_cvolume *v, pa_context_success_cb_t cb, void *ud);
+    pa_operation *pa_context_set_sink_mute_by_name(pa_context *c, const char *name,
+        int mute, pa_context_success_cb_t cb, void *ud);
+    pa_operation *pa_context_set_source_mute_by_name(pa_context *c, const char *name,
+        int mute, pa_context_success_cb_t cb, void *ud);
+
+    int pa_operation_get_state(pa_operation *o);
+    const char *pa_proplist_gets(pa_proplist *pl, const char *key);
+    ]]
+    _G.pulse_cdef = true
+end
+
+-- cdata that must outlive the call that created it (FFI callbacks get GC'd
+-- otherwise, which turns into a crash inside libpulse, not a Lua error).
+local _keep = {}
+local _C
+local _ctx, _ml
+local _lib
+
+-- Fire a write operation and pump the mainloop until the server's success
+-- callback reports back. A fixed sleep is not enough: these are async
+-- round trips over the pulse socket, and a CLI that exits with the queue
+-- still pending silently loses the write. Returns true/false, ok.
+local function _await(issue)
+    local C = _lib()
+    local done, ok = false, false
+    local cb = ffi.cast("pa_context_success_cb_t", function(_, success, _)
+        ok = (tonumber(success) == 1)
+        done = true
+    end)
+    _keep.ok = cb
+    issue(cb)
+    for _ = 1, 400 do
+        C.pa_mainloop_iterate(_ml, 10, nil)
+        if done then
+            if ok then return true end
+            -- success==0 means the server refused the request; the reason is
+            -- only in errno, so capture it here while the context is live
+            return false, ffi.string(C.pa_strerror(C.pa_context_errno(_ctx)))
+        end
+    end
+    return false, "timed out waiting for server"
+end
+local _ts
+
+_lib = function()
+    if _C then return _C end
+    _C = ffi.load("libpulse.so.0")
+
+    -- ABI gate. If the real struct disagrees, every pa_sink_info allocation
+    -- we hand the library would be too small. Refuse instead of corrupting.
+    local sz, off, cv = ffi.sizeof("pa_sink_info"),
+        ffi.offsetof("pa_sink_info", "volume"), ffi.sizeof("pa_cvolume")
+    if sz ~= 416 or off ~= 172 or cv ~= 132 then
+        _C = nil
+        error(string.format(
+            "pulse_body: libpulse ABI mismatch (pa_sink_info=%d vol@%d pa_cvolume=%d)",
+            sz, off, cv))
+    end
+    return _C
+end
+
+-- pa_mainloop_iterate() is the only legal way to drive this loop, and it is
+-- what flips it into STATE_POLLED (pa_mainloop_dispatch asserts that state
+-- and aborts otherwise). It only reports 1 once a context is attached to the
+-- loop, so it must be called after pa_context_new/connect, never before.
+
+-- PA_CONTEXT_* : UNCONNECTED 0 CONNECTING 1 AUTHORIZING 2 SETTING_NAME 3
+--                READY 4 FAILED 5 TERMINATED 6
+local CTX_READY, CTX_FAILED = 4, 5
+-- PA_OPERATION_* : RUNNING 0 DONE 1 CANCELLED 2 FAILED 4
+local OP_DONE, OP_FAILED = 1, 4
+
+function pulse_to_raw(pct)
+    return math.floor(tonumber(pct) * NORM / 100 + 0.5)
+end
+
+function pulse_to_pct(raw)
+    return math.floor(tonumber(raw) * 100 / NORM + 0.5)
+end
+
+local function _context()
+    if _ctx then return _ctx, nil end
+    local C = _lib()
+    _ml = C.pa_mainloop_new()
+    if _ml == nil then return nil, "pa_mainloop_new failed" end
+    _ctx = C.pa_context_new(C.pa_mainloop_get_api(_ml), "pulse_body")
+    if _ctx == nil then return nil, "pa_context_new failed" end
+    -- do_call() asserts c->callback is non-NULL, so this no-op is mandatory.
+    local scb = ffi.cast("pa_context_notify_cb_t", function() end)
+    _keep.scb = scb
+    C.pa_context_set_state_callback(_ctx, scb, nil)
+    if C.pa_context_connect(_ctx, nil, 0, nil) < 0 then
+        return nil, "connect: " .. ffi.string(C.pa_strerror(C.pa_context_errno(_ctx)))
+    end
+    local st
+    for _ = 1, 200 do
+        C.pa_mainloop_iterate(_ml, 20, nil)
+        st = C.pa_context_get_state(_ctx)
+        if st == CTX_READY then return _ctx, nil end
+        if st == CTX_FAILED then
+            return nil, "server refused: " ..
+                ffi.string(C.pa_strerror(C.pa_context_errno(_ctx)))
+        end
+    end
+    return nil, "context never became ready (state " .. tostring(st) .. ")"
+end
+
+-- a NULL cdata pointer is NOT nil in LuaJIT, so ffi.NULL has to be tested
+-- separately or these dereference a null and segfault
+local function live(p) return p ~= nil and p ~= ffi.NULL end
+
+-- libpulse knows nothing about "@DEFAULT_SINK@" -- that is a pactl
+-- convention, and passing it to get_*_info_by_name simply fails. The real
+-- default device name only exists in pa_server_info. Cached because the
+-- default cannot change under a running server.
+local _default = {}
+
+-- name,err for the real device behind "sink"/"source".
+function pulse_name(kind, want)
+    -- An explicit device name must be honoured verbatim, otherwise typos
+    -- (and any name the server does not know) silently get redirected to the
+    -- default device and the caller sees a bogus success. Only fall back to
+    -- the default when no name was given.
+    if want ~= nil and want ~= "" then
+        if want == "@DEFAULT_SINK@" or want == "@DEFAULT_SOURCE@" then
+            -- handled by the fallback below
+        else
+            return want, nil
+        end
+    end
+    local cached = _default[kind]
+    if cached then return cached, nil end
+    local C = _lib()
+    local c, err = _context()
+    if not c then return nil, err end
+
+    local out, done = nil, false
+    local cb = ffi.cast("pa_server_info_cb_t", function(_, i, _)
+        if live(i) then
+            local f = (kind == "source") and i.default_source_name
+                or i.default_sink_name
+            if live(f) then
+                local n = ffi.string(f)
+                -- guard against a mis-declared struct: a device name never
+                -- contains control characters or spaces
+                if n ~= "" and not n:find("[%c%s]") then out = n end
+            end
+        end
+        done = true
+    end)
+    _keep.scb2 = cb
+    -- return value is unreliable in this build; rely on the callback flag
+    C.pa_context_get_server_info(c, cb, nil)
+    for _ = 1, 200 do
+        C.pa_mainloop_iterate(_ml, 20, nil)
+        if done then break end
+    end
+    if out == nil then return nil, "no default " .. tostring(kind) end
+    _default[kind] = out
+    return out, nil
+end
+
+-- read: left/right percent + channel count. nil,err on failure.
+function pulse_read(kind)
+    local C = _lib()
+    local c, err = _context()
+    if not c then return nil, err end
+
+    local out, done = nil, false
+    local cb = ffi.cast("pa_sink_info_cb_t", function(_, i, eol, _)
+        -- the struct is library-owned and released after eol~=0, so every
+        -- value we keep has to be copied out here
+        if eol == 0 and live(i) then
+            local v = i.volume
+            local n = tonumber(v.channels)
+            if n ~= nil and n >= 1 then
+                local l = pulse_to_pct(v.values[0])
+                out = {
+                    l = l,
+                    r = n >= 2 and pulse_to_pct(v.values[1]) or l,
+                    channels = n,
+                    name = live(i.name) and ffi.string(i.name) or "?",
+                }
+                out.muted = (tonumber(i.mute) == 1) and 1 or 0
+            end
+        elseif eol ~= 0 then
+            done = true
+        end
+    end)
+    _keep.cb = cb
+
+    local fn = (kind == "source") and C.pa_context_get_source_info_by_name
+        or C.pa_context_get_sink_info_by_name
+    -- NOTE: the int this returns is garbage in this libpulse (a 17.0 build
+    -- whose wrappers do not set eax), so it must NOT be used as a status
+    -- code -- doing so rejects calls that actually succeeded. Success is
+    -- detected from the callback's eol flag instead.
+    fn(c, pulse_name(kind), cb, nil)
+
+    for _ = 1, 200 do
+        C.pa_mainloop_iterate(_ml, 20, nil)
+        if done then break end
+    end
+    if not done then return nil, "read timed out" end
+    if out == nil then return nil, "no device named " .. pulse_name(kind) end
+    return out
+end
+
+-- write: absolute left/right percent. Refuses to touch channels we did not
+-- see, so a mono sink can never be handed a value[1].
+function pulse_set(kind, l, r, dev)
+    local C = _lib()
+    local c, err = _context()
+    if not c then return false, err end
+
+    local name = pulse_name(kind, dev)
+    local cur = pulse_read(kind)
+    if not cur then return false, cur end
+    if cur.channels < 2 and r ~= nil and tonumber(r) ~= tonumber(l) then
+        return false, "sink is mono (" .. tostring(cur.channels) ..
+            "ch) -- left/right balance not applicable"
+    end
+
+    local cv = ffi.new("pa_cvolume")
+    cv.channels = cur.channels
+    cv.values[0] = pulse_to_raw(l)
+    if cur.channels >= 2 then cv.values[1] = pulse_to_raw(r or l) end
+
+    local fn = (kind == "source") and C.pa_context_set_source_volume_by_name
+        or C.pa_context_set_sink_volume_by_name
+    -- the returned pa_operation* is unreliable in this build, so completion
+    -- is taken from the success callback instead
+    local ok, why = _await(function(cb) fn(c, name, cv, cb, nil) end)
+    if not ok then return false, "set_volume: " .. tostring(why) end
+    return true, { l = tonumber(l), r = tonumber(r or l), channels = cur.channels }
+end
+
+-- balance: 0 = hard left (left speaker silent, sound from the right),
+-- 50 = centre, 100 = hard right. `centre` is the level both sides get at
+-- the midpoint, in percent.
+function pulse_balance(kind, bal, centre, dev)
+    bal = math.max(0, math.min(100, tonumber(bal)))
+    centre = tonumber(centre)
+    local l, r
+    if bal <= 50 then
+        r = centre
+        l = math.floor(centre * bal / 50 + 0.5)
+    else
+        l = centre
+        r = math.floor(centre * (100 - bal) / 50 + 0.5)
+    end
+    return pulse_set(kind, l, r, dev)
+end
+
+function pulse_mute(kind, on, dev)
+    local C = _lib()
+    local c, err = _context()
+    if not c then return false, err end
+    local fn = (kind == "source") and C.pa_context_set_source_mute_by_name
+        or C.pa_context_set_sink_mute_by_name
+    local ok, why = _await(function(cb) fn(c, pulse_name(kind, dev), on and 1 or 0, cb, nil) end)
+    if not ok then return false, "set_mute: " .. tostring(why) end
+    return true
+end
+
+-- Read both devices and return a table for the caller to publish to $states2.
+function pulse_seed()
+    local out = {}
+    for _, kind in ipairs({ "sink", "source" }) do
+        local v, err = pulse_read(kind)
+        out[kind] = v and { l = v.l, r = v.r, channels = v.channels, muted = v.muted,
+            name = v.name }
+            or nil
+        out[kind .. "_err"] = err
+    end
+    return out
+end
+
+-- One-time init: read the live devices and write the $states2 files the
+-- hot path reads from. Returns true, or false plus a reason.
+function pulse_seed_states()
+    local s = pulse_seed()
+    if not s.sink then return false, "sink: " .. tostring(s.sink_err) end
+    if not s.source then return false, "source: " .. tostring(s.source_err) end
+
+    local function frac(v) return string.format("%d.%02d", v, 0) end
+
+    tf(states2 .. "/vol", tostring(s.sink.l))
+    tf(states2 .. "/vol_f", frac(s.sink.l))
+    tf(states2 .. "/vol_left", tostring(s.sink.l))
+    tf(states2 .. "/vol_right", tostring(s.sink.r))
+    tf(states2 .. "/vol_muted", tostring(s.sink.muted))
+    tf(states2 .. "/vol_channels", tostring(s.sink.channels))
+    tf(states2 .. "/vol_device", s.sink.name or "")
+
+    tf(states2 .. "/mic", tostring(s.source.l))
+    tf(states2 .. "/mic_f", frac(s.source.l))
+    tf(states2 .. "/mic_left", tostring(s.source.l))
+    tf(states2 .. "/mic_right", tostring(s.source.r))
+    tf(states2 .. "/mic_muted", tostring(s.source.muted))
+    tf(states2 .. "/mic_channels", tostring(s.source.channels))
+    tf(states2 .. "/mic_device", s.source.name or "")
+
+    return true
+end
+
+-- Push state-file values back to the server. l/r are integers (percent);
+-- nil means "keep whatever the other side is". Returns true/false, err.
+function pulse_apply(kind, l, r, muted)
+    if muted ~= nil then
+        local ok, err = pulse_mute(kind, muted and true or false)
+        if not ok then return false, err end
+    end
+    if l == nil then return true end
+    if r == nil then r = l end
+    return pulse_set(kind, l, r)
+end

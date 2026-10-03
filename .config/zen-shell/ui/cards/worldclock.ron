@@ -1,0 +1,112 @@
+(
+    // world clock card — fully declarative (zero Ink). The pinned-city list and
+    // the inline zone search are BOTH `Rows`; the `+ add city` row and the
+    // search's input plate are ordinary items. The only Rust left on this card
+    // is the typed buffer and the two state toggles that open/close the search.
+    //
+    // Geometry of record (draw_worldclock_card): 12 px pad, a 24 px header,
+    // rows of 26 px starting 4 px under it. A row may not cross `card_h − 34`,
+    // because the LAST slot belongs to `+ add city` — that row's own top is
+    // `y0 + min(n, max_rows−1)·row_h`, which is the list's arithmetic on the
+    // card's height, so it rides `y` (a binding) and a gate rather than a literal.
+    //
+    // The search is the same shape: a 24 px input plate under the header, then
+    // match rows 30 px under it, each a hover plate 2 px shorter than its row
+    // and keyed `WORLDCLOCK_PICK_BASE + i` — the keys the resident handler
+    // resolves through the same pure `worldclock_matches` the rows came from.
+    items: [
+        Header(title: "World clock", glyph: "\u{f017}", meta: "{wc_meta}", pad: 12.0),
+        Rows(
+            name: "worldclock_rows",
+            y: 28.0,
+            row_h: 26.0,
+            pad: 12.0,
+            row_dy: 1.0,
+            cols: [
+                // day/night glyph
+                (x: 0.0, size: 10.0, icon: true),
+                // city, 14-char cap (the drawer's own `chars().take(14)`)
+                (x: 16.0, size: 9.5, max_chars: 14),
+                // HH:MM in mono, right-anchored 34 px before the right pad
+                (x: 0.0, size: 9.5, right: true, edge: 46.0, font: mono),
+                // the offset-vs-local chip, right-anchored at the pad
+                (x: 0.0, size: 7.5, right: true, edge: 12.0, color: fg3, dy: 2.0),
+            ],
+            // the hover ✕: the drawer's own reveal at `card_w − 12 − 58`,
+            // its region 2 px above the row so a 26 px row is easy to hit
+            // the hover ✕: the glyph the drawer inʟ lines up 56 px before
+            // the pad, the click box 2 px further out and 2 px higher, and the
+            // box is the ROW's height, not the glyph's — which is why the glyph
+            // and the region carry their own numbers here
+            del_base: 31_000,
+            del_pad: 68.0,
+            del_dy: 1.0,
+            del_rx: 70.0,
+            del_ry: 2.0,
+            del_rh: 0.0,
+            // revealed already red: the drawer paints one constant, so the
+            // colour does not change under the pointer
+            del_color: danger,
+            bottom: 34.0,
+            // the search takes the card's whole body
+            visible: "wc_idle",
+        ),
+
+        // ── `+ add city`: the list's last free slot, or nothing ──
+        Text(
+            x: 12.0, y: "wc_add_y", dy: 1.0,
+            text: "\u{f067}", icon: true, font_size: 10.0,
+            color: value("wc_add_ink"), visible: "wc_add_on",
+        ),
+        Text(
+            x: 28.0, y: "wc_add_y", dy: 2.0,
+            text: "add city", font_size: 8.5,
+            color: value("wc_add_ink"), visible: "wc_add_on",
+        ),
+        Hit(
+            x: 12.0, y: "wc_add_y",
+            w: -12.0, h: 26.0, key: 31_100,
+            visible: "wc_add_on",
+        ),
+
+        // ── the inline search ──
+        Surface(
+            x: 12.0, y: 28.0, w: -12.0, h: 24.0, r: 6.0,
+            color: hover, visible: "wc_srch",
+        ),
+        // the buffer, dim until something is typed (the placeholder hint)
+        Text(
+            x: 20.0, y: 34.0, text: "{wc_buf}", font_size: 9.5,
+            color: value("wc_buf_ink"), visible: "wc_srch",
+        ),
+        Text(
+            x: 20.0, y: 35.0, right: true, text: "esc", font_size: 7.5,
+            color: fg3, visible: "wc_srch",
+        ),
+        // the matches: a hover plate 2 px shorter than its row, the city
+        // 4 px in, the tz path right-anchored 4 px inside the pad
+        Rows(
+            name: "wc_matches",
+            y: 58.0,
+            row_h: 24.0,
+            pad: 12.0,
+            row_dy: 4.0,
+            r: 5.0,
+            hover_surface: hover_hl,
+            surface_dh: -2.0,
+            // no `key_base`: every match row carries its OWN key from the
+            // value, because the keys are the match list's (`PICK_BASE + i`),
+            // and a base here would be a second, competing source for them
+            cols: [
+                (x: 4.0, size: 9.0, max_chars: 16),
+                (x: 0.0, size: 7.5, right: true, edge: 16.0, dy: 5.0, color: fg3),
+            ],
+            // a needle shorter than two characters is not a search yet
+            visible: "wc_two",
+        ),
+        Text(
+            x: 0.0, y: 64.0, center_x: true, text: "no matches", font_size: 8.5,
+            color: fg3, visible: "wc_none",
+        ),
+    ],
+)

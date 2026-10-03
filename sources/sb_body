@@ -1,0 +1,24 @@
+#!/usr/bin/env luajit
+-- helper sync_back
+dofile(sources .. "/utils")
+
+if is_dir(states) and is_dir(dots .. "/states") and is_dir(dots .. "/states_r") then
+    local s_val = flagf_get(states2 .. "/s")
+    tf(states .. "/s", s_val)
+    run("rsync -crv --inplace --no-whole-file --delete-before " .. states .. "/ " .. dots .. "/states/")
+    run("rsync -crv --inplace --no-whole-file " .. r_daemon .. "/states/ " .. dots .. "/states_r/")
+
+    rcache_dir = rcache .. "/accents/"
+
+                if flagf_get(states .. "/save_shades") == "1" then
+                    local pcache_dir = dots .. "/pcache/accents/"
+                    if not is_dir(pcache_dir) then
+                        mkdir_p(pcache_dir)
+                    end
+                    run("rsync -crv --inplace --no-whole-file --delete-before " .. rcache_dir .. " " .. pcache_dir)
+                end
+end
+
+if command_v("init_last_run") then
+    run("init_last_run sync_back")
+end

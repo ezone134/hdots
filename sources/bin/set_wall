@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- set_wall — apply a wallpaper (args forwarded to the body).
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/set_wall_body")
+set_wall_body(unpack(arg))

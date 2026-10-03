@@ -1,0 +1,25 @@
+# -*- mode: sh -*-
+#
+# this script will only be called by theme body, not hypr-init
+m=$(<$states2/m)
+s=$(<$states2/s)
+bg=$(<$states2/bg)
+fg=$(<$states2/fg)
+bg8=$(<$states2/bg8)
+fg8=$(<$states2/fg8)
+border8=$(<$states2/border8)
+border=$(<$states2/border)
+acc8=$(<$states2/acc8)
+acc=$(<$states2/acc)
+acc_ec=$(<$states2/acc_ec)
+fg=$(<$states2/fg)
+sfg=$(<$states2/sfg)
+bg2=$(<$states2/bg2) # this is accented bg
+useful_red=$(<$states2/ured)
+rofi_font_size=$(<$states/rofi_font_size_${s}) || rofi_font_size=13
+rofi_font=$(<$states/rofi_font_${s}) || rofi_font=Roboto
+# this doesnot contan hash #
+bg_1=${bg#\#}
+fg_1=${fg#\#}
+
+bg_alpha=$(<$states/bg_alpha_${s})

@@ -1,0 +1,91 @@
+(
+    // wifi card — fully declarative (zero `Ink`).
+    //
+    // Geometry of record (draw_wifi_card): 12 px pad, a 24 px header, rows of
+    // 19 px starting 2 px under it, and the drawer's `floor((h − 24 − 4) / 19)`
+    // cap expressed as `bottom: 4.0`. Each row is the four-bar signal
+    // staircase 4 px in, the SSID 27 px in at 9.5 (capped at 22 characters),
+    // a padlock 6 px past the SSID's measured end, and the ✓ / … state
+    // right-anchored at the 12 px inset.
+    //
+    // Two new cell kinds carry the staircase and the padlock: `bars`
+    // (`SegmentsSpec` — `count` bars climbing from a shared baseline) and
+    // `suffix` (a glyph hung `gap` px past the cell's own measured end, read
+    // from another column of the same row, so an open network simply leaves
+    // it empty). One deliberate difference from the drawer: a row's wash is
+    // 19 px tall here against the drawer's 17 (the engine's row surface has no
+    // 1 px vertical inset).
+    items: [
+        Header(
+            title: "Wi-Fi",
+            glyph: "\u{f1eb}",
+            glyph_color: acc,
+            pad: 12.0,
+        ),
+        Text(
+            // the drawer's own meta metrics (y 9, 8.5) rather than the
+            // Header's canonical 11 / 8.5
+            x: 12.0, y: 9.0, w: 0.0,
+            right: true,
+            text: "{wifi_meta}", font_size: 8.5, font: ui, weight: regular,
+            color: fg3,
+        ),
+        Rows(
+            name: "wifi_rows",
+            y: 26.0, row_h: 19.0,
+            pad: 12.0, row_dy: 1.5, r: 4.0,
+            bottom: 4.0,
+            hairline: true,
+            // no `hover_surface`: the drawer's wash chain (connected →
+            // acc_tint, else hovered → hover) rides each row's own `surface`,
+            // published per frame so a connected row keeps its tint under the
+            // pointer exactly like the Rust drawer
+            key_base: 14_000,
+            start: "wifi_scroll",
+            cols: [
+                // the signal staircase: 2 / 4.2 / 6.4 / 8.6 px bars standing
+                // on a baseline 7 px above the row's bottom, `floor(signal/25)`
+                // of them lit
+                SceneCol(
+                    x: 4.0,
+                    bars: SegmentsSpec(
+                        count: 4, max: 100.0,
+                        width: 2.5, gap: 2.0,
+                        height: 2.0, step: 2.2, radius: 0.5,
+                        base: 12.0,
+                        fill: acc, track: hover,
+                    ),
+                ),
+                // the SSID: accent when connected, 22-char cap, and the
+                // padlock 6 px past its measured end
+                SceneCol(
+                    x: 27.0, size: 9.5,
+                    max_chars: 22,
+                    suffix: SuffixSpec(glyph_col: 2, gap: 6.0, size: 8.0, color: fg3),
+                ),
+                // padlock source column — `hide` keeps it from drawing at the
+                // row's left edge; only the cell above's `suffix` reads it
+                SceneCol(x: 0.0, size: 8.0, icon: true, hide: true),
+                // the connected ✓, in the icon font
+                SceneCol(x: 0.0, w: 0.0, right: true, edge: 12.0, size: 9.0, dy: 2.0, icon: true),
+                // the connecting …, in the ui font (never both at once)
+                SceneCol(x: 0.0, w: 0.0, right: true, edge: 12.0, size: 10.0, dy: 2.0),
+            ],
+        ),
+        // the two empty states, centered 6 px above the card's middle
+        Text(
+            x: 0.0, y: -6.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "no networks — run a scan", font_size: 9.0, font: ui, weight: regular,
+            color: fg3,
+            visible: "wifi_empty_on",
+        ),
+        Text(
+            x: 0.0, y: -6.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "wi-fi off — enable in toggles", font_size: 9.0, font: ui, weight: regular,
+            color: fg3,
+            visible: "wifi_off",
+        ),
+    ],
+)

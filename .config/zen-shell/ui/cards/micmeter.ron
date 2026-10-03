@@ -1,0 +1,54 @@
+(
+    // micmeter card — fully declarative (zero `Ink`).
+    //
+    // Geometry of record (draw_micmeter_card): 12 px pad, 22 px header, an
+    // 8 px level bar at y 34 with its status caption 16 px lower, and a 22 px
+    // mute button whose bottom edge sits 12 px above the card's. The level
+    // bar and the button both inset 12 px on the left AND the right, so they
+    // declare `w: -12.0` (a negative span measures from the item's own `x`).
+    // The button's hit region keeps the drawer's own 3 px click halo.
+    items: [
+        Header(
+            title: "Mic",
+            glyph: "{mic_icon}",
+            meta: "{mic_meta}",
+            meta_mono: true,
+            pad: 12.0,
+        ),
+        // the level bar: `max: 1.0` because `mic_lvl` is already 0..1
+        // (muted publishes 0, the drawer's own level), and the fill ink clips
+        // to the red tip above 90% so clipping is visible without the fader
+        Bar(
+            x: 12.0, y: 34.0, w: -12.0, h: 8.0, r: 4.0,
+            value: "{mic_lvl}", max: 1.0,
+            fill: value("mic_bar_ink"), track: hover,
+        ),
+        Text(
+            x: 12.0, y: 50.0, w: 0.0,
+            text: "{mic_status}",
+            font_size: 9.0, font: ui, weight: regular,
+            color: value("mic_status_ink"),
+        ),
+        // the mute button: hover-aware fill + the glyph+label swap, both
+        // published by the shell (the drawer's one string, verbatim)
+        Surface(
+            x: 12.0, y: 12.0, w: -12.0, h: 22.0, r: 6.0, bottom: true,
+            color: value("mic_btn_fill"),
+        ),
+        Text(
+            // `bottom: true, y: 28` = the button's top + the drawer's 6 px
+            // label lift (12 + 22 − 6); `center_x` centers the string on the
+            // card's center line (the drawer's `ui::text_c`)
+            x: 0.0, y: 28.0, w: 0.0,
+            center_x: true, bottom: true,
+            text: "{mic_btn_label}", font_size: 9.0,
+            font: ui, weight: light, icon: true,
+            color: value("mic_btn_ink"),
+        ),
+        Hit(
+            // the drawer's 3 px halo: 3 px out on every side of the button
+            x: 9.0, y: 9.0, w: -9.0, h: 28.0, bottom: true,
+            key: 31_910,
+        ),
+    ],
+)

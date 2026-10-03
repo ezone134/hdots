@@ -1,0 +1,53 @@
+(
+    // alarms card — fully declarative (zero `Ink`).
+    //
+    // Geometry of record (draw_alarms_card): 12 px pad, a 24 px header, the
+    // composer as a 22 px pill at y 26 (radius 6) with its label 8 px in and
+    // 5 px down, and the list from y 50 on the same 24 px pitch. The drawer's
+    // `floor(((h - 2) - y0) / 24)` row cap is `bottom: 2.0` — no row's bottom
+    // edge may cross `card_h - 2`.
+    //
+    // The delete ✕ is the engine's hover-reveal `del_base` idiom. One
+    // deliberate difference from the drawer: the ✕ paints Fg while the ROW is
+    // hovered and only turns danger-red once the pointer is on the ✕ itself
+    // (`del_base + i`), the staged reveal every other `del_base` list uses.
+    items: [
+        Header(title: "Alarms", pad: 12.0),
+        Text(
+            // the drawer's own meta metrics (y 12, 9.0, fg) rather than the
+            // Header's canonical 11 / 8.5 / fg3
+            // `right: true` anchors the string's right edge at `card_w - x`,
+            // the drawer's `x + w - pad` (a right margin, not a box width)
+            x: 12.0, y: 12.0, w: 0.0,
+            right: true,
+            text: "{alarm_meta}", font_size: 9.0, font: ui, weight: regular,
+            color: fg,
+        ),
+        Hit(
+            // the composer: `hover_hl` while the input has focus, the quiet
+            // `hover` well otherwise — one published fill, the drawer's switch
+            x: 12.0, y: 26.0, w: -12.0, h: 22.0, r: 6.0,
+            surface: value("alarm_fill"),
+            key: 31_600,
+        ),
+        Text(
+            x: 20.0, y: 31.0, w: 0.0,
+            text: "{alarm_input}", font_size: 8.5, font: ui, weight: regular,
+            color: value("alarm_ink"),
+        ),
+        Rows(
+            name: "alarm_rows",
+            y: 50.0, row_h: 24.0, pad: 12.0, row_dy: 3.0,
+            bottom: 2.0, r: 0.0,
+            // ✕ at the 12 px pad + 14, 4 px into the row, 9.0, with the
+            // drawer's row pitch as its click height
+            del_base: 31_610, del_pad: 26.0, del_dy: 4.0, del_size: 9.0,
+            cols: [
+                (x: 0.0, font: mono, size: 10.0, color: acc),
+                // the drawer reserves 60 px on the right for the ✕ and takes
+                // `((w - 2·pad - 60) / 5.9)` chars — `truncate`'s exact mirror
+                (x: 50.0, size: 9.5, truncate: 60.0, color: fg),
+            ],
+        ),
+    ],
+)

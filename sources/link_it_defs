@@ -1,0 +1,29 @@
+-- link_it_defs — faithful Lua port of the bash symlink helpers.
+-- Mirrors legacy link_it_defs exactly: mkdir -p first, -ef same-file skip,
+-- symlink dst moved to /tmp/moved_deleted.$rnd, existing dst backed up,
+-- then ln -s src dst. NO rm -rf anywhere.
+
+function link_it_file_func(src, dst)
+    mkdir_p(dirname(src), dirname(dst))
+    if not is_file(src) then touch(src) end
+    if is_same_file(src, dst) then return true end
+    if is_symlink(dst) then
+        if not mv(dst, "/tmp/moved_deleted." .. tostring(rnd)) then rm(dst) end
+    end
+    if is_file(dst) then
+        mv(dst, dst .. ".bak." .. tostring(rnd))
+    end
+    return symlink(src, dst)
+end
+
+function link_it_dir_func(src, dst)
+    mkdir_p(src, dirname(dst))
+    if is_same_file(src, dst) then return true end
+    if is_symlink(dst) then
+        if not mv(dst, "/tmp/moved_deleted." .. tostring(rnd)) then rm(dst) end
+    end
+    if is_dir(dst) then
+        mv(dst, dst .. "." .. tostring(rnd))
+    end
+    return symlink(src, dst)
+end

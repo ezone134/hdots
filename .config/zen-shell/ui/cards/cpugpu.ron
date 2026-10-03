@@ -1,0 +1,46 @@
+(
+    // cpugpu card — fully declarative (zero `Ink`): a dual CPU/GPU history
+    // graph on the transparent card, with the two legend lines in the
+    // top-right corner ONLY on a wide card (the drawer's `w >= s(170)`
+    // branch, which also drops the plot to y+52). The line inks follow the
+    // mode ($states/m: d/l) through `cpugpu_cpu_ink` / `cpugpu_gpu_ink`.
+    items: [
+        // wide layout: colour dot + right-anchored CPU % at the top right,
+        // then the GPU row (dot only while a source exists — otherwise the
+        // "GPU n/a" caption takes its place)
+        When(
+            min_w: 170.0,
+            items: [
+                Surface(x: 52.0, y: 18.0, w: 8.0, h: 8.0, r: 2.0, right: true, color: value("cpugpu_cpu_ink")),
+                Text(x: 14.0, y: 15.0, w: 0.0, right: true, text: "{cpugpu_cpu}", font_size: 10.0, color: fg),
+                Surface(
+                    x: 52.0, y: 39.0, w: 8.0, h: 8.0, r: 2.0, right: true,
+                    color: value("cpugpu_gpu_ink"),
+                    visible: "cpugpu_gpu_live",
+                ),
+                Text(x: 14.0, y: 36.0, w: 0.0, right: true, text: "{cpugpu_gpu}", font_size: 10.0, color: fg),
+            ],
+        ),
+        // wide plot: GPU under CPU, 52 px down, stopping 14 above the bottom
+        When(
+            min_w: 170.0, min_h: 90.0,
+            items: [
+                Spark(name: "gpu_spark", x: 14.0, y: 52.0, w: -14.0, h: -14.0,
+                      color: value("cpugpu_gpu_ink"), max: 1.0, thickness: 2.0),
+                Spark(name: "cpu_spark", x: 14.0, y: 52.0, w: -14.0, h: -14.0,
+                      color: value("cpugpu_cpu_ink"), max: 1.0, thickness: 2.0),
+            ],
+        ),
+        // narrow plot: full-bleed from 12 px down (the drawer skips the graph
+        // entirely under 24 px of plot height → 50 px of card)
+        When(
+            max_w: 170.0, min_h: 50.0,
+            items: [
+                Spark(name: "gpu_spark", x: 14.0, y: 12.0, w: -14.0, h: -14.0,
+                      color: value("cpugpu_gpu_ink"), max: 1.0, thickness: 2.0),
+                Spark(name: "cpu_spark", x: 14.0, y: 12.0, w: -14.0, h: -14.0,
+                      color: value("cpugpu_cpu_ink"), max: 1.0, thickness: 2.0),
+            ],
+        ),
+    ],
+)

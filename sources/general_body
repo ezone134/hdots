@@ -1,0 +1,38 @@
+#!/usr/bin/env luajit
+-- helper general_body
+
+function general_main_cmd(cmd)
+    s = flagf_get(states2 .. "/s")
+
+    if cmd == "reset" then
+        tf(os.getenv("HOME") .. "/.config/hypr/luas/general.lua", "")
+        exit_0()
+    end
+
+    local gaps_in_val         = ff(states .. "/gaps_in_" .. s)
+    local gaps_out_val        = ff(states .. "/gaps_out_" .. s)
+    local rounding_val        = ff(states .. "/rounding_" .. s)
+    local rounding_power_val  = ff(states .. "/rounding_power_" .. s)
+    local border_size_val     = ff(states .. "/border_size_" .. s)
+    local resize_on_border_val = ff(states .. "/resize_on_border_" .. s)
+    local allow_tearing_val   = ff(states .. "/allow_tearing_" .. s)
+    local layout_val          = ff(states .. "/layout_" .. s)
+
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/general.lua",
+        "hl.config({\n" ..
+        "general = {\n" ..
+        "gaps_in = " .. gaps_in_val .. ",\n" ..
+        "gaps_out = " .. gaps_out_val .. ",\n" ..
+        "border_size = " .. border_size_val .. ",\n" ..
+        "resize_on_border = " .. resize_on_border_val .. ",\n" ..
+        "allow_tearing = " .. allow_tearing_val .. ",\n" ..
+        "layout = " .. layout_val .. ",\n" ..
+        "},\n" ..
+        "decoration = {\n" ..
+        "rounding = " .. rounding_val .. ",\n" ..
+        "rounding_power = " .. rounding_power_val .. ",\n" ..
+        "},\n" ..
+        "})")
+    flagf_set(states2 .. "/general_done", "1")
+    exit_0()
+end

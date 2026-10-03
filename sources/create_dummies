@@ -1,0 +1,30 @@
+# -*- mode: sh -*-
+
+
+[[ -e $rbase/${USER}_rconf/rconfig/hypr/luas ]] || mkdir -p $rbase/${USER}_rconf/rconfig/hypr/luas
+
+[[ -e $HOME/.config/hypr/luas ]] || {
+    [[ -L $HOME/.config/hypr/luas ]] && rm -f $HOME/.config/hypr/luas
+    mv $HOME/.config/hypr/luas $HOME/.config/hypr/luas.$$ >/dev/null
+    ln -s $rbase/${USER}_rconf/rconfig/hypr/luas $HOME/.config/hypr/luas
+}
+
+> $HOME/.config/hypr/luas/border.lua
+> $HOME/.config/hypr/luas/blur.lua
+> $HOME/.config/hypr/luas/shadow.lua
+> $HOME/.config/hypr/luas/opacity.lua
+> $HOME/.config/hypr/luas/general.lua
+> $HOME/.config/hypr/luas/shader.lua
+> $HOME/.config/hypr/luas/border.lua
+
+
+echo "hl.monitor({
+    output   = \"\",
+    mode     = \"preferred\",
+    position = \"auto\",
+    scale    = \"$(<$dots/states/m_scl)\",
+})" > $HOME/.config/hypr/luas/monitors.lua
+
+[[ $1 == reload_hyprctl ]] && {
+    hyprctl reload
+}

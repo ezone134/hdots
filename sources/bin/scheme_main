@@ -1,0 +1,8 @@
+#!/usr/bin/env luajit
+-- scheme_main — theme grid CLI: list/apply <id>
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/theme_body")
+dofile(sources .. "/theme_main_body")
+dofile(sources .. "/scheme_body")
+scheme_cmd(unpack(arg))

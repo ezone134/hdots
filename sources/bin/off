@@ -1,0 +1,8 @@
+#!/usr/bin/env luajit
+-- off — sync state files then power off.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/power_body")
+print()
+print("Going to Shut Down...")
+run("sudo systemctl poweroff")

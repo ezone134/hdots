@@ -1,0 +1,42 @@
+(
+    // latency card — the ping sparkline went declarative (zero `Ink`). The
+    // Rust body survives as the no-scene fallback and is the geometry of
+    // record: the header (the probe host as mono meta), the plot box, the
+    // right-anchored hero ms number with its `ms` unit, the status word, and
+    // the 30x20 re-probe pill with its 3 px click halo.
+    //
+    // Geometry of record (draw_latency_card), all in base px:
+    //   plot      x 12, top 22+10 = 32, width w−24−58 (the 58 px column the
+    //             hero number owns), height h−32−12
+    //   idle line the plot's vertical midpoint = h/2 + 10 (a `Divider` with
+    //             `cy_pct: 0.5`), drawn only while there is no history
+    //   hero ms   right 12, top = plot_mid + 7 = h/2 + 17
+    //   "ms"      right 12, top = plot_mid − 7 = h/2 + 3
+    //   status    x 12, top = (h−20−8) + 5 = h − 23
+    //   pill      30x20, r 6, right margin 12, bottom 8; its hit halo is 3 px out on
+    //             every side (a second, invisible Hit on the same key)
+    items: [
+        Header(title: "Latency", glyph: "\u{e9e4}", meta: "1.1.1.1", meta_mono: true, pad: 12.0),
+        // the probe series, pre-normalized against the drawer's own peak
+        // (a 120 ms floor) and empty until two probes land
+        Spark(name: "lat_spark", x: 12.0, y: 32.0, w: -70.0, h: -12.0,
+              color: info, max: 1.0, kind: line, thickness: 2.0),
+        // ... and its flat idle trace, the same box, the same midpoint
+        Divider(x: 12.0, y: 10.0, w: -70.0, cy_pct: 0.5,
+                color: fg3, visible: "lat_idle"),
+        Text(right: true, x: 12.0, y: 17.0, cy_pct: 0.5, w: 0.0,
+             text: "{lat_val}", font_size: 20.0, font: display, weight: medium,
+             color: value("lat_val_ink")),
+        Text(right: true, x: 12.0, y: 3.0, cy_pct: 0.5, w: 0.0,
+             text: "ms", font_size: 7.5, color: fg3),
+        Text(x: 12.0, y: 23.0, bottom: true, w: 0.0,
+             text: "{lat_status}", font_size: 8.5, color: fg2),
+        Hit(right: true, x: 12.0, y: 8.0, w: 30.0, h: 20.0, r: 6.0, bottom: true,
+            surface: raised, surface_hover: raised_hl,
+            icon: true, center: true, dy: 0.0,
+            text: "\u{f021}", font_size: 9.0, color: fg3, color_hover: acc,
+            key: 31_970),
+        Hit(right: true, x: 9.0, y: 5.0, w: 36.0, h: 26.0, bottom: true,
+            key: 31_970),
+    ],
+)

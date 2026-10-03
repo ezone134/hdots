@@ -1,0 +1,40 @@
+#!/usr/bin/env luajit
+-- helper caps_body
+
+function caps_cmd()
+    dofile(hypr_global .. "/qpid")
+    run_bg("pkill splash")
+
+    local state = tonumber(flagf_get(states2 .. "/" .. "caps_lock_state"))
+    local new_state = 1 - state
+    flagf_set(states2 .. "/" .. "caps_lock_state", tostring(new_state))
+
+    local on_cmd = function()
+        dofile(sources .. "/center_pop")
+        run_bg("center_pop 'CAPSLOCK' 'ON'")
+    end
+
+    local off_cmd = function()
+        dofile(sources .. "/center_pop")
+        run_bg("center_pop 'CAPSLOCK' 'OFF'")
+    end
+
+    if new_state == 1 then
+        on_cmd()
+    else
+        off_cmd()
+    end
+
+    bg_delay(2, string.format(
+        "local f=function() "
+        .. "local p = ff(states2 .. \"/\" .. 'caps_lock_file_path') "
+        .. "local rs = tonumber(ff(p)) "
+        .. "local ns = %d "
+        .. "if rs ~= ns then "
+        ..   "if rs == 1 then center_pop('CAPSLOCK','ON') else center_pop('CAPSLOCK','OFF') end "
+        ..   "tf(states2 .. \"/\" .. 'caps_lock_state', tostring(rs)) "
+        .. "end end; f()",
+        new_state))
+
+    exit_0()
+end

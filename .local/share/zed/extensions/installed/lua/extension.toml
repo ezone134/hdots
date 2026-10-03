@@ -1,0 +1,32 @@
+id = "lua"
+name = "Lua"
+version = "0.1.10"
+schema_version = 1
+description = "Lua support."
+repository = "https://github.com/zed-extensions/lua"
+authors = ["Max Brunsfeld <max@zed.dev>"]
+themes = []
+icon_themes = []
+languages = ["languages/lua", "languages/emmyluadoc"]
+capabilities = []
+
+[lib]
+kind = "Rust"
+version = "0.7.0"
+
+[grammars.emmyluadoc]
+repository = "https://github.com/EmmyLuaLs/tree-sitter-emmyluadoc"
+rev = "ea755c0fd34c07e16597bd62a404d6eba2a3891e"
+
+[grammars.lua]
+repository = "https://github.com/tree-sitter-grammars/tree-sitter-lua"
+rev = "10fe0054734eec83049514ea2e718b2a56acd0c9"
+
+[language_servers.lua-language-server]
+languages = ["Lua", "EmmyLuadoc"]
+
+[language_servers.lua-language-server.language_ids]
+
+[context_servers]
+
+[slash_commands]

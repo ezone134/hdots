@@ -1,0 +1,67 @@
+(
+    // gpu card — fully declarative (zero `Ink`): the util hero + bar, the
+    // thermal row, and the VRAM row/bar that only exists when the source
+    // exposes a VRAM total. "no GPU source" is the empty state.
+    //
+    // Geometry of record (draw_gpu_card): 12 px pad, 24 px header; hero %%
+    // right-anchored on the header line (22 px display, accent); the
+    // "utilization" caption 4 px lower on the left; the 5 px util bar 26 px
+    // under the header; the thermal glyph at the pad with its mono reading
+    // 14 px right; the VRAM mono line + 4 px bar 15/27 px lower still.
+    items: [
+        Header(title: "GPU", glyph: "\u{f013}", pad: 12.0),
+        // `card_empty`: centered, 6 px above the card's middle (fg3, 9.0) —
+        // gated on the INVERSE of the live body, since a missing source is
+        // exactly when there is no util/temp to show
+        Text(
+            x: 0.0, y: -6.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "no GPU source", font_size: 9.0,
+            font: ui, weight: regular, color: fg3,
+            visible: "gpu_empty",
+        ),
+        Stack(
+            x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+            visible: "gpu_live",
+            items: [
+                Text(
+                    x: 12.0, y: 24.0, w: 0.0, right: true,
+                    text: "{gpu_pct}", font_size: 22.0,
+                    font: display, weight: medium, color: acc,
+                ),
+                Text(
+                    x: 12.0, y: 28.0,
+                    text: "utilization", font_size: 8.5,
+                    font: ui, weight: regular, color: fg2,
+                ),
+                Bar(
+                    x: 12.0, y: 50.0, w: -12.0, h: 5.0, r: 2.5,
+                    value: "{gpu_frac}", max: 1.0,
+                    fill: acc, track: hover,
+                ),
+                Text(
+                    x: 12.0, y: 62.0,
+                    text: "\u{f2c9}", font_size: 9.0,
+                    font: ui, weight: regular, icon: true, color: fg2,
+                ),
+                Text(
+                    x: 26.0, y: 63.0,
+                    text: "{gpu_temp_c}", font_size: 9.5,
+                    font: mono, weight: regular, color: fg,
+                ),
+                Text(
+                    x: 12.0, y: 77.0,
+                    text: "{gpu_vram_txt}", font_size: 9.5,
+                    font: mono, weight: regular, color: fg,
+                    visible: "gpu_vram_live",
+                ),
+                Bar(
+                    x: 12.0, y: 89.0, w: -12.0, h: 4.0, r: 2.0,
+                    value: "{gpu_vram_frac}", max: 1.0,
+                    fill: info, track: hover,
+                    visible: "gpu_vram_live",
+                ),
+            ],
+        ),
+    ],
+)

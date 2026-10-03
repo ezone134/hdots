@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+i="$1"
+[[ -L "${i}_" ]] && {
+    notify-send -a Symlink "Symlink" "Already exists" &
+    exit 0
+}
+ln -sr "$i" "${i}_"
+
+if [[ -L "${i}_" ]]; then
+   notify-send -a Symlink "Symlink" "Created" &
+else
+    notify-send -a Symlink "Symlink" "Failed to create" &
+fi
+exit 0

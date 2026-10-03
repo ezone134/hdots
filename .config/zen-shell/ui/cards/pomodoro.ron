@@ -1,0 +1,99 @@
+(
+    // pomodoro card — fully declarative (zero `Ink`; the Rust drawer is the
+    // fallback when this file is absent).
+    //
+    // Geometry of record (draw_pomodoro_card), all in base px:
+    //   header    24 px band, the shared `Header` chrome ("Focus" + glyph +
+    //             the `{n} done` session meta)
+    //   hero      mm:ss, ui-light 26, centered on the card, top y+30
+    //             (24 px header + 6)
+    //   caption   "focus" / "break", ui-regular 8.5, fg3, top y+58
+    //             (hero + 28)
+    //   bar       12 px insets, 4 tall, fully rounded, top y+72 (hero + 42)
+    //   steppers  idle only — `[-] 25m [+]`, 18x18 chips r 6 on y+82 (bar +
+    //             10), readout ui-regular 8.5 fg3 centered on the card at
+    //             y+85
+    //   controls  52x22 chips r 6, bottom edge 10 px above the card bottom
+    //             (Start/Pause/Resume + Reset, 6 px apart around the middle)
+    //
+    // Everything per-frame rides a bound value: the figure, the phase ink
+    // (focus = fg, break = OK; dimmed while idle), the bar's fill and
+    // fraction, the phase word, the session meta, the readout and the toggle
+    // label. The button fills are bound too — the drawer's own
+    // `draw_edit_lbl_btn` mixes the resting fill and tints the accent button
+    // on hover, which no plain token can express, so `pomo_chip_fill` /
+    // `pomo_tog_fill` / `pomo_tog_hover` are published per frame.
+    items: [
+        Header(title: "Focus", glyph: "\u{f573}", meta: "{pomo_meta}", pad: 12.0),
+        // the countdown figure — `center_x` puts its anchor on the card's
+        // center line, like the drawer's `ui::text_c(v, x + w/2, …)`
+        Text(
+            x: 0.0, y: 30.0, w: 0.0,
+            center_x: true,
+            text: "{pomo_hero}", font_size: 26.0,
+            font: ui, weight: light, color: value("pomo_ink"),
+        ),
+        // phase word under the numerals
+        Text(
+            x: 0.0, y: 58.0, w: 0.0,
+            center_x: true,
+            text: "{pomo_phase_lbl}", font_size: 8.5,
+            font: ui, weight: regular, color: fg3,
+        ),
+        // progress bar: `w: -12` at x: 12 insets both sides, r 2 = the
+        // drawer's `h/2` capsule
+        Bar(
+            x: 12.0, y: 72.0, w: -12.0, h: 4.0, r: 2.0,
+            value: "{pomo_frac}", max: 1.0,
+            fill: value("pomo_bar_ink"),
+            track: hover,
+        ),
+        // duration steppers (idle only). The chips flank a runtime string, so
+        // their center-relative x rides `x` — the shell publishes the
+        // drawer's own measured readout half-width, which is why `[-] 25m [+]`
+        // never drifts from the fallback.
+        Hit(
+            x: "pomo_dec_dx", y: 82.0, w: 18.0, h: 18.0, r: 6.0,
+            center_x: true,
+            surface: value("pomo_chip_fill"), surface_hover: hover_hl,
+            text: "-", font_size: 9.5, center: true, label_dy: 3.5,
+            color: fg, key: 30_733,
+            visible: "pomo_idle",
+        ),
+        Text(
+            x: 0.0, y: 85.0, w: 0.0,
+            center_x: true,
+            text: "{pomo_focus_readout}", font_size: 8.5,
+            font: ui, weight: regular, color: fg3,
+            visible: "pomo_idle",
+        ),
+        Hit(
+            x: "pomo_inc_dx", y: 82.0, w: 18.0, h: 18.0, r: 6.0,
+            center_x: true,
+            surface: value("pomo_chip_fill"), surface_hover: hover_hl,
+            text: "+", font_size: 9.5, center: true, label_dy: 3.5,
+            color: fg, key: 30_732,
+            visible: "pomo_idle",
+        ),
+        // Start/Pause + Reset. `center_x` lands each chip's LEFT edge on the
+        // card's center line: −58 and +6 put the pair symmetric about the
+        // middle with a 6 px gap (the drawer's `w/2 − 58` / `w/2 + 6`), and
+        // `bottom: true` keeps them pinned to the card bottom on a resize.
+        // `label_dy: 6.25` is the label's own center inside the chip:
+        // (22 − fs(9.5)) / 2, with the box itself left on the 10 px line.
+        Hit(
+            x: -58.0, y: 10.0, w: 52.0, h: 22.0, r: 6.0,
+            center_x: true, bottom: true,
+            surface: value("pomo_tog_fill"), surface_hover: value("pomo_tog_hover"),
+            text: "{pomo_tog_lbl}", font_size: 9.5, center: true, label_dy: 6.25,
+            color: acc, key: 30_730,
+        ),
+        Hit(
+            x: 6.0, y: 10.0, w: 52.0, h: 22.0, r: 6.0,
+            center_x: true, bottom: true,
+            surface: value("pomo_chip_fill"), surface_hover: hover_hl,
+            text: "Reset", font_size: 9.5, center: true, label_dy: 6.25,
+            color: fg, key: 30_731,
+        ),
+    ],
+)

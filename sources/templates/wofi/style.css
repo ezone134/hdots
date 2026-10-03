@@ -1,0 +1,51 @@
+#window {
+margin: 0px;
+border: 0px solid $border;
+background-color: $bg;
+
+width: 300px;
+height: 150px;
+}
+
+#input {
+margin: 5px;
+border: none;
+color: $fg;
+background-color: $bg;
+}
+
+#inner-box {
+margin: 5px;
+border: none;
+background-color: $bg;
+}
+
+#outer-box {
+margin: 5px;
+border: none;
+background-color: $bg;
+}
+
+#scroll {
+margin: 0px;
+border: none;
+}
+
+#text {
+margin: 5px;
+border: none;
+color: $fg;
+}
+
+#entry.activatable #text {
+color: $fg;
+}
+
+#entry > * {
+color: $bg;
+}
+
+#entry:selected {
+background-color: ${acc};
+}
+}

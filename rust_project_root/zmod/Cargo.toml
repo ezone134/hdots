@@ -1,0 +1,22 @@
+[package]
+name = "zmod"
+version = "0.1.0"
+edition = "2021"
+description = "Loader for zen-shell data-provider plugins ($sources/lib/*.so)"
+license = "MIT"
+
+[lib]
+name = "zmod"
+path = "src/lib.rs"
+
+[dependencies]
+# libc only: a loader that drags serde/image/font stacks into every plugin
+# host is a loader nobody will keep using. The ABI itself is four C functions
+# (see include/zenmod.h) so plugins can be written in any language.
+libc = "0.2"
+
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1
+strip = true

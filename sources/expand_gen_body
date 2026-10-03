@@ -1,0 +1,10 @@
+#!/usr/bin/env luajit
+-- helper expand_gen_body
+
+function expand_gen(template_path, output_path)
+    local dir_path = dirname(output_path)
+    if not is_dir(dir_path) then mkdir_p(dir_path) end
+    local content = ff(template_path)
+    content = s_expand(content)
+    tf(output_path, content)
+end

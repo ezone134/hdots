@@ -1,0 +1,37 @@
+(
+    // disk card — fully declarative (zero `Ink`): the header with its live
+    // "{n} mounts" meta, one row per mount (label in fg2 · right mono
+    // `used/total GB pct%` · a 6 px meter bar on the shared warn/crit ladder)
+    // and the centered empty state.
+    //
+    // Geometry of record (draw_disk_card): rows from y+32, 24 px stride, the
+    // 14 px card pad; bar 13 px under the row top, 6 px tall, r 3; the value
+    // cell right-anchored at the same 14 px inset.
+    items: [
+        Header(title: "Disk", meta: "{disk_meta}", pad: 14.0),
+        Rows(
+            name: "disk_rows",
+            y: 32.0,
+            row_h: 24.0,
+            pad: 14.0,
+            row_dy: 0.0,
+            // the drawer's `((h - 36) / 24).floor()` row cap == rows must
+            // clear `card_h - 4` (36 = the 32 px first-row offset + 4 px slack)
+            bottom: 4.0,
+            visible: "disk_live",
+            cols: [
+                (x: 0.0, size: 9.0, color: fg2),
+                (x: 0.0, w: 0.0, edge: 14.0, right: true, size: 9.0, font: mono, color: fg),
+                (x: 0.0, w: 0.0, dy: 13.0, bar: (height: 6.0, top: 13.0, radius: 3.0, max: 100.0)),
+            ],
+        ),
+        // `card_empty`: centered, 6 px above the card's middle (fg3, 9.0)
+        Text(
+            x: 0.0, y: -6.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "No partitions", font_size: 9.0,
+            font: ui, weight: regular, color: fg3,
+            visible: "disk_empty",
+        ),
+    ],
+)

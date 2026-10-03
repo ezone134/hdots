@@ -1,0 +1,38 @@
+(
+    // moon card — fully declarative (zero Ink). The body is a vector phase
+    // disc plus its side caption: the disc is the `Moon` primitive (a dark
+    // circle with the lit portion painted as terminator slivers, from the
+    // cycle fraction the shell samples once per frame), and the three caption
+    // lines are published strings whose baselines ride the disc's own center.
+    items: [
+        Header(title: "Moon", glyph: "\u{f186}", meta: "{moon_meta}", pad: 12.0),
+        // the disc: its center and diameter are BOUND because both come from
+        // the card's `body_h` min/max arithmetic — the shell publishes the
+        // floor too (`max(s(30))`), since a bound box skips the item's own
+        Moon(
+            phase: "moon_phase",
+            x: "moon_cx",
+            y: "moon_cy",
+            d: "moon_d",
+        ),
+        // the side column, present only when the card is wide enough for it
+        Text(
+            x: "moon_tx",
+            y: "moon_ty_0",
+            text: "{moon_name}", font_size: 10.5, color: fg,
+            visible: "moon_side",
+        ),
+        Text(
+            x: "moon_tx",
+            y: "moon_ty_1",
+            text: "{moon_lit}", font_size: 8.5, color: fg2,
+            visible: "moon_side",
+        ),
+        Text(
+            x: "moon_tx",
+            y: "moon_ty_2",
+            text: "{moon_sub}", font_size: 8.5, color: fg3,
+            visible: "moon_side",
+        ),
+    ],
+)

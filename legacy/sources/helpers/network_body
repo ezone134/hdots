@@ -1,0 +1,120 @@
+# -*- mode: sh -*-
+# network_body — functions for the network_main CLI: net
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- network (wifi / bluetooth) ------------------------------------------
+
+wifi_status() {
+    local o
+    o="$(nmcli radio wifi 2>/dev/null)"
+    case "$o" in
+        enabled)  printf 'on\n';;
+        disabled) printf 'off\n';;
+        *)        printf 'unknown\n';;
+    esac
+}
+
+wifi_scan() {
+    nmcli dev wifi rescan 2>/dev/null || true
+}
+
+wifi_list() {
+    local ssid="" sig="" sec="" inuse="" line
+    while IFS= read -r line; do
+        case "$line" in
+            SSID:*)     ssid="${line#*SSID:}";     ssid="${ssid#"${ssid%%[![:space:]]*}"}";;
+            SIGNAL:*)   sig="${line#*SIGNAL:}";    sig="${sig#"${sig%%[![:space:]]*}"}";;
+            SECURITY:*) sec="${line#*SECURITY:}";  sec="${sec#"${sec%%[![:space:]]*}"}";;
+            IN-USE:*)   inuse="${line#*IN-USE:}";  inuse="${inuse#"${inuse%%[![:space:]]*}"}";;
+        esac
+        case "$line" in
+            IN-USE:*)
+                [[ -n "$ssid" && "$ssid" != "--" ]] && printf '%s\t%s\t%s\t%s\n' "$ssid" "$sig" "$sec" "$inuse"
+                ;;
+        esac
+    done < <(nmcli -m multiline -f SSID,SIGNAL,SECURITY,IN-USE dev wifi list --rescan no 2>/dev/null)
+}
+
+wifi_connect() {
+    (( $# >= 1 )) || { err "net wifi connect: need SSID"; return 1; }
+    nmcli dev wifi connect "$1" 2>/dev/null || nmcli --ask dev wifi connect "$1"
+}
+
+wifi_disconnect() {
+    local d
+    while IFS= read -r line; do
+        [[ "$line" == *:wifi:* ]] && { d="${line%%:*}"; break; }
+    done < <(nmcli -t -f DEVICE,TYPE dev status 2>/dev/null)
+    [[ -n "${d:-}" ]] && nmcli dev disconnect "$d"
+}
+
+wifi_cmd() {
+    case "${1:-status}" in
+        on)         nmcli radio wifi on;;
+        off)        nmcli radio wifi off;;
+        toggle)     [[ "$(wifi_status)" == on ]] && nmcli radio wifi off || nmcli radio wifi on;;
+        scan)       wifi_scan;;
+        list)       wifi_list;;
+        connect)    wifi_connect "${2:-}";;
+        disconnect) wifi_disconnect;;
+        status)     printf 'wifi: %s\n' "$(wifi_status)";;
+        *)          err "net wifi: use status|on|off|toggle|scan|list|connect SSID|disconnect";;
+    esac
+}
+
+bt_status() {
+    local o
+    o="$(bluetoothctl show 2>/dev/null)"
+    if [[ "$o" == *"Powered: yes"* ]]; then printf 'on\n'
+    elif [[ "$o" == *"Powered: no"* ]]; then printf 'off\n'
+    else printf 'unknown\n'; fi
+}
+
+bt_devices() {
+    local line mac name conn conn_list
+    conn_list="$(timeout 2 bluetoothctl devices Connected 2>/dev/null)"
+    while IFS= read -r line; do
+        case "$line" in
+            Device\ *)
+                set -- $line
+                mac="$2"; shift 2; name="$*"
+                conn=" "
+                [[ "$conn_list" == *" Device $mac "* ]] && conn="*"
+                printf '%s\t%s\t%s\n' "$mac" "$name" "$conn"
+                ;;
+        esac
+    done < <(timeout 2 bluetoothctl devices 2>/dev/null)
+}
+
+bt_connect() {
+    (( $# >= 1 )) || { err "net bt connect: need MAC"; return 1; }
+    bluetoothctl connect "$1"
+}
+
+bt_disconnect() {
+    (( $# >= 1 )) || { err "net bt disconnect: need MAC"; return 1; }
+    bluetoothctl disconnect "$1"
+}
+
+bt_cmd() {
+    case "${1:-status}" in
+        on)         bluetoothctl power on;;
+        off)        bluetoothctl power off;;
+        toggle)     [[ "$(bt_status)" == on ]] && bluetoothctl power off || bluetoothctl power on;;
+        devices)    bt_devices;;
+        connect)    bt_connect "${2:-}";;
+        disconnect) bt_disconnect "${2:-}";;
+        status)     printf 'bluetooth: %s\n' "$(bt_status)";;
+        *)          err "net bt: use status|on|off|toggle|devices|connect MAC|disconnect MAC";;
+    esac
+}
+
+net_cmd() {
+    case "${1:-status}" in
+        wifi)      wifi_cmd "${2:-status}" "${3:-}";;
+        bt|bluetooth) bt_cmd "${2:-status}" "${3:-}";;
+        status)    printf 'wifi: %s  bluetooth: %s\n' "$(wifi_status)" "$(bt_status)";;
+        *)         err "net: use wifi|bt|status";;
+    esac
+}
+

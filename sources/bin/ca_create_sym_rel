@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- thunar_create_rel_symlink — create a relative symlink "<path>_" next to it.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/rsym_body")
+rsym_cmd(arg[1])

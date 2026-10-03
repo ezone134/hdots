@@ -1,0 +1,12 @@
+# -*- mode: sh -*-
+. $hdots/sources/helpers/fetch_color_scheme center_pop auto_fetch
+
+[[ -z $1 ]] && big=BIG || big=$1
+[[ -z $2 ]] && small=small || small=$2
+
+
+printf '{"w":20,"h":20,"bg":"%s","fg":"%s","b_text":"%s","b_font":"Phosphor","b_size":100,"s_text":"%s","s_font":"JetBrainsMonoNL Nerd Font","s_size":18,"duration":3,"spacing":5,"loading_id":2,"show_loading_animation":false,"center_b_text":0,"corner_rounding":20,"alpha":%s}' \
+    "$bg" "$fg" "$big" "$small" "${bf:-100}" > "$states2/splash_vars"
+
+
+$hdots/sources/helpers/splash & # run binary in bg

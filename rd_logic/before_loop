@@ -1,0 +1,15 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+dofile(SCRIPT_DIR .. "/utils")
+
+sleep(1)
+
+local sysrq_state = ff("/proc/sys/kernel/sysrq") or "0"
+if tonumber(sysrq_state) ~= 1 then
+    tf("/proc/sys/kernel/sysrq", "1\n")
+end
+
+chmod(SCRIPT_DIR .. "/states/fire_delay", "777")
+chmod(SCRIPT_DIR .. "/fire_count", "777")
+tf(SCRIPT_DIR .. "/unmounter_status", "1\n")

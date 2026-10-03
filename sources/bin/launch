@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- hypr_launch — entry point, persist-based pre-sync bootstrap
+dots = os.getenv("dots")
+dofile(dots .. "/sources/utils")
+dofile(dots .. "/sources/launch_body")
+launch_final_func()

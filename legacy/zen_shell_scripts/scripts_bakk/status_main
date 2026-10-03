@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# status_main — everything at once. Was: qs-ctl status.
+set -u
+. "$hypr_sources/helpers/status_body"
+status

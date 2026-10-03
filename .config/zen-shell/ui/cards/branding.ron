@@ -1,0 +1,41 @@
+(
+    // branding card — the brand mark only (zero `Ink`). The mark is
+    // aspect-fit inside the body: it scales to the SMALLER of the horizontal
+    // slot (a ~0.62 em advance estimate, so a multi-char word shrinks to fit
+    // the width first) or the full body height, keeps its aspect, and sits
+    // centered with a generous 16 px pad. That fit is computed per frame in
+    // `scene_values` (the glyph is re-read from `$states2/d` on every draw, so
+    // editing the id shows up with no restart), which is why the mark's size
+    // and top ride the new `font_size` / `y` bindings instead of constants.
+    //
+    // Geometry of record (draw_branding_card): `avail_w = w − 2·16`,
+    // `avail_h = h − 24 − 16`, `size = min(avail_w / (chars·0.62), avail_h) ·
+    // 0.95` (≥ 10), and the top at `24 + (avail_h − size) / 2` — the same
+    // `ui::text_cw` centering the drawer used, with the Brand font.
+    items: [
+        Header(title: "Brand", glyph: "\u{f004}", pad: 16.0),
+        Text(
+            x: 0.0,
+            center_x: true,
+            y: "brand_y",
+            w: 0.0,
+            text: "{brand_glyph}",
+            font_size: "brand_size",
+            font: brand,
+            color: fg,
+            visible: "brand_live",
+        ),
+        Text(
+            // the drawer's own empty caption (`card_empty`), centered
+            x: 0.0,
+            center_x: true,
+            center_y: true,
+            y: -6.0,
+            w: 0.0,
+            text: "no brand glyph in $states2/d",
+            font_size: 9.0,
+            color: fg3,
+            visible: "brand_empty",
+        ),
+    ],
+)

@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- kill_window — enter hyprland kill mode with a notice.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+run_bg("notify-send -a 'Kill Mode' 'Kill Mode' 'Click a window to terminate it. Right-click or Esc to cancel.' -i edit-delete -t 3000")
+run("hyprctl kill")

@@ -1,0 +1,65 @@
+(
+    // MEDIA — album art, title / album+artist, the seek bar with its time
+    // labels, and the three transport buttons. Fully declarative: the Rust
+    // drawer survives only as the no-scene fallback and is the geometry of
+    // record.
+    //
+    // Two gates move with the card box, both published: `media_wide` (≥ 210 px
+    // puts the info column RIGHT of the 48 px art, else UNDER it — the
+    // drawer's `tx0 = pad + art + 10`) and `media_has_room` (≥ 120 px tall
+    // shows the transport row at all). The `fit()` char cap that trims the
+    // title and the album+artist line is width-dependent, so the shell
+    // publishes the ALREADY-trimmed strings rather than the cell guessing a
+    // reserve — `media_title` / `media_line2` (an empty line2 draws nothing).
+    items: [
+        // ── album art: a rounded placeholder when MPRIS gave no path, else the
+        // artwork itself on the same 48 px box (`media_art_key` is the
+        // renderer's `file:` key, empty when there is no art) ──
+        Surface(x: 14.0, y: 12.0, w: 48.0, h: 48.0, r: 10.0,
+                color: value("media_ph_ink"), visible: "media_art_empty"),
+        Text(x: 28.4, y: 26.4, w: 0.0, icon: true, text: "\u{f001}", font_size: 16.0,
+             color: fg, visible: "media_art_empty"),
+        Image(x: 14.0, y: 12.0, w: 48.0, h: 48.0, key: "{media_art_key}"),
+        // ── track info ──
+        // the title is SEMIBOLD (the drawer's `ui::title`, not `ui::text`)
+        Text(x: 72.0, y: 14.0, w: 0.0, text: "{media_title}", font_size: 12.0, weight: semibold,
+             color: fg, visible: "media_title_wide"),
+        // under the art on a narrow card, so its x rides the same gate
+        Text(x: 14.0, y: 14.0, w: 0.0, text: "{media_title}", font_size: 12.0, weight: semibold,
+             color: fg, visible: "media_title_narrow"),
+        Text(x: 72.0, y: 32.0, w: 0.0, text: "{media_line2}", font_size: 9.5, color: fg,
+             visible: "media_line2_wide"),
+        Text(x: 14.0, y: 32.0, w: 0.0, text: "{media_line2}", font_size: 9.5, color: fg,
+             visible: "media_line2_narrow"),
+        // ── seek bar: the track is hover-tinted (published), the fill accent ──
+        Bar(x: 14.0, y: 80.0, w: -14.0, h: 5.0, r: 2.5, max: 1.0, value: "{media_frac}",
+            track: value("media_track_ink"), fill: value("media_fill_ink")),
+        // the drawer's halo: 2 px left of the bar, 6 px above, 4 px wider
+        Hit(x: 12.0, y: 74.0, w: -12.0, h: 16.0, key: 23),
+        Text(x: 16.0, y: 88.0, w: 0.0, text: "{media_pos}", font_size: 8.0, color: fg),
+        Text(x: 12.0, y: 88.0, w: 0.0, right: true, text: "{media_dur}", font_size: 8.0,
+             color: fg),
+        // ── transport: the three glyphs straddle the center line, so they ride
+        // `center_x` (which centers the STRING on the line) and the hit boxes
+        // bind their own x, since a 38 px box 36 px off-center is not a
+        // proportional anchor ──
+        Text(x: "media_prev_gx", y: 104.0, w: 0.0, icon: true,
+             text: "{media_prev_glyph}", font_size: 14.0, color: value("media_prev_ink"),
+             visible: "media_has_room"),
+        Text(x: "media_play_gx", y: 102.0, w: 0.0, icon: true,
+             text: "{media_play_glyph}", font_size: 17.0, color: acc,
+             visible: "media_has_room"),
+        Text(x: "media_next_gx", y: 104.0, w: 0.0, icon: true,
+             text: "{media_next_glyph}", font_size: 15.0, color: value("media_next_ink"),
+             visible: "media_has_room"),
+        // `x` is a required field — these three boxes are
+        // NOT centered on their glyphs (the drawer's own offsets: −50 / −22 /
+        // +12 from the center line), so each binds its own x
+        Hit(x: "media_prev_hx", y: 94.0, w: 38.0, h: 36.0, key: 20,
+            visible: "media_has_room"),
+        Hit(x: "media_play_hx", y: 92.0, w: 44.0, h: 40.0, key: 21,
+            visible: "media_has_room"),
+        Hit(x: "media_next_hx", y: 94.0, w: 38.0, h: 36.0, key: 22,
+            visible: "media_has_room"),
+    ],
+)

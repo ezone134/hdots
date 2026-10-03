@@ -1,0 +1,70 @@
+#!/usr/bin/env luajit
+-- helper dash_body
+
+function dash_cmd()
+    local function num(s)
+        return s:gsub("%D", "")
+    end
+
+    local bri  = num(out("brightness_main get"))
+    local vl   = out("audio_main vol get")
+    local ml   = out("audio_main mic get")
+    local vol  = num(vl:match("(%d+%%)"))
+    local mic  = num(ml:match("(%d+%%)"))
+    local mmut = 0
+    if ml:match("muted: yes") then mmut = 1 end
+
+    -- ONE call for the whole look: scr_main owns the one master.glsl shader
+    -- (saturation + gamma + Kelvin, no daemon), so "<on> <sat> <temp_on>
+    -- <kelvin>" is a single spawn per poll. `on` is DERIVED there -- any of the
+    -- three knobs off 0 -- so there is no switch file to read here and none to
+    -- disagree with what the faders say.
+    local sh = out("scr_main status")
+    local shst, shsat, sust, sukv = sh:match("^(%S*)%s*(%S*)%s*(%S*)%s*(%S*)%s*$")
+    if shst == nil or shst ~= "1" then shst = "0" end
+    -- saturation is echoed RAW, off values included. 100 is its neutral notch
+    -- (the tile's off) and 0 is full grayscale -- a real effect, not a missing
+    -- one -- so neither may be rounded away: the Saturation tile reads this very
+    -- field to light itself. The fallback for a field that is not a number at all
+    -- is 100, the neutral one, so a helper too old to answer leaves the colours
+    -- alone instead of guessing a shift.
+    if shsat == nil or shsat == "" or shsat:match("%D") then shsat = "100" end
+    -- sust is the blue-light gate (1 = a Kelvin actually asking for warmth, so
+    -- neither 0 nor the 6500 K neutral notch), not a daemon state any more
+    if sust ~= "1" then sust = "0" end
+    -- 0 and 6500 are both real Kelvin values now (off and neutral), so both are
+    -- echoed like any other; the fallback for a field that is not a number at all
+    -- is 0 -- off -- not a made-up temperature
+    if sukv == nil or sukv == "" or sukv:match("%D") then sukv = "0" end
+
+    local caff = out("caffeine_main status")
+
+    -- compositor effect states — read the same state files the helpers toggle.
+    s = flagf_get(states2 .. "/s")
+    local blur_on = 0
+    if ff(states .. "/hypr_blur_" .. s) == "1" then blur_on = 1 end
+    local shadow_on = 0
+    if ff(states .. "/shadow_enabled_" .. s) == "1" then shadow_on = 1 end
+    -- opacity: active_opacity 1.0 = normal (off), <1.0 = dimming applied (on)
+    local opac_on = 0
+    local opac_act = ff(states .. "/opacity_active_" .. s)
+    if opac_act ~= "1.0" and opac_act ~= "" then opac_on = 1 end
+
+    -- the smooth transition (`states/sst`, the one switch scr_body reads with
+    -- no `sst_$s`): read here rather than asked of scr_main because it changes
+    -- nothing on screen, so it is not part of the look the status line reports
+    -- and putting it in that four-field contract would shift a parse that five
+    -- consumers already read positionally. Absent reads as 0, the plain
+    -- one-shot bake.
+    local sst_on = 0
+    if ff(states .. "/sst") == "1" then sst_on = 1 end
+
+    print(string.format("%s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+        bri, vol, mic, mmut,
+        shsat, (shst ~= "0" and "1" or "0"),
+        sust, sukv, caff,
+        blur_on, shadow_on, opac_on,
+        -- trailing: the same derived bit as field 6, kept so the field count
+        -- never shifts under app/mod.rs's parse.
+        shst, sst_on))
+end

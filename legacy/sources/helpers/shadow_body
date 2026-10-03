@@ -1,0 +1,64 @@
+# -*- mode: sh -*-
+s=$(<$states2/s)
+
+restore_logic () {
+    state=$(<$states/shadow_enabled_${s})
+    shadow_range=$(<$states/shadow_range_${s})
+    shadow_render_power=$(<$states/shadow_render_power_${s})
+    shadow_rgba=$(<$states/shadow_rgba_${s})
+    echo "hl.config({
+    decoration = {
+    shadow = {
+        enabled = $state,
+        range = $shadow_range,
+        render_power = $shadow_render_power,
+        color = $shadow_rgba,
+    },
+    },
+    })" > $HOME/.config/hypr/configs/shadow.lua
+    echo 1 > $states2/shadow_done
+}
+
+shadow_restore_func () {
+restore_logic
+notify-send -a Shadow "Shadow" "Restored" &
+    exit 0
+}
+
+
+shadow_off_func () {
+
+    s=$(<$states2/s)
+    echo 0 > $states/shadow_enabled_${s}
+    restore_logic
+    notify-send -a Shadow "Shadow" "Disabled" &
+    exit 0
+}
+
+shadow_on_func () {
+    s=$(<$states2/s)
+    echo 1 > $states/shadow_enabled_${s}
+    restore_logic
+    notify-send -a Shadow "Shadow" "Enabled" &
+    exit 0
+}
+
+
+shadow_toggle_func () {
+    s=$(<$states2/s)
+    state=$(<$states/shadow_enabled_${s})
+    if (( state == 1 )); then
+        shadow_off_func
+        else
+            shadow_on_func
+            fi
+    exit 0
+}
+
+
+shadow_reset_func () {
+    # Clear the generated config so the Hyprland defaults (secondary.lua) apply.
+    > $HOME/.config/hypr/configs/shadow.lua
+    notify-send -a Shadow "Shadow" "Reset" &
+    exit 0
+}

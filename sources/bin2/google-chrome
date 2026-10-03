@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# this is google-chrome wrapper script in $PATH
+exec /home/appimages/chrome "$@"

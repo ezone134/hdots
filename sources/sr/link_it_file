@@ -1,0 +1,7 @@
+#!/usr/bin/env luajit
+-- sr/link_it_file — source link_it_defs and call link_it_file_func with args
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+
+dofile(sources .. "/link_it_defs")
+link_it_file_func(arg[1], arg[2])

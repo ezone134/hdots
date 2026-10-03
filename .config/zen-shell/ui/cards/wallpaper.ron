@@ -1,0 +1,86 @@
+(
+    // wallpaper card — fully declarative (zero Ink). A scrollable tile grid
+    // plus its right-edge scrollbar. Every number the grid needs is the card's
+    // own fit arithmetic (the adaptive cell shrinks until ≥5 columns and ≥2
+    // rows fit), so `cols` / `cell` / `start` / the block origin are all bound:
+    // no breakpoint ladder can express "keep at least five columns at any
+    // width", and a static `max_rows` cannot express a per-box row fit.
+    //
+    // The tile is a `hover` plate (r 10) with the thumbnail `image_inset` 3 px
+    // inside it, and the whole grid windows on `start` — with the cell KEYS
+    // staying absolute, so clicking a tile below the fold still resolves the
+    // same wallpaper as the tile's row in the list.
+    items: [
+        Header(title: "Backgrounds", glyph: "\u{f03e}", meta: "{wp_meta}", pad: 12.0),
+        Grid(
+            name: "wp_cells",
+            x: "wp_grid_x",
+            y: "wp_grid_y",
+            w: 0.0, h: 0.0,
+            // the column count and the cell size are one arithmetic, published
+            // together: `square` then makes the height follow the width
+            cols_var: "wp_cols",
+            cell_var: "wp_cell",
+            square: true,
+            gap: 8.0,
+            // the window is a PAIR: `start` is which cells are on the page and
+            // `max_rows_var` is how many rows of them the page holds — the
+            // card's own clip-safe row fit, so the grid stops at the fold
+            // instead of tiling its whole tail
+            start: "wp_scroll",
+            max_rows_var: "wp_rows",
+            r: 10.0,
+            // every tile is a plate, said once here instead of on all 295 cells
+            surface: hover,
+            hover_surface: hover_hl,
+            image_inset: 3.0,
+            key_base: 2000,
+            visible: "wp_has"
+        ),
+        // the centered empty state, where the grid would be
+        Text(
+            x: 0.0, y: 18.0, center_x: true, bottom: true,
+            text: "No images here", font_size: 9.5, color: fg3,
+            visible: "wp_none"
+        ),
+
+        // ── the right-edge scrollbar: track, thumb, two page-jump bands ──
+        // `right: true` + (margin, width) is the drawer's `x + w - s(9)`
+        // track / `x + w - s(10)` thumb framing; the thumb's height and top
+        // are the scroll's fraction of the pages, so both are bound.
+        // `right: true` measures `x` from the card's RIGHT edge to the box's
+        // own right side, so the 4 px track 9 px in is `x: 5.0` (9 − 4) —
+        // the drawer's `x + w − s(9)` track / `x + w − s(10)` thumb framing
+        Surface(
+            right: true, x: 5.0, w: 4.0,
+            y: "wp_sb_track_y",
+            h: "wp_sb_track_h",
+            r: 2.0, color: value("wp_sb_track"),
+            visible: "wp_sb"
+        ),
+        Surface(
+            right: true, x: 4.0, w: 6.0,
+            y: "wp_sb_thumb_y",
+            h: "wp_sb_thumb_h",
+            r: 3.0, color: value("wp_sb_thumb"),
+            visible: "wp_sb"
+        ),
+        // the bands are whatever the thumb left free above and below it, and a
+        // band under 4 px is not a target — so each carries its own gate, or a
+        // 0-height region would sit in the hit list and swallow clicks
+        Hit(
+            right: true, x: 0.0, w: 10.0,
+            y: "wp_sb_up_y",
+            h: "wp_sb_up_h",
+            key: 10000,
+            visible: "wp_sb_up"
+        ),
+        Hit(
+            right: true, x: 0.0, w: 10.0,
+            y: "wp_sb_down_y",
+            h: "wp_sb_down_h",
+            key: 10001,
+            visible: "wp_sb_down"
+        ),
+    ]
+)

@@ -1,0 +1,36 @@
+# -*- mode: sh -*-
+m=$(<$states2/m)
+echo "THIS IS THEME BODY RUN........................."
+
+{
+    . $hypr_global/qpid thunar || {
+        hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+    }
+} &
+
+{
+    blur_main restore &
+    shadow_main restore &
+    opacity_main restore & # it will call shader restore
+    general_main restore & # later move to other location?
+    hs_main restore &
+    shader_main restore &
+    max_wait=30
+    sleep 0.1
+    while (( $(<$states2/general_done) == 0 || $(<$states2/hs_done) == 0 || $(<$states2/shadow_done) == 0 || $(<$states2/opacity_done) == 0 || $(<$states2/shader_done) == 0 || $(<$states2/blur_done) == 0 && max_wait > 0 )); do
+        sleep 0.1
+        ((max_wait--))
+    done
+    echo "firing hyprctl reload"
+    hyprctl reload
+} &
+
+{
+    kill -SIGUSR1 $(. $hypr_global/qpid kitty) &>/dev/null
+} &
+
+{
+. $hypr_sources/helpers/remove_theme_lock_file
+} &
+
+echo "this is end of theme body run"

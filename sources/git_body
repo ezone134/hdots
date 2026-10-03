@@ -1,0 +1,138 @@
+# -*- mode: sh -*-
+
+[[ $USER != root && -n $pat ]] && {
+
+    # Helper function for directory existence verification
+    global_verify () {
+        [[ -e "$verify_dir" ]] || {
+            echo "ERROR: $verify_dir does not exist!"
+            return 1
+        }
+    }
+
+    # Helper function for size checks
+    size_verify () {
+        local size_mb
+        size_mb=$(du -sm "$target_dir" | cut -f1)
+        [[ "$size_mb" -lt "$min_size_mb" ]] && {
+            echo "ERROR: $target_dir is only $size_mb MB, less than $min_size_mb MB. Halting."
+            return 1
+        }
+        echo "Size check passed: $size_mb MB >= $min_size_mb MB"
+    }
+
+    up_hdots_func () {
+        local running_message="Uploading to github"
+        local update_message="Upload hdots"
+        local source_dir="$HOME/.config/hdots"
+        local verify_dir="$HOME/.config/hdots/states"
+        local user_name="Ezone Solutions"
+        local user_email="ezonesolutions22@gmail.com"
+        local gitrepo="https://ezone134:${pat}@github.com/ezone134/${base_name}.git"
+        local branch="main"
+        local min_size_mb=40
+        local rsync_flag_git="-caAxXHhiv --inplace --fsync --no-whole-file"
+        local target_dir="/tmp/git-tmp/long-name-for-safety/$base_name"
+
+        echo "$running_message"
+        global_verify
+
+        # Full literal path cleanup
+        rm -rf /tmp/git-tmp/long-name-for-safety/*
+        mkdir -p "$target_dir"
+
+        rsync $rsync_flag_git "$source_dir/" "$target_dir/"
+
+        # Full literal path for .git removal
+        rm -rf /tmp/git-tmp/long-name-for-safety/hdots/.git
+        cd "$target_dir"
+
+        size_verify
+
+        git init
+        git config user.name "$user_name"
+        git config user.email "$user_email"
+        git checkout -b "$branch" 2>/dev/null || git checkout "$branch"
+        git add .
+        git commit -m "$update_message $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+        git remote remove origin 2>/dev/null || true
+        git remote add origin "$gitrepo"
+        git branch -M "$branch"
+        git push -f origin "$branch"
+
+        cd ~
+    }
+
+    up_zypp_func () {
+        local base_name="zypp"
+        local source_dir="/var/cache/zypp"
+        local verify_dir="$source_dir/raw"
+        local running_message="Running upload to github"
+        local update_message="Update zypp"
+        local user_name="Ezone Solutions"
+        local user_email="ezonesolutions22@gmail.com"
+        local gitrepo="https://ezone134:$pat@github.com/ezone134/$base_name.git"
+        local branch="main"
+        local min_size_mb=40
+        local rsync_flag_git="-caAxXHhiv --inplace --fsync --no-whole-file"
+        local target_dir="/tmp/git-tmp/long-name-for-safety/$base_name"
+
+        echo "$running_message"
+        global_verify
+
+        # Full literal path cleanup
+        rm -rf /tmp/git-tmp/long-name-for-safety/*
+        mkdir -p "$target_dir"
+
+        sudo rsync $rsync_flag_git "$source_dir/" "$target_dir/"
+
+        # Full literal path for .git removal
+        rm -rf /tmp/git-tmp/long-name-for-safety/zypp/.git
+        cd "$target_dir"
+
+        size_verify
+
+        git init
+        git config user.name "$user_name"
+        git config user.email "$user_email"
+        git checkout -b "$branch" 2>/dev/null || git checkout "$branch"
+
+        git add .
+        git commit -m "$update_message $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+        git remote remove origin 2>/dev/null || true
+        git remote add origin "$gitrepo"
+        git branch -M "$branch"
+        git push -f origin "$branch"
+
+        cd ~
+    }
+
+    down_zypp_func () {
+        local zyppcache="/var/cache/zypp"
+        local gitdir="/tmp/zypp-git/opensuse_repo"
+        local gitrepo="https://ezone134:$pat@github.com/ezone134/zypp.git"
+        local branch="main"
+        local min_size_mb=40
+        local target_dir="$gitdir/zypp"
+
+        echo "git repo is $gitrepo"
+
+        [[ -e "$zyppcache" ]] || {
+            echo "$zyppcache does not exist.. creating new, needs sudo"
+            sudo mkdir -p "$zyppcache"
+        }
+
+        # Full literal path cleanup
+        rm -rf /tmp/zypp-git/opensuse_repo
+        mkdir -p "$gitdir"
+        cd "$gitdir"
+
+        git clone "$gitrepo"
+
+        size_verify
+
+        sudo rsync -caxXhHiv --exclude=.git "$target_dir/" "$zyppcache/"
+        cd ~
+    }
+
+}

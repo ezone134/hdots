@@ -1,0 +1,14 @@
+# -*- mode: sh -*-
+alias sd='sudo '
+chroot_path () {
+C="$1"
+mkdir -p "$C"/{dev,proc,sys,tmp,run}
+mount --rbind /dev "$C/dev"
+mount --make-rslave "$C/dev"
+mount -t proc /proc "$C/proc"
+mount --rbind /sys "$C/sys"
+mount --make-rslave "$C/sys"
+mount --rbind /tmp "$C/tmp"
+mount --bind /run "$C/run"
+chroot "$C" /bin/bash
+}

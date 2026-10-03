@@ -1,0 +1,44 @@
+-- helper gen_keybinds_cache
+-- Parses the trailing `-- dots |` comments in $HOME/.config/hypr/keybinds.lua and
+-- writes one cache: $states2/keybinds_cache — JSON [{key,desc},…] read by
+-- zen-shell (see zen-shell/src/themes.rs:keybinds_path).
+--
+-- Each comment is authored as:
+--     <hl.bind line>  -- dots | SUPER + KEY   →   What it does
+-- (variable whitespace around the → is tolerated). Commented-out binds
+-- (--hl.bind…) are skipped. Sourced by hypr_init_logic at boot.
+local kbl = os.getenv("HOME") .. "/.config/hypr/keybinds.lua"
+if not is_file(kbl) then
+    err("gen_keybinds_cache: " .. kbl .. " missing")
+    return 1
+end
+
+local json_parts = {}
+local first = true
+
+for line in io.lines(kbl) do
+    if line:find("-- dots", 1, true) then
+        local trimmed = line:match("^%s*(.-)%s*$")
+        -- skip commented-out binds (--hl.bind…)
+        if not trimmed:match("^%-%-") then
+            local part = line:match("%-%- dots | (.*)")
+            if part and part ~= "" then
+                local keys = part:match("^(.*)%s*→")
+                local desc = part:match("→%s*(.-)%s*$")
+                if keys then
+                    keys = keys:match("^%s*(.-)%s*$")
+                end
+                if desc then
+                    desc = desc:match("^%s*(.-)%s*$")
+                end
+                if keys and desc and keys ~= "" and desc ~= "" then
+                    if not first then json_parts[#json_parts + 1] = "," end
+                    json_parts[#json_parts + 1] = '\n  {"key":"' .. keys .. '","desc":"' .. desc .. '"}'
+                    first = false
+                end
+            end
+        end
+    end
+end
+
+tf(states2 .. "/keybinds_cache", "[" .. table.concat(json_parts) .. "\n]\n")

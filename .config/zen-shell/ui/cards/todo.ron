@@ -1,0 +1,62 @@
+(
+    // todo card — fully declarative, zero `Ink`.
+    //
+    // Geometry of record (the old Rust body drawer):
+    //   title at x+14, y+10 (11.5 semibold) · done/total at x+w−14, y+12
+    //   rows from y+36, 24 px stride · checkbox 11×11 at x+14, row+1 (r 3.5)
+    //   label at x+32, row+1 (9.5) · hover ✕ right-anchored 20 px from the
+    //   card edge · "+N more" centered one row under the last DRAWN row (8.0)
+    //   empty state: "No tasks yet" centered at y+60 (9.5) + the todo glyph
+    //   centered at y+78 (16) in mix(hover, fg, 0.10)
+    //   composer strip: 26 px tall, 12 px in from the sides, its bottom edge
+    //   12 px above the card bottom
+    items: [
+        Header(title: "To-Do", meta: "{todo_count}", pad: 14.0),
+        // the checklist: the label column sits 20 px in from the row pad (32
+        // abs, clear of the checkbox), `bottom: 40` keeps the list clear of
+        // the composer strip (exactly the drawer's `(h − 76) / 24` row cap:
+        // a row may not cross `card_h - 40`), and
+        // `more` prints the hidden count under the fold — the item owns that
+        // count, so it lands right for any card height.
+        Rows(
+            name: "todo_rows",
+            y: 36.0,
+            row_h: 24.0,
+            pad: 12.0,
+            bottom: 40.0,
+            cols: [(x: 20.0, size: 9.5)],
+            key_base: 60,
+            max_rows: 8,
+            start: "todo_scroll",
+            check: "todo_checks",
+            del_base: 70,
+            del_pad: 20.0,
+            more: "+{n} more",
+        ),
+        // empty state — only while the list itself is empty
+        Text(
+            x: 0.0, y: 60.0, w: 0.0, center_x: true,
+            text: "No tasks yet", font_size: 9.5,
+            font: ui, weight: regular, color: fg,
+            visible: "todo_empty",
+        ),
+        Text(
+            x: 0.0, y: 78.0, w: 0.0, center_x: true,
+            text: "\u{f256}", font_size: 16.0,
+            font: ui, weight: regular, icon: true,
+            color: value("todo_empty_ink"),
+            visible: "todo_empty",
+        ),
+        Composer(
+            pad: 12.0,
+            y: 12.0,
+            bottom: true,
+            text: "{todo_buf}",
+            focus: "todo_focus",
+            placeholder: "Add a task…",
+            key: 78,
+            add: true,
+            add_key: 30702,
+        ),
+    ],
+)

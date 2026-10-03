@@ -1,0 +1,30 @@
+# -*- mode: sh -*-
+
+if [[ -f "$sources/misc/vars" ]]; then
+    . "$sources/misc/vars"
+else
+    . "$HOME/.config/${d_id}/sources/misc/vars"
+fi
+
+[[ -f /tmp/auto_launch_${USER} ]] || {
+    > /tmp/auto_launch_${USER}
+
+    rbase=$(<$dots/states/b) || rbase=/tmp
+    export rbase
+
+    . "$dots/sources/create_dummies"
+
+    if [[ -e $HOME/env_override ]]; then
+        while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*-- ]] && continue
+            if [[ "$line" == *auto_launch* ]]; then
+                [[ "$line" == *1* ]] && auto_launch=1 || auto_launch=0
+            fi
+        done < "$HOME/env_override"
+        [[ -z $auto_launch ]] && auto_launch=$(<$dots/states/auto_launch) || auto_launch=1
+    else
+        auto_launch=$(<$dots/states/auto_launch) || auto_launch=1
+    fi
+
+    [[ $auto_launch == 1 ]] && start-hyprland
+}

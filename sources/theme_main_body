@@ -1,0 +1,257 @@
+-- helper theme_main_body
+-- ported from bash sources/theme_main_body
+
+function wait_for_theme_proc_to_stop_func()
+    dofile(sources .. "/sr/dismiss_notif")
+    local lock_path = states2 .. "/theme_lock"
+    -- pure blocking loop: wait until the theme run lock is gone
+    while is_file(lock_path) do
+        sleep(0.5)
+    end
+end
+
+function wait_until_css_done()
+    if flagf_get(states2 .. "/" .. "css4_done") == "1" then return end
+    local fd = inotify_init()
+    assert(fd, "inotify_init failed")
+    inotify_watch(fd, states2, 0x2 + 0x8 + 0x4) -- IN_MODIFY | IN_CLOSE_WRITE | IN_ATTRIB
+    while flagf_get(states2 .. "/" .. "css3_done") ~= "1"
+        or flagf_get(states2 .. "/" .. "css4_done") ~= "1" do
+        inotify_wait_event(fd, 500)
+    end
+    inotify_close(fd)
+end
+
+function theme_reapply_func_accent_hot_reload(...)
+    local acc_changed_path = states2 .. "/acc_changed"
+    local full_reload_path = states2 .. "/full_theme_reload"
+    local acc_reload_path = states2 .. "/acc_reload"
+
+    local acc_changed = flagf_get(acc_changed_path)
+    local full_reload = flagf_get(full_reload_path)
+    local acc_reload = flagf_get(acc_reload_path)
+
+    -- bash gate: (( acc_changed == 1 || full_theme_reload == 1 && $acc_reload == 1 ))
+    local flags_set = (acc_changed == "1" or full_reload == "1")
+
+    if flags_set and tonumber(acc_reload) == 1 then
+        read_mode_flags()
+        local alt_flag = 0
+        local gtk_theme = out("gsettings get org.gnome.desktop.interface gtk-theme")
+        if gtk_theme:find("alt") then
+            alt_flag = 1
+        end
+
+        local new_theme
+        if m == "d" then
+            if alt_flag == 1 then
+                new_theme = "gtk_d"
+            else
+                new_theme = "gtk_d_alt"
+            end
+        else
+            if alt_flag == 1 then
+                new_theme = "gtk_l"
+            else
+                new_theme = "gtk_l_alt"
+            end
+        end
+
+        if tonumber(full_reload) == 1 then
+            dofile(sources .. "/theme_definitions")
+            font_vars()
+            if m == "d" then vars_d() else vars_l() end
+        end
+
+        -- wait for the theme run to finish: inotify event-driven until lock file is gone
+        wait_until_css_done()
+
+        run("gsettings set org.gnome.desktop.interface gtk-theme " .. shq(new_theme))
+        tf(states2 .. "/" .. "cur_theme", new_theme)
+
+        if tonumber(full_reload) == 1 then
+            full_hot_reload_func(...)
+            run_bg("notify-send -a theme-extras 'Theme extras' 'Accent hot releload + full theme set reapply …'")
+        else
+            run_bg("notify-send -a theme-extras 'Theme extras' 'Accent hot reloaded …'")
+        end
+    end
+
+    flagf_set(states2 .. "/" .. "acc_changed", "0")
+    flagf_set(states2 .. "/" .. "full_theme_reload", "0")
+end
+
+function save_flags_func()
+    tf(states2 .. "/" .. "s_String", s_String)
+    tf(states2 .. "/" .. "s_string", s_string)
+    tf(states2 .. "/" .. "m_string", m_string)
+    tf(states2 .. "/" .. "m_String", m_String)
+    tf(states2 .. "/" .. "s_string_long", s_String .. " " .. m_String)
+    flagf_set(states2 .. "/" .. "sm", sm)
+    flagf_set(states2 .. "/" .. "s", s)
+    tf(states .. "/" .. "s", s)
+    flagf_set(states2 .. "/" .. "m", m)
+    flagf_set(states2 .. "/" .. "m_dummy", m)
+    tf("/tmp/mode", m)
+end
+
+function theme_apply_dark_func(...)
+    read_mode_flags()
+    if s == "n" then
+        s_String = "Normal"
+        s_string = "normal"
+        tf(states2 .. "/" .. "s_id", "N")
+        s_is = "n"
+    else
+        s_String = "Split"
+        s_string = "split"
+        flagf_set(states2 .. "/" .. "s", "d")
+        tf(states2 .. "/" .. "s_id", "SD")
+        s_is = "d"
+    end
+    m_String = "Dark"
+    m_string = "dark"
+    m = "d"
+    s = s_is
+    sm = s_is .. "d"
+    save_flags_func()
+    setting_theme = "yes"
+    tb_set_d(...)
+end
+
+function theme_apply_light_func(...)
+    read_mode_flags()
+    if s == "n" then
+        s_String = "Normal"
+        s_string = "normal"
+        tf(states2 .. "/" .. "s_id", "N")
+        s_is = "n"
+    else
+        s_String = "Split"
+        s_string = "split"
+        flagf_set(states2 .. "/" .. "s", "l")
+        tf(states2 .. "/" .. "s_id", "SL")
+        s_is = "l"
+    end
+    m_String = "Light"
+    m_string = "light"
+    m = "l"
+    s = s_is
+    sm = s_is .. "l"
+    save_flags_func()
+    setting_theme = "yes"
+    tb_set_l(...)
+end
+
+function restore_main_logic(...)
+if s == "n" then
+    s_String = "Normal"
+    s_string = "normal"
+    tf(states2 .. "/" .. "s_id", "N")
+    s_is = "n"
+else
+    s_String = "Split"
+    s_string = "split"
+    flagf_set(states2 .. "/" .. "s", m)
+    -- S${m^} → "SD" or "SL"
+    local s_id = "S" .. m:sub(1, 1):upper() .. m:sub(2)
+    tf(states2 .. "/" .. "s_id", s_id)
+    s_is = m
+end
+
+if m == "d" then
+    m_String = "Dark"
+    m_string = "dark"
+else
+    m_String = "Light"
+    m_string = "light"
+end
+
+s = s_is
+sm = s_is .. m
+save_flags_func()
+setting_theme = ""
+_G["tb_r_" .. m](...)
+local reapply_extra = ""
+local n_args = select("#", ...)
+local reapply_parts = {}
+for i = 1, n_args do reapply_parts[#reapply_parts + 1] = shq(tostring(select(i, ...))) end
+if n_args > 0 then reapply_extra = " " .. table.concat(reapply_parts, " ") end
+theme_reapply_func_accent_hot_reload()
+end
+
+function theme_main_restore_func(...)
+    wait_for_theme_proc_to_stop_func()
+    read_mode_flags()
+    restore_main_logic()
+end
+
+
+function theme_main_restore_state_func(...)
+    wait_for_theme_proc_to_stop_func()
+    s = ff(states2 .. "/s")
+    m = ff(states2 .. "/m")
+    restore_main_logic()
+end
+
+function debounce_func(...)
+    -- bash debounce: echo $$ > theme_switch_pid, then background a wait that
+    -- sleeps 0.5s and only applies if this request is still the newest one and
+    -- the desired mode actually differs from the current mode.
+    local mypid = getpid()
+    tf(states2 .. "/theme_switch_pid", tostring(mypid))
+    local parts = {}
+    local n_args = select("#", ...)
+    for i = 1, n_args do parts[#parts + 1] = string.format("%q", tostring(select(i, ...))) end
+    local tail = table.concat(parts, ", ")
+    local code = string.format(
+        "local uh = %q "
+        .. "dofile(uh .. '/utils') dofile(uh .. '/theme_main_body') dofile(uh .. '/theme_body') "
+        .. "sleep(0.5) "
+        .. "if ff(states2 .. '/theme_switch_pid') ~= tostring(%d) then return end "
+        .. "local mcur = ff(states2 .. '/m') "
+        .. "local final = ff(states2 .. '/m_dummy') "
+        .. "if mcur == final then return end "
+        .. "wait_for_theme_proc_to_stop_func() "
+        .. "if final == 'l' then theme_apply_light_func(%s) else theme_apply_dark_func(%s) end",
+        sources, mypid, tail, tail)
+    run_bg("luajit -e " .. shq(code))
+end
+
+function theme_switch_func(...)
+    local cur = flagf_get(states2 .. "/" .. "m_dummy")
+    if cur == "d" then
+        flagf_set(states2 .. "/" .. "m_dummy", "l")
+    else
+        flagf_set(states2 .. "/" .. "m_dummy", "d")
+    end
+    debounce_func(...)
+end
+
+function theme_cmd(m_arg, ...)
+    if m_arg == "status" or m_arg == "get" then
+        theme_cur()
+    elseif m_arg == "dark" then
+        theme_apply_dark_func(...)
+    elseif m_arg == "light" then
+        theme_apply_light_func(...)
+    elseif m_arg == "toggle" or m_arg == "switch" then
+        theme_switch_func(...)
+    elseif m_arg == "restore" then
+        theme_main_restore_func(...)
+    elseif m_arg == "crestore" then
+        flagf_set(states2 .. "/" .. "acc_changed", "1")
+        theme_main_restore_func(...)
+    elseif m_arg == "srestore" then
+        flagf_set(states2 .. "/" .. "st_switched", "1")
+        theme_main_restore_state_func(...)
+    elseif m_arg == "frestore" then
+        flagf_set(states2 .. "/" .. "full_theme_reload", "1")
+        theme_main_restore_func(...)
+    elseif m_arg == "gtk_reload" then
+        flagf_set(states2 .. "/" .. "acc_changed", "1")
+        theme_reapply_func_accent_hot_reload(...)
+    else
+        print("theme: use status|dark|light|toggle|restore|reapply")
+    end
+end

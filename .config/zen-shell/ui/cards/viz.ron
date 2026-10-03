@@ -1,0 +1,59 @@
+(
+    // viz card — fully declarative (zero Ink). The Rust body survives as the
+    // no-scene fallback and is the geometry of record: an even bar pitch of
+    // `plot_w / n` (NOT the line trace's `w / (n-1)`), bars standing on the
+    // plot's bottom edge, every 4th bar the flat accent, and the sub-0.5px
+    // bars culled. One `Spectrum` item per style, gated on which style the
+    // `viz_style` cycle is on; the series is published already clamped to the
+    // card's own `n` and zero-padded, so the pitch holds.
+    items: [
+        // a hand-rolled header: the accent glyph, and the title 1px further
+        // right at 12 (the drawer picks its own gap/size, not card_head's)
+        Header(title: "Visualizer", glyph: "\u{f001}", glyph_color: acc,
+               title_size: 12.0, title_dx: 18.0, pad: 12.0),
+        // style cycle (top-right corner, icon only — no pill bg): a 16×20
+        // well 4 px in from the right edge, 20 px down, with the 12 px glyph
+        // centered in it
+        // a 12px glyph 2px inside that well: `glyph` sits at `glyph_pad`
+        // (a hit with no label is glyph-only), and the glyph path runs one px
+        // over `font_size` — the bump that matches a label's cap height
+        Hit(
+            x: 4.0, y: 4.0, w: 16.0, h: 20.0, r: 0.0, right: true,
+            glyph: "\u{f009}", glyph_pad: 2.0, font_size: 11.0,
+            glyph_color: fg, glyph_color_hover: acc,
+            label_dy: 5.0,
+            key: 33000,
+        ),
+        // the plot: 16 px in from each side, 42 px down (the drawer's own
+        // header allowance) and 12 px of bottom pad
+        Spectrum(
+            name: "viz_series", x: 16.0, y: 42.0, w: -16.0, h: -12.0,
+            min_w: 20.0, min_h: 12.0,
+            kind: rounded, floor: 0.5, bar_frac: 0.5, min_bar_w: 2.0,
+            color: acc, accent_every: 4, tint: 0.35,
+            visible: "viz_bars",
+        ),
+        Spectrum(
+            name: "viz_series", x: 16.0, y: 42.0, w: -16.0, h: -12.0,
+            min_w: 20.0, min_h: 12.0,
+            kind: block, floor: 0.5, inset: 1.0, min_bar_w: 1.0,
+            color: acc, accent_every: 4, tint: 0.4,
+            visible: "viz_block",
+        ),
+        Spectrum(
+            name: "viz_series", x: 16.0, y: 42.0, w: -16.0, h: -12.0,
+            min_w: 20.0, min_h: 12.0,
+            kind: wave, thickness: 2.0,
+            color: acc, tint: 0.0,
+            visible: "viz_wave",
+        ),
+        // the silent caption only earns its place on a card tall enough to
+        // carry it (the drawer's own `h >= s(90)`)
+        When(
+            min_h: 90.0,
+            items: [
+                Text(x: 0.0, y: 24.0, center_x: true, bottom: true, text: "no audio", font_size: 8.0, color: fg3, visible: "viz_silent"),
+            ],
+        ),
+    ],
+)

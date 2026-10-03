@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- alpha_main — set channel-scoped alpha flags (acc_alpha, border_alpha, ...).
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/alpha_body")
+alpha_cmd(unpack(arg))

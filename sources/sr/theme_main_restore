@@ -1,0 +1,7 @@
+#!/usr/bin/env luajit
+-- sr/theme_main_restore — source theme_main_body and call theme_main_restore_func
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/theme_main_body")
+dofile(sources .. "/theme_body")
+theme_cmd("restore")

@@ -1,0 +1,4 @@
+local scaling_governor = "powersave"
+local power_dpm_force_performance_level = "manual"
+local power_dpm_state = "battery"
+local pp_dpm_sclk = "0"

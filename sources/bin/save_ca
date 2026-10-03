@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+s=$(<$states2/s)
+cur_hex=$(<$states/custom_acc_${s})
+printf -v now '%(%s)T' -1
+[[ "$cur_hex" == "#"* ]] && {
+    caml_content=$(< "$caml")
+    if [[ "$caml_content" == *"$cur_hex"* ]]; then
+        found_name=""
+        while IFS= read -r line; do
+            if [[ "$line" == *"$cur_hex"* ]]; then
+                found_name="${line%%=*}"
+                found_name="${found_name//[[:space:]]/}"
+                break
+            fi
+        done < "$caml"
+        display_name="${found_name:-$cur_hex}"
+        notify-send "Save color" "'$display_name' ($cur_hex) is already saved in system" &
+    else
+        entry_name="saved_$now"
+        printf '{ "%s", "%s" },\n' "$entry_name" "$cur_hex" >> "$dots/sources/c_acc/saved"
+        notify-send "Save color" "Saved '$entry_name' ($cur_hex) successfully" &
+    fi
+}

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+. "$hypr_sources/helpers/power_body"

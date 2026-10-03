@@ -1,0 +1,56 @@
+(
+    // ACCENT — pick the accent source (wallpaper / scheme default / custom).
+    // Mirrors the Settings Appearance block: a defined-hex is merged into the
+    // custom-acc logic, so only three sources are offered.
+    //
+    // The PICKER is declarative; the custom-accents subview stays in the Rust
+    // drawer (it owns a paged scroll plus the `accent_list_rect` write-back the
+    // wheel handler reads), so every item here is gated on `accent_picker`
+    // (= the subview is closed) and the resident `Ink` still handles the rest.
+    //
+    // Geometry of record (draw_accent_card): the block is centered in the card
+    // with `top = ((h − 156) / 2).clamp(30, 48)` — height-dependent, so every y
+    // here is a published anchor the shell computes in BASE px (a `Text` has
+    // `y` but no `dy`, so the 6.5 / 5.5 insets ride in the scalar). The
+    // scheme row sits at `top + 28` and the three sources at `top + 58`, all on
+    // the drawer's 30 px pitch.
+    items: [
+        Header(title: "Theme & Accent", glyph: "\u{f1fc}", pad: 12.0),
+        // the scheme row — its own region is 30 px tall while the source rows'
+        // are 26 (`region_dh: -4.0`), which is why this is a standalone `Hit`
+        // rather than the first row of the list. `x: 10, w: -10` is the
+        // drawer's `x + 10, w − 20`: 10 in each side (a negative `w` is the
+        // span left from `x` to `right − inset`)
+        Hit(x: 10.0, y: "accent_scheme_region_y", w: -10.0, h: 30.0, key: 28,
+            visible: "accent_picker"),
+        Text(x: 14.0, y: "accent_scheme_text_y", w: 0.0, text: "{accent_scheme}", font_size: 10.0,
+             color: value("accent_scheme_ink"),
+             visible: "accent_picker"),
+        Text(x: 18.0, y: "accent_chev_y", w: 0.0, right: true, text: "\u{f054}", font_size: 11.0,
+             color: fg2, visible: "accent_picker"),
+        Rows(
+            name: "accent_rows",
+            y: "accent_rows_y",
+            row_h: 30.0,
+            pitch: 30.0,
+            pad: 10.0,
+            row_dy: 6.5,
+            // the drawer's loop breaks at `card_h − 3`
+            bottom: 3.0,
+            visible: "accent_picker",
+            key_base: 32000,
+            // the source regions are 4 px shorter than the 30 px row box
+            region_dh: -4.0,
+            cols: [
+                // the ACTIVE row's rail on the left edge: 3 wide × 12 tall at
+                // `top + ((30 − 4) / 2) − 6` = 7 into the row, `acc`; the other
+                // two rows publish `clear`, so the cell paints nothing. The
+                // cell text is empty and still draws because it opts into `dot`
+                (x: 0.0, dot: (size: 3.0, h: 12.0, radius: 1.5, top: 7.0)),
+                // the label, `acc` under the cursor
+                (x: 8.0, size: 10.0),
+            ],
+        ),
+        Ink(x: 0.0, y: 0.0, w: 0.0, h: 0.0, name: "accent"),
+    ],
+)

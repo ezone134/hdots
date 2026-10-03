@@ -1,0 +1,27 @@
+if not is_file(caml) then
+    run_bg("notify-send -a theme-extras 'Theme extras' 'Generating accent hex files…'")
+    dofile(sources .. "/ca_array")
+
+    local out_lines = {}
+    local json_parts = { "[" }
+
+    for i, entry in ipairs(master_array) do
+        local nm = entry[1]
+        local h = entry[2]
+
+        if nm and h then
+            -- 1. Generate text format line
+            out_lines[#out_lines + 1] = nm .. ' = "' .. h .. '"'
+
+            -- 2. Generate JSON format line matching your schema
+            if i > 1 then json_parts[#json_parts + 1] = "," end
+            json_parts[#json_parts + 1] = string.format('{"name":"%s","hex":"%s"}', nm, h)
+        end
+    end
+
+    json_parts[#json_parts + 1] = "]"
+
+    -- Write both files out
+    tf(caml, table.concat(out_lines, "\n"))
+    tf(states2 .. "/custom_acc.json", table.concat(json_parts))
+end

@@ -1,0 +1,95 @@
+(
+    // quote card — fully declarative (zero `Ink`).
+    //
+    // Geometry of record (draw_quote_card): 12 px pad, a 24 px header, the
+    // wrap box from y 28 down to 40 px above the card's bottom edge (the
+    // drawer's `(h - 24 - 40).max(10)`), and the two pills as a centered
+    // 88 + 12 + 88 pair whose bottom edge sits 8 px above the card's. Each
+    // label's baseline is 21 px below its pill's top — the drawer's
+    // `py + ph - 5`.
+    //
+    // The save pill's fill + ink follow whether a quote is loaded (green when
+    // armed, the quiet well when not) and its region only exists when it is
+    // armed, both through published values; the refresh pill's hover lift is
+    // the drawer's `mix(acc, fg, 0.15)`.
+    items: [
+        Header(
+            title: "Quote",
+            glyph: "\u{f10d}",
+            glyph_color: acc,
+            pad: 12.0,
+        ),
+        Text(
+            // the drawer's own meta metrics (y 9, 8.5) and its three-state ink
+            x: 12.0, y: 9.0, w: 0.0,
+            right: true,
+            text: "{quote_meta}", font_size: 8.5, font: ui, weight: regular,
+            color: value("quote_meta_ink"),
+        ),
+        TextWrap(
+            // the wrap box: 34 chars a line, 136 chars total, every line
+            // centered — the drawer's own loop, and the "— author" caption
+            text: "{quote_text}",
+            caption: "— {quote_author}",
+            top: 28.0, bottom: 40.0,
+            font_size: 10.0, line_h: 13.0,
+            color: fg,
+            visible: "quote_has",
+        ),
+        // the two swap states share the wrap box's center line, 6 px up
+        Text(
+            x: 0.0, y: -6.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "fetching a quote…", font_size: 9.0, font: ui, weight: regular,
+            color: fg3,
+            visible: "quote_fetching",
+        ),
+        Text(
+            x: 0.0, y: -6.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "no quote yet", font_size: 9.0, font: ui, weight: regular,
+            color: fg3,
+            visible: "quote_empty",
+        ),
+        Row(
+            // the pill pair: bottom edge 8 px up, centered as a block. Each
+            // pill is a 88x26 Stack so the Row can measure it as a fixed
+            // child — the two pills then need no absolute x of their own.
+            x: 0.0, y: 8.0, w: 0.0, h: 26.0,
+            bottom: true, pad: 0.0, spacing: 12.0,
+            halign: center,
+            items: [
+                Stack(
+                    x: 0.0, y: 0.0, w: 88.0, h: 26.0, pad: 0.0,
+                    items: [
+                        Surface(x: 0.0, y: 0.0, w: 88.0, h: 26.0, r: 13.0, color: value("quote_new_fill")),
+                        Hit(x: 0.0, y: 0.0, w: 88.0, h: 26.0, key: 14_500),
+                    ],
+                ),
+                Stack(
+                    x: 0.0, y: 0.0, w: 88.0, h: 26.0, pad: 0.0,
+                    items: [
+                        Surface(x: 0.0, y: 0.0, w: 88.0, h: 26.0, r: 13.0, color: value("quote_save_fill")),
+                        // no region until a quote is loaded — the drawer's `save_ok`
+                        Hit(x: 0.0, y: 0.0, w: 88.0, h: 26.0, key: 14_501, visible: "quote_has"),
+                    ],
+                ),
+            ],
+        ),
+        // the pill labels: centered on the card's center line, 50 px either
+        // side of it (the pair's own centers), baseline 13 px above the card's
+        // bottom edge — the drawer's `py + ph - 5`
+        Text(
+            x: -50.0, y: 13.0, w: 0.0,
+            center_x: true, bottom: true,
+            text: "\u{f01e}  new", font_size: 10.0, font: ui, weight: regular,
+            color: value("quote_new_ink"),
+        ),
+        Text(
+            x: 50.0, y: 13.0, w: 0.0,
+            center_x: true, bottom: true,
+            text: "\u{f0c7}  save", font_size: 10.0, font: ui, weight: regular,
+            color: value("quote_save_ink"),
+        ),
+    ],
+)

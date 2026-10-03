@@ -1,0 +1,226 @@
+# -*- mode: sh -*-
+# this is theme_init
+. "$hypr_sources/helpers/themes"
+
+# ==============================================================================
+# Theme Definition Field Schema (fixed layout, no extras short-cut)
+# ==============================================================================
+# Every side block is a fixed 27-field record. Singles carry one side
+# (30 fields incl. sort_index/theme_mode/extras header); duals carry two
+# (57 fields). Indices below are 0-based array offsets.
+#
+#   [0]=sort_index  [1]=theme_mode(d/l/b)  [2]=extras(always "1")
+#
+#   side block (dark side of a single, or the dark block of a dual):
+#     [3]=sfg_mode  [4]=bg  [5]=bg2  [6]=bg3
+#     [7]=fg  [8]=fg2  [9]=fg3
+#     [10]=acc  [11]=acc_hc  [12]=acc_ec  [13]=acc_us  [14]=border
+#     [15]=hover  [16]=focus  [17]=disabled
+#     [18]=success  [19]=warning  [20]=danger  [21]=info
+#     [22]=sfg_d  [23]=sfg_l
+#     [24]=series1  [25]=series2  [26]=series3
+#     [27]=series4  [28]=series5  [29]=series6
+#
+#   dual light block: same layout shifted by +27 ([30..56]).
+
+display_final_vars () {
+    echo "theme_mode=$theme_mode
+    extras_first=$extras_first
+    extras_second=$extras_second
+    sfg_mode=$sfg_mode
+    bg=$bg
+    bg2=$bg2
+    bg3=$bg3
+    fg=$fg
+    fg2=$fg2
+    fg3=$fg3
+    acc=$acc
+    acc_hc=$acc_hc
+    acc_ec=$acc_ec
+    acc_us=$acc_us
+    border=$border
+    hover=$hover
+    focus=$focus
+    disabled=$disabled
+    success=$success
+    warning=$warning
+    danger=$danger
+    info=$info
+    sfg_d=$sfg_d
+    sfg_l=$sfg_l
+    series1=$series1
+    series2=$series2
+    series3=$series3
+    series4=$series4
+    series5=$series5
+    series6=$series6"
+}
+
+save_theme_vars () {
+    echo "theme_mode=$theme_mode
+    extras_first=$extras_first
+    extras_second=$extras_second
+    sfg_mode=$sfg_mode
+    bg=$bg
+    bg2=$bg2
+    bg3=$bg3
+    fg=$fg
+    fg2=$fg2
+    fg3=$fg3
+    acc=$acc
+    acc_hc=$acc_hc
+    acc_ec=$acc_ec
+    acc_us=$acc_us
+    border=$border
+    hover=$hover
+    focus=$focus
+    disabled=$disabled
+    success=$success
+    warning=$warning
+    danger=$danger
+    info=$info
+    sfg_d=$sfg_d
+    sfg_l=$sfg_l
+    series1=$series1
+    series2=$series2
+    series3=$series3
+    series4=$series4
+    series5=$series5
+    series6=$series6" > "$states2/theme_vars"
+}
+
+load_default_extras () {
+    hover="#1c1a20"
+    focus="#6a6d75"
+    disabled="#6a6d75"
+    success="#9ece6a"
+    warning="#ff9e64"
+    danger="#f7768e"
+    info="#7dcfff"
+    sfg_d="#1a1a1e"
+    sfg_l="#f3f4f6"
+}
+
+parse_first_base () {
+    echo "Loading first base fields..."
+    sfg_mode="${ref[3]}"
+    bg="${ref[4]}"
+    bg2="${ref[5]}"
+    bg3="${ref[6]}"
+    fg="${ref[7]}"
+    fg2="${ref[8]}"
+    fg3="${ref[9]}"
+    acc="${ref[10]}"
+    acc_hc="${ref[11]}"
+    acc_ec="${ref[12]}"
+    acc_us="${ref[13]}"
+    border="${ref[14]}"
+}
+
+parse_first_extras () {
+    echo "Loading first extra fields..."
+    hover="${ref[15]}"
+    focus="${ref[16]}"
+    disabled="${ref[17]}"
+    success="${ref[18]}"
+    warning="${ref[19]}"
+    danger="${ref[20]}"
+    info="${ref[21]}"
+    sfg_d="${ref[22]}"
+    sfg_l="${ref[23]}"
+}
+
+parse_first_series () {
+    echo "Loading first series fields..."
+    series1="${ref[24]}"
+    series2="${ref[25]}"
+    series3="${ref[26]}"
+    series4="${ref[27]}"
+    series5="${ref[28]}"
+    series6="${ref[29]}"
+}
+
+parse_second_base () {
+    echo "Loading light base fields..."
+    sfg_mode="${ref[30]}"
+    bg="${ref[31]}"
+    bg2="${ref[32]}"
+    bg3="${ref[33]}"
+    fg="${ref[34]}"
+    fg2="${ref[35]}"
+    fg3="${ref[36]}"
+    acc="${ref[37]}"
+    acc_hc="${ref[38]}"
+    acc_ec="${ref[39]}"
+    acc_us="${ref[40]}"
+    border="${ref[41]}"
+}
+
+parse_second_extras () {
+    echo "Loading light extra fields..."
+    hover="${ref[42]}"
+    focus="${ref[43]}"
+    disabled="${ref[44]}"
+    success="${ref[45]}"
+    warning="${ref[46]}"
+    danger="${ref[47]}"
+    info="${ref[48]}"
+    sfg_d="${ref[49]}"
+    sfg_l="${ref[50]}"
+}
+
+parse_second_series () {
+    echo "Loading light series fields..."
+    series1="${ref[51]}"
+    series2="${ref[52]}"
+    series3="${ref[53]}"
+    series4="${ref[54]}"
+    series5="${ref[55]}"
+    series6="${ref[56]}"
+}
+
+resolve_theme() {
+    theme_mode=""
+    found=0
+    ACTIVE_THEME="$1"
+    echo "theme_id is $ACTIVE_THEME"
+
+    # Bind local nameref for this function execution
+    local -n ref="$ACTIVE_THEME"
+
+    # --- Unpack Dark/Base Theme Fields ---
+    sort_index="${ref[0]}"
+    theme_mode="${ref[1]}"
+    extras_first="${ref[2]}"
+    t_theme_array_t="${ACTIVE_THEME}[@]"
+    [[ $theme_mode == d || $theme_mode == l || $theme_mode == b ]] && found=1 && echo "The found -> $ACTIVE_THEME and theme array: ${!t_theme_array_t}"
+    export found
+    if [[ $theme_mode == b ]]; then
+        # Fixed layout: the light block always follows the dark block (+27).
+        extras_second=1
+        echo "first extra is $extras_first"
+        echo "second extra is $extras_second"
+    else
+        parse_first_base
+        parse_first_extras
+        parse_first_series
+        extras_second=0
+        display_final_vars
+    fi
+}
+
+d_side () {
+    local -n ref="$ACTIVE_THEME"
+    parse_first_base
+    parse_first_extras
+    parse_first_series
+    display_final_vars
+}
+
+l_side () {
+    local -n ref="$ACTIVE_THEME"
+    parse_second_base
+    parse_second_extras
+    parse_second_series
+    display_final_vars
+}

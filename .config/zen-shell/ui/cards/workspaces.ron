@@ -1,0 +1,58 @@
+(
+    // workspaces card — fully declarative (zero Ink; the Rust drawer is the
+    // fallback when this file is absent). One tile per Hyprland workspace.
+    //
+    // The tile grid IS the drawer's own layout, expressed as a responsive
+    // frame:
+    //   · `cols_break` is the drawer's `(w − 24) / 34` column ladder written
+    //     out as its breakpoints — a card is `(w − 24) / 34` tiles wide, so
+    //     tile k becomes available at card width `24 + 34·k` (58 = 1 tile,
+    //     364 = 10, the drawer's `clamp(1, 10)` ceiling). Declaring the ladder
+    //     also caps the count at the number of workspaces, so three
+    //     workspaces in a wide card stay three wide tiles instead of three
+    //     tiles in an eight-column grid.
+    //   · `cell_max_w` / `cell_max_h` (48 × 40) + `center` are the drawer's
+    //     `.min(48) / .min(40)` caps and the block's centering in the body.
+    //   · `font_size` 9 px + `cell_w_break: [(30, 11)]` is the tile's own font
+    //     ladder: 11 px once a tile is 30 wide or more, 9 px below that (a
+    //     breakpoint ladder only ever RAISES the base size, like `cols_break`).
+    //   · `dot_*` + the cell's `marker` are the active tile's 3 px pip, 6 px
+    //     above the tile's bottom edge.
+    //
+    // Geometry of record (draw_workspaces_card), all in base px:
+    //   body      x 12, top 30 (24 px header + 6), width w−24, height h−36
+    //   gap       6
+    //   tile      ≤ 48 × 40, r 7, block centered in the body
+    //   label     centered on the tile's vertical midpoint, biased up 1 px
+    //             (the drawer's `th/2 − fs/2 − 1`)
+    //   pip       3 × 3, r 1.5, centered on the tile's bottom − 6
+    //
+    // Per-tile data (the number, and whether it is the active workspace) rides
+    // the `ws_tiles` cell list; the ink ladder below is this file's: the
+    // active tile holds its accent wash under the cursor, a hovered resting
+    // tile lifts to the strong hover fill.
+    items: [
+        Header(title: "Workspaces", glyph: "\u{e9b0}", meta: "{ws_meta}", pad: 12.0),
+        Grid(
+            name: "ws_tiles",
+            x: 12.0, y: 30.0, w: 0.0, h: -6.0,
+            pad: 0.0,
+            gap: 6.0,
+            cols: 1,
+            cols_break: [
+                (58.0, 1), (92.0, 2), (126.0, 3), (160.0, 4), (194.0, 5),
+                (228.0, 6), (262.0, 7), (296.0, 8), (330.0, 9), (364.0, 10),
+            ],
+            cell_max_w: 48.0,
+            cell_max_h: 40.0,
+            center: true,
+            font_size: 9.0,
+            cell_w_break: [(30.0, 11.0)],
+            r: 7.0,
+            key_base: 30800,
+            hover_surface: hover_hl,
+            dot_size: 3.0,
+            dot_dy: 6.0,
+        ),
+    ],
+)

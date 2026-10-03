@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+set -e
+
+file="$1"
+dir="${file%/*}"
+name="${file##*/}"
+
+base="${name%.*}"
+
+# Move to the directory containing the file
+cd "$dir"
+
+echo "Extracting...."
+notify-send -a Extractor "Extractor" "Extracting $name…" &
+
+# Handle AppImages first
+if [[ "$name" == *.AppImage ]] || [[ "$name" == "$base" ]]; then
+    if file "$name" | grep -q "executable"; then
+        chmod +x "$name"
+        ./"$name" --appimage-extract
+        exit 0
+    fi
+fi
+
+final_message () {
+notify-send -a Extractor "Extractor" "All files extracted" &
+}
+
+case "$name" in
+  *.zip)
+    unzip "$name" -d "$base"
+    final_message
+    ;;
+  *.tar)
+    mkdir -p "$base" && tar -xf "$name" -C "$base"
+    final_message
+    ;;
+  *.tar.gz|*.tgz)
+    mkdir -p "$base" && tar -xzf "$name" -C "$base"
+    final_message
+    ;;
+  *.tar.xz)
+    mkdir -p "$base" && tar -xJf "$name" -C "$base"
+    final_message
+    ;;
+  *.tar.bz2)
+    mkdir -p "$base" && tar -xjf "$name" -C "$base"
+    final_message
+    ;;
+  *.lz)
+    mkdir -p "$base" && lzip -dc "$name" > "$base/${base}"
+    final_message
+    ;;
+  *.gz)
+    mkdir -p "$base" && gunzip -c "$name" > "$base/$base"
+    final_message
+    ;;
+  *.7z)
+    7z x "$name" -o"$base"
+    final_message
+    ;;
+  *.rar)
+    mkdir -p "$base" && unrar x "$name" "$base/"
+    final_message
+    ;;
+    *.apk)
+        7z x "$name" -o"$base"
+        final_message
+        ;;
+   *.deb)
+        7z x "$name" -o"$base"
+        final_message
+        ;;
+  *)
+    notify-send -a Extractor "Extractor" "Unsupported file: $name" &
+    exit 1
+    ;;
+esac
+
+exit 0

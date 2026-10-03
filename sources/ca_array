@@ -1,0 +1,39 @@
+#!/usr/bin/env luajit
+-- ca_array
+-- builds master_array: an ordered list of { name, "#hex" } pair tables.
+-- Each c_acc/* file holds `{ "opensuse_green_39", "#73ba25" },` rows, so their
+-- contents are concatenated in order and evaluated as ONE chunk. The consumers
+-- iterate master_array by pair (`entry[1]`/`entry[2]`), so it has to be real
+-- tables, not the raw strings.
+
+local dir = sources .. "/c_acc"
+
+if not distro_id or distro_id == "" then
+    distro_id = ff(states2 .. "/distro")
+end
+
+local distro_map = {
+    fedora     = "fedora",
+    tumbleweed = "opensuse",
+    leap       = "opensuse",
+    arch       = "arch",
+    generic    = "generic"
+}
+
+local dn = distro_map[distro_id] or "generic"
+
+master_array = loadstring("return {" .. table.concat({
+    '{ "accent_amber", "#ffb000" },',
+    '{ "muted_lavender", "#9d8cbf" },',
+    '{ "stealth_graphite", "#2a2a2a" },',
+    ff(dir .. "/vlt") or "",
+    ff(dir .. "/lt") or "",
+    ff(dir .. "/lmt") or "",
+    ff(dir .. "/mt") or "",
+    ff(dir .. "/ht") or "",
+    ff(dir .. "/vht") or "",
+    ff(dir .. "/neutrals") or "",
+    ff(dir .. "/blc") or "",
+    ff(dir .. "/saved") or "",
+    ff(dir .. "/hc") or ""
+}, "\n") .. "}")()

@@ -1,0 +1,42 @@
+(
+    // POWER DRAW — battery watts (accent) and GPU watts (info blue) as two
+    // traces over one box, each last sample printed beside its B / G dot.
+    // Fully declarative: the Rust body survives as the no-scene fallback and
+    // is the geometry of record.
+    //
+    // The box is the drawer's: `x + 14`, `y + 30`, 80 px of right column
+    // reserved (`w: -94` = stop 94 px short of the card's right edge) and 12
+    // px of bottom pad (`h: -12`). The series arrive pre-normalized against
+    // the drawer's shared peak, so `max: 1.0` and the `Spark` item's own
+    // divide reproduce its arithmetic exactly.
+    items: [
+        Header(title: "Power", glyph: "\u{f0e7}", pad: 12.0),
+        // ── the right column: watts right-aligned at the pad, the dot 80 px
+        // in — the drawer's `lx - side_w + 4`
+        Text(right: true, x: 12.0, y: 32.0, w: 0.0, text: "{pw_b}", font_size: 10.0,
+             visible: "pw_live"),
+        Text(right: true, x: 12.0, y: 50.0, w: 0.0, text: "{pw_g}", font_size: 10.0,
+             visible: "pw_live"),
+        Surface(x: 81.0, y: 34.0, w: 7.0, h: 7.0, r: 2.0, right: true, color: acc,
+                visible: "pw_live"),
+        Surface(x: 81.0, y: 52.0, w: 7.0, h: 7.0, r: 2.0, right: true, color: info,
+                visible: "pw_live"),
+        // One sample cannot make a trace — the drawer's flat midline. The plot
+        // box starts at `y + 30` and is `card_h − 42` tall, so its midpoint is
+        // `card_h/2 + 9`: `y: 9` with `cy_pct: 0.5` is that line exactly.
+        Divider(x: 14.0, y: 9.0, w: -94.0, min_w: 20.0, cy_pct: 0.5, color: fg3,
+                visible: "pw_idle"),
+        // `min_w: 20` / `min_h: 10` are the drawer's own floors, so a card too
+        // narrow for the plot still shows a trace instead of a dot
+        Spark(name: "pw_b_series", x: 14.0, y: 30.0, w: -94.0, h: -12.0,
+              min_w: 20.0, min_h: 10.0,
+              color: acc, max: 1.0, kind: line, thickness: 2.0),
+        Spark(name: "pw_g_series", x: 14.0, y: 30.0, w: -94.0, h: -12.0,
+              min_w: 20.0, min_h: 10.0,
+              color: info, max: 1.0, kind: line, thickness: 2.0),
+        // the empty state, centered a caption's 6 px above the middle
+        Text(x: 0.0, y: -6.0, w: 0.0, center_x: true, center_y: true,
+             text: "no power sensors", font_size: 9.0, weight: regular, color: fg3,
+             visible: "pw_empty"),
+    ],
+)

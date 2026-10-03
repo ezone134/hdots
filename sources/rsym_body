@@ -1,0 +1,19 @@
+#!/usr/bin/env luajit
+-- helper rsym_body — relative symlink creator.
+
+function rsym_cmd(i)
+    if is_symlink(i .. "_") then
+        run_bg("notify-send -a Symlink 'Symlink' 'Already exists'")
+        exit_0()
+    end
+
+    local target = basename(i)
+    symlink(target, i .. "_")
+
+    if is_symlink(i .. "_") then
+        run_bg("notify-send -a Symlink 'Symlink' 'Created'")
+    else
+        run_bg("notify-send -a Symlink 'Symlink' 'Failed to create'")
+    end
+    exit_0()
+end

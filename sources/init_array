@@ -1,0 +1,7 @@
+-- array hypr_init_gen_array
+-- ported from bash sources/hypr_init_gen_array
+-- source:target pairs generated each time hyprinit runs
+
+init_array = {
+    {dots .. "/sources/udev_rule/power_rule", hypr_global .. "/99-power-source.rules"},
+}

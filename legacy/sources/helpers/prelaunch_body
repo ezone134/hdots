@@ -1,0 +1,73 @@
+# -*- mode: sh -*-
+
+main_logic() {
+    rm -rf "${rbase:-/tmp}/${USER}_rconf/hypr_bin"/* \
+           "${rbase:-/tmp}/${USER}_rconf/sources"/* \
+           "${rbase:-/tmp}/hypr_misc/misc"/* \
+           "${rbase:-/tmp}/${USER}_rconf/sources/quickshell"/*
+
+    mkdir -p "$hypr_bin" "$hypr_sources" "$rconf/scripts" "$rbase/hypr_misc/misc" "$hypr_global" "$rcache" "$rconf/quickshell"
+
+    cp -r "$hdots/source_run/"* "$hypr_global/" &
+    cp -r "$hdots/hypr_bin/"* "$hypr_bin/" &
+    cp -r "$hdots/sources/"* "$hypr_sources/" &
+    cp -r "$hdots/.config/quickshell/"* "$rconf/quickshell" &
+
+    wait
+
+    cp -r "$hdots/scripts/"* "$rconf/scripts/" &
+    cp -r "$hdots/misc/"* "$rbase/hypr_misc/misc/" &
+}
+
+splash_func() {
+    . "$hdots/sources/helpers/splash_init"
+}
+
+launch_final_func() {
+    mkdir -p "$states2"
+    s=$(<"$hdots/states/s")
+
+gtk_theme_name=$(gsettings get org.gnome.desktop.interface gtk-theme)
+case $gtk_theme_name in
+    *dark*)
+        m_init=d
+        theme_panic=""
+        ;;
+    *light*)
+        m_init=l
+        theme_panic=""
+        ;;
+    *)
+        m_init=l
+        theme_panic="yes"
+        ;;
+esac
+
+
+if (( ${s:-1} == 1 )); then
+    s_init=$m_init
+else
+    s_init=n
+fi
+
+    sm="${s_init}${m_init}"
+    echo "$sm" > "$states2/sm"
+
+    export s_init
+    export sm
+    export m_init
+    export do_not_relaunch_rofi="yes_dont_relaunch"  # donot in bg
+
+    show_splash=$(<"$hdots/states/show_splash_${s_init}")
+    [[ $show_splash == 1 ]] && splash_func &
+    disown
+
+    main_logic
+
+    [[ -e "$HOME/.config/hypr/configs/shadow.lua" ]] || {  # if hypr auto didnt generate these dummy then manually generate
+        . "$hypr_sources/helpers/create_dummy_configs"
+        hyprctl reload &
+    }
+
+    . "$hypr_sources/helpers/hypr_init_logic"
+}

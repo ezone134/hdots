@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Warp Terminal Emulator (Appimage)
+Comment=A simple test application
+Exec=/home/appimages/warp $@
+Icon=$hypr_global/icons/warp.png
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+StartupNotify=true
+Keywords=test;dummy;example;

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# audio_main — vol/mic/audio (wpctl/pactl) standalone CLI. Direct keybind
+# target; sources the shared audio body for the actual functions.
+set -u
+. "$hypr_sources/helpers/audio_body"
+
+case "${1:-vol}" in
+	vol)   shift; vol_cmd "$@";;
+	mic)   shift; mic_cmd "$@";;
+	audio) shift; audio_cmd "$@";;
+	*)     err "audio_main: use vol|mic|audio"; exit 1;;
+esac

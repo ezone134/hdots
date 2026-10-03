@@ -1,0 +1,23 @@
+-- helper theme_is_dark — master sourcable dark/light detector.
+-- The themes master no longer stores a mode per entry; the d/l/b answer is
+-- derived: dual = 4-digit flags, and a single theme's darkness comes from its
+-- own background luminance via is_dark_theme (YIQ; below 128 = dark).
+-- Sourced by theme_init and gen_theme_cards.
+
+dofile(sources .. "/sfg_calc")
+
+function is_dark_theme(hex_color)
+    -- Remove the '#' if it's included in the string
+    hex_color = hex_color:gsub("#", "")
+
+    -- Extract RGB components (base 16)
+    local r = tonumber(hex_color:sub(1, 2), 16) or 0
+    local g = tonumber(hex_color:sub(3, 4), 16) or 0
+    local b = tonumber(hex_color:sub(5, 6), 16) or 0
+
+    -- Calculate perceived brightness (YIQ formula)
+    local brightness = (r * 299 + g * 587 + b * 114) / 1000
+
+    -- Threshold is 128 (out of 255). Below 128 = Dark, Above = Light
+    return brightness < 128
+end

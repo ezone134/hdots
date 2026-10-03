@@ -1,0 +1,72 @@
+#1789987042
+/home/tw/.config/hdots/sources/misc/boot
+#1789987232
+echo $HOME
+#1789987285
+echo ~
+#1790054886
+link-all
+#1790065801
+/acc/common/misc/boot
+#1790067375
+/acc/common/misc/boot
+#1790067384
+exit
+#1790067815
+own_it /tmp/user-tw
+#1790067838
+chown -R /home/tw/
+#1790067844
+chown -R tw:tw /home/tw/
+#1790067865
+chown -R tw:tw /tmp/user-tw
+#1790069229
+own_it /tmp/aa
+#1790069438
+own_it /tmp/user-tw
+#1790069544
+/acc/common/misc/boot
+#1790071284
+vim 
+#1790071293
+vim /etc/systemd/system/boot.service
+#1790071470
+/acc/common/misc/boot
+#1790071490
+link-all
+#1790071700
+/acc/common/misc/boot
+#1790862779
+vim /etc/systemd/system/prep.service
+#1790930148
+vim
+#1790930151
+vi
+#1790930181
+/bin/busybox vi /etc/systemd/system/prep.service
+#1790930264
+/acc/common/misc/prep
+#1790930268
+exit
+#1790930610
+/acc/common/misc/prep
+#1790931009
+/acc/common/misc/prep
+#1790931017
+exit
+#1790934673
+/acc/common/misc/prep
+#1790934678
+exit
+#1790954190
+/acc/common/misc/prep
+#1790954192
+eexit
+#1790954194
+exit
+#1791014578
+/acc/common/misc/prep
+#1791014582
+exit
+#1791014960
+echo $dots

@@ -1,0 +1,11 @@
+#!/usr/bin/env luajit
+-- define_master
+-- ported from bash sources/define_master
+-- these vars are sourced before generating app configs
+
+function define_master()
+    alacritty_font = "Hack"
+    -- alacritty_font = "Victor Mono"
+end
+
+define_master()

@@ -1,0 +1,107 @@
+#!/usr/bin/env luajit
+
+local ffi = require("ffi")
+local bit = require("bit")
+
+-- Safe stat definition with buffer padding to prevent FFI layout crashes
+ffi.cdef[[
+    struct passwd {
+        char *pw_name;
+        char *pw_passwd;
+        int   pw_uid;
+        int   pw_gid;
+        char *pw_gecos;
+        char *pw_dir;
+        char *pw_shell;
+    };
+    struct passwd *getpwuid(int uid);
+
+    struct stat {
+        char __pad[256];
+    };
+    int stat(const char *pathname, struct stat *buf);
+    int lstat(const char *pathname, struct stat *buf);
+]]
+
+local function path_exists(path)
+    local s = ffi.new("struct stat")
+    return ffi.C.stat(path, s) == 0 or ffi.C.lstat(path, s) == 0
+end
+
+local function get_stat_fields(path)
+    local s = ffi.new("struct stat")
+    if ffi.C.stat(path, s) ~= 0 then return nil, nil end
+
+    -- Read st_uid from the padded buffer safely on Linux x86_64 (st_uid is typically at offset 28 or via pointer arithmetic)
+    -- Using safe pointer casting for uid which is standard on 64-bit Linux
+    local uid_ptr = ffi.cast("unsigned int*", s.__pad + 28)
+    local st_uid = uid_ptr[0]
+
+    local mode_ptr = ffi.cast("unsigned int*", s.__pad + 24)
+    local st_mode = mode_ptr[0]
+
+    return st_uid, st_mode
+end
+
+local function is_directory(path)
+    _, mode = get_stat_fields(path)
+    if mode then
+        return bit.band(mode, 0170000) == 0040000 -- S_IFDIR
+    end
+    return false
+end
+
+local function get_owner_name(path)
+    local uid, _ = get_stat_fields(path)
+    if uid then
+        local pwd = ffi.C.getpwuid(uid)
+        if pwd ~= nil then
+            return ffi.string(pwd.pw_name)
+        end
+    end
+    return nil
+end
+
+local function parse_args(args)
+    local flags = { quiet = false }
+    local positional = {}
+
+    for _, arg in ipairs(args) do
+        if arg:sub(1, 1) == "-" and arg:sub(2, 2) ~= "-" then
+            for i = 2, #arg do
+                local char = arg:sub(i, i)
+                if char == "q" then flags.quiet = true end
+            end
+        elseif arg == "--quiet" then
+            flags.quiet = true
+        else
+            table.insert(positional, arg)
+        end
+    end
+    return flags, positional
+end
+
+local function main()
+    local flags, pos = parse_args(arg)
+    local target = pos[1]
+    local target_user = pos[2] or os.getenv("u") or os.getenv("USER")
+
+    if not target or target == "/" or target == "" then
+        return 0
+    end
+
+    if not path_exists(target) then
+        return 0
+    end
+
+    local owner = get_owner_name(target)
+    if owner and owner ~= target_user then
+        if is_directory(target) then
+            os.execute(string.format("chown -R %s:%s %q", target_user, target_user, target))
+        else
+            os.execute(string.format("chown %s:%s %q", target_user, target_user, target))
+        end
+    end
+end
+
+main()

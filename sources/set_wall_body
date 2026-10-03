@@ -1,0 +1,55 @@
+#!/usr/bin/env luajit
+-- helper set_wall_body
+
+function set_wall_body(...)
+    if is_file(states2 .. "/wall_lock") then
+        run_bg("notify-send -a Wallpaper 'Wallpaper' 'Please wait — previous instance still running...'")
+        local max_try = 10
+        while is_file(states2 .. "/wall_lock") and max_try > 0 do
+            sleep(1)
+            max_try = max_try - 1
+        end
+    end
+
+    local wall_arg = select(1, ...)
+    local wall
+    if wall_arg and is_file(wall_arg) then
+        wall = wall_arg
+    else
+        wall = os.getenv("HOME") .. "/Wallpapers/" .. wall_arg
+    end
+
+    if is_file(wall) then
+        read_mode_flags()
+        local current_wall = ff(states .. "/current_wall_" .. s)
+        if current_wall ~= wall then
+            tf(states .. "/current_wall_" .. s, wall)
+            local need_acc_reload
+            if ff(states .. "/acc_source_" .. s) == "w" then
+                need_acc_reload = 1
+            else
+                need_acc_reload = 0
+            end
+
+            if is_file(states2 .. "/wall_lock") then
+                run_bg("notify-send -a Wallpaper 'Wallpaper' 'Waiting for pending processes...'")
+                local max_try = 10
+                while is_file(states2 .. "/wall_lock") and max_try > 0 do
+                    sleep(0.5)
+                    max_try = max_try - 1
+                end
+            end
+            touch(states2 .. "/wall_lock")
+
+            bg_fn(function()
+                dofile(sources .. "/awww_final")
+            end)
+
+            if need_acc_reload == 1 then
+                dofile(sources .. "/theme_body")
+                quick_regen(...)
+            end
+            rm(states2 .. "/wall_lock")
+        end
+    end
+end

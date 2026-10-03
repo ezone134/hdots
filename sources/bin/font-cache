@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+-- font-cache — rebuild the system font cache.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+run("fc-cache -fv")

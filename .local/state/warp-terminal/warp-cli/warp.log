@@ -1,0 +1,133 @@
+2026-09-27T18:06:43Z [INFO] Spawning terminal server process...
+2026-09-27T18:06:43Z [INFO] Running terminal server...
+2026-09-27T18:06:46Z [INFO] Unable to read user from secure storage: SecureStorageError(NotFound)
+2026-09-27T18:06:46Z [INFO] Connecting to SQLite database
+2026-09-27T18:06:46Z [WARN] SQLite error 284 (Automatic indexing used - database might benefit from additional indexes): automatic index on object_permissions(subject_type)
+2026-09-27T18:06:46Z [INFO] Initializing crash reporting Some("linux_stable_release") with tag "v0.2026.09.16.08.27.stable_02"...
+2026-09-27T18:06:46Z [INFO] Starting warp with channel state ChannelState { channel: Stable, additional_features: {}, config: ChannelConfig { app_id: AppId { qualifier: "dev", organization: "warp", application_name: "Warp" }, logfile_name: "warp.log", server_config: WarpServerConfig { server_root_url: "https://app.warp.dev", rtc_server_url: "wss://rtc.app.warp.dev/graphql/v2", session_sharing_server_url: Some("wss://sessions.app.warp.dev"), firebase_auth_api_key: "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs", iap_config: None }, oz_config: OzConfig { oz_root_url: "https://oz.warp.dev", workload_audience_url: None }, telemetry_config: Some(TelemetryConfig { telemetry_file_name: "warp.telemetry", rudderstack_config: Some(RudderStackConfig { write_key: "2iyG8S1RaV4XTX6SEypetFSEbLK", root_url: "https://warpianwzlfqdq.dataplane.rudderstack.com", ugc_write_key: "2uBazVfcqYBDYSOHnqSVx45GpTV" }) }), autoupdate_config: Some(AutoupdateConfig { releases_base_url: "https://releases.warp.dev", show_autoupdate_menu_items: true }), crash_reporting_config: Some(CrashReportingConfig { sentry_url: "https://0195a81da0714f55a93ee4624825f9ec@o540343.ingest.sentry.io/5658526" }), mcp_static_config: Some(McpStaticConfig { providers: [McpOAuthProviderConfig { issuer: "https://github.com/login/oauth", client_id: "Ov23lihTVQYPrqSxZi1F", client_secret: "ea776ec101b0fc6cc5db9d5ad2fbf61d18087883", loopback_client: None }] }) } } and version Some("v0.2026.09.16.08.27.stable_02")
+2026-09-27T18:06:46Z [INFO] Computing available system fonts
+2026-09-27T18:06:46Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:06:46Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:06:46Z [INFO] Initializing app services
+2026-09-27T18:06:46Z [INFO] Converting 0 legacy MCP servers into templatable MCP servers
+2026-09-27T18:06:46Z [INFO] Initialized execution profile model with state: Unsynced, file_backed_profiles: true
+2026-09-27T18:06:46Z [INFO] Read 8 bundled skills
+2026-09-27T18:06:46Z [INFO] Read 14 bundled skills
+2026-09-27T18:06:46Z [INFO] Loaded onnx classifier bert_tiny_v3.onnx
+2026-09-27T18:06:46Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:06:46Z [INFO] Initial global file-based MCP scan complete: 0 auto-started server(s) to await before the first turn
+2026-09-27T18:06:48Z [INFO] TUI autoupdate check finished: UpToDate { version: "v0.2026.09.16.08.27.stable_02" }
+2026-09-27T18:06:49Z [INFO] dispatching typed action: warp_tui::root_view::RootTuiAction::StartDeviceLogin
+2026-09-27T18:07:17Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:07:31Z [INFO] Resetting initial_load_complete condition for fresh cloud object fetch
+2026-09-27T18:07:31Z [INFO] No isolation platform detected
+2026-09-27T18:07:31Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:07:31Z [INFO] Reconstructing database, but it already exists
+2026-09-27T18:07:31Z [INFO] fetching updated cloud objects
+2026-09-27T18:07:31Z [INFO] forcing sync of all objects
+2026-09-27T18:07:31Z [INFO] Spawning the built-in Factory MCP server
+2026-09-27T18:07:31Z [INFO] Creating terminal model with 0 restored blocks
+2026-09-27T18:07:31Z [INFO] Connecting to SQLite database
+2026-09-27T18:07:31Z [INFO] SQLite Writer is resumed
+2026-09-27T18:07:31Z [INFO] Fetching channel versions and changelogs from Warp server
+2026-09-27T18:07:31Z [INFO] Starting shell /bin/bash
+2026-09-27T18:07:31Z [INFO] No isolation platform detected
+2026-09-27T18:07:31Z [INFO] Successfully spawned tty with pid: 6214
+2026-09-27T18:07:31Z [INFO] Successfully spawned child bash process with pid 6214
+2026-09-27T18:07:31Z [INFO] Cleaning up index metadata from SQLite
+2026-09-27T18:07:31Z [INFO] Received InitShell hook
+2026-09-27T18:07:31Z [INFO] Received CommandFinished hook
+2026-09-27T18:07:31Z [INFO] Tried to exit the alternate screen, but it was already inactive
+2026-09-27T18:07:31Z [INFO] Block finished with new state DoneWithExecution
+2026-09-27T18:07:31Z [INFO] Incrementing stage from WarpInput to ScriptExecution
+2026-09-27T18:07:31Z [INFO] Received Precmd hook
+2026-09-27T18:07:31Z [INFO] Received Bootstrapped hook
+2026-09-27T18:07:31Z [INFO] Configured typeahead mode as ShellReported
+2026-09-27T18:07:31Z [INFO] creating a local executor!
+2026-09-27T18:07:31Z [INFO] Parsed shell version string: Some([Number(5), Number(3), Number(9), Number(1), Text("release")])
+2026-09-27T18:07:31Z [INFO] Shell is bootstrapped with session_id SessionId(8786452194976646252)
+2026-09-27T18:07:31Z [INFO] Loading history from file /home/tw/.bash_history for shell bash
+2026-09-27T18:07:31Z [INFO] Received CommandFinished hook
+2026-09-27T18:07:31Z [INFO] Tried to exit the alternate screen, but it was already inactive
+2026-09-27T18:07:31Z [INFO] Block finished with new state DoneWithExecution
+2026-09-27T18:07:31Z [INFO] Incrementing stage from Bootstrapped to PostBootstrapPrecmd
+2026-09-27T18:07:31Z [INFO] Attempting to start websocket connection in CloudObjects::Listener
+2026-09-27T18:07:31Z [INFO] Received Precmd hook
+2026-09-27T18:07:31Z [INFO] Received InputBuffer hook
+2026-09-27T18:07:32Z [WARN] Failed to spawn MCP server: Transport creation error: Unexpected status code: 403 Forbidden
+2026-09-27T18:07:32Z [WARN] SimpleLogger: channel closed: receiving from an empty and closed channel
+2026-09-27T18:07:32Z [ERROR] No template UUID found for installation UUID [installation_uuid=fac70a11-a55e-4bde-9c3a-1c0ffee0f001]
+2026-09-27T18:07:32Z [INFO] Received channel versions from Warp server: dev: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.27.08.25.dev_00", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2023.05.12.08.03.dev_00"), last_prominent_update: Some("v0.2025.03.05.08.02.dev_00"), is_rollback: None, cli_version: None, tui_version: None }, overrides: [] }; preview: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.16.08.27.preview_01", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.08.05.09.03.preview_01"), last_prominent_update: Some("v0.2026.07.08.17.54.preview_02"), is_rollback: None, cli_version: None, tui_version: None }, overrides: [] }; stable: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.16.08.27.stable_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.08.05.09.03.stable_01"), last_prominent_update: Some("v0.2026.08.05.09.03.stable_01"), is_rollback: None, cli_version: Some("v0.2026.09.09.08.26.stable_03"), tui_version: None }, overrides: [] }
+2026-09-27T18:07:32Z [INFO] Warp Drive privacy preferences are set, using those for telemetry=true, crash_reporting=true, cloud_conversation_storage=true
+2026-09-27T18:07:33Z [INFO] Initial websocket connection established; skipping out-of-band refresh.
+2026-09-27T18:07:47Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:07:48Z [INFO] Received ObjectContentChanged message in CloudObjects::Listener
+2026-09-27T18:07:48Z [INFO] in memory revision is greater or equal to metadata from update, ignoring
+2026-09-27T18:07:51Z [INFO] dispatching typed action: warp_tui::input::view::TuiInputAction::Editor(InsertChar('h'))
+2026-09-27T18:07:51Z [INFO] dispatching typed action: warp_tui::input::view::TuiInputAction::Editor(InsertChar('i'))
+2026-09-27T18:07:51Z [INFO] dispatching typed action: warp_tui::input::view::TuiInputAction::Submit
+2026-09-27T18:07:51Z [INFO] dispatching global action for workspace:save_app
+2026-09-27T18:07:51Z [WARN] MultiAgent request failed; recovering: recovery=retry attempt=1/3 wait=624.554239ms failed_request=original - Error: QuotaLimit { user_display_message: Some("You're out of AI credits. Buy more credits or upgrade your plan at https://app.warp.dev/upgrade") }
+2026-09-27T18:07:52Z [WARN] MultiAgent request failed; recovering: recovery=retry attempt=2/3 wait=1.121517248s failed_request=original - Error: QuotaLimit { user_display_message: Some("You're out of AI credits. Buy more credits or upgrade your plan at https://app.warp.dev/upgrade") }
+2026-09-27T18:07:54Z [WARN] MultiAgent request failed; recovering: recovery=retry attempt=3/3 wait=2.19807975s failed_request=original - Error: QuotaLimit { user_display_message: Some("You're out of AI credits. Buy more credits or upgrade your plan at https://app.warp.dev/upgrade") }
+2026-09-27T18:07:56Z [WARN] MultiAgent request failed; not recovering: recovery=none reason=budget_exhausted attempt=3/3 failed_request=original - Error: QuotaLimit { user_display_message: Some("You're out of AI credits. Buy more credits or upgrade your plan at https://app.warp.dev/upgrade") }
+2026-09-27T18:07:56Z [WARN] Request failed due to lack of AI quota. [has_received_client_actions=false, is_recoverable=true, will_attempt_resume=false, is_online=true, failed_request=original, recovery_attempt=3, max_recovery_attempts=3, error_debug=QuotaLimit { user_display_message: Some("You're out of AI credits. Buy more credits or upgrade your plan at https://app.warp.dev/upgrade") }]
+2026-09-27T18:07:56Z [INFO] Pending events are not ready: conversation_id=AIConversationId(6e872bea-7eb4-4ba4-8acb-1b2cc2b8285c) owns_conversation=true has_active_stream=false status=Error is_exiting=false
+2026-09-27T18:08:02Z [INFO] dispatching typed action: warp_tui::transcript_view::TuiTranscriptAction::SelectionStarted
+2026-09-27T18:08:06Z [INFO] dispatching typed action: warp_tui::transcript_view::TuiTranscriptAction::SelectionStarted
+2026-09-27T18:08:07Z [INFO] dispatching typed action: warp_tui::transcript_view::TuiTranscriptAction::SelectionEnded("https://app.warp.dev/upgrade/user/xp7uTMG5fJbIKlC4izGHiTFsVyH2?source=warp-agent-cli")
+2026-09-27T18:08:18Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:08:29Z [INFO] Received ObjectContentChanged message in CloudObjects::Listener
+2026-09-27T18:08:29Z [INFO] in memory revision is greater or equal to metadata from update, ignoring
+2026-09-27T18:09:29Z [INFO] received url
+2026-09-27T18:09:29Z [INFO] dispatching global action for root_view:open_new_from_path
+2026-09-27T18:09:29Z [INFO] Start to send telemetry events to RudderStack
+2026-09-27T18:09:29Z [INFO] Creating terminal model with 0 restored blocks
+2026-09-27T18:09:29Z [WARN] Generator for GitDiffStats: could not prepare execution context
+2026-09-27T18:09:29Z [WARN] Generator for KubernetesContext: could not prepare execution context
+2026-09-27T18:09:29Z [INFO] Starting autoupdate polling loop
+2026-09-27T18:09:29Z [INFO] Checking for update on channel stable. Update id is xY7M7JH
+2026-09-27T18:09:29Z [INFO] Fetching channel versions (without changelogs) from Warp server
+2026-09-27T18:09:29Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-09-27T18:09:29Z [WARN] Action HandleFocusChange was dispatched, but no view handled it
+2026-09-27T18:09:29Z [INFO] Marking changelog v0.2026.09.16.08.27.stable_02 as shown in versions Object {"v0.2026.03.04.08.20.stable_03": Bool(true)}
+2026-09-27T18:09:29Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-09-27T18:09:29Z [WARN] Action HandleFocusChange was dispatched, but no view handled it
+2026-09-27T18:09:29Z [WARN] Tried to update block filter query without active_filter_editor_block_index set
+2026-09-27T18:09:29Z [WARN] Generator for GitDiffStats: could not prepare execution context
+2026-09-27T18:09:29Z [WARN] Generator for KubernetesContext: could not prepare execution context
+2026-09-27T18:09:29Z [INFO] active window changed: Some(WindowId(1))
+2026-09-27T18:09:29Z [INFO] Starting shell /bin/bash
+2026-09-27T18:09:29Z [INFO] Successfully spawned tty with pid: 8432
+2026-09-27T18:09:29Z [INFO] Successfully spawned child bash process with pid 8432
+2026-09-27T18:09:29Z [INFO] Received InitShell hook
+2026-09-27T18:09:29Z [INFO] Received CommandFinished hook
+2026-09-27T18:09:29Z [INFO] Tried to exit the alternate screen, but it was already inactive
+2026-09-27T18:09:29Z [INFO] Block finished with new state DoneWithExecution
+2026-09-27T18:09:29Z [INFO] Incrementing stage from WarpInput to ScriptExecution
+2026-09-27T18:09:29Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-09-27T18:09:29Z [WARN] Action HandleFocusChange was dispatched, but no view handled it
+2026-09-27T18:09:29Z [INFO] Received Precmd hook
+2026-09-27T18:09:29Z [INFO] Received Bootstrapped hook
+2026-09-27T18:09:29Z [INFO] Configured typeahead mode as ShellReported
+2026-09-27T18:09:29Z [INFO] creating a local executor!
+2026-09-27T18:09:29Z [INFO] Parsed shell version string: Some([Number(5), Number(3), Number(9), Number(1), Text("release")])
+2026-09-27T18:09:29Z [INFO] Shell is bootstrapped with session_id SessionId(1328513028985093233)
+2026-09-27T18:09:29Z [INFO] dispatching global action for workspace:save_app
+2026-09-27T18:09:29Z [INFO] Received CommandFinished hook
+2026-09-27T18:09:29Z [INFO] Tried to exit the alternate screen, but it was already inactive
+2026-09-27T18:09:29Z [INFO] Block finished with new state DoneWithExecution
+2026-09-27T18:09:29Z [INFO] Incrementing stage from Bootstrapped to PostBootstrapPrecmd
+2026-09-27T18:09:29Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-09-27T18:09:29Z [WARN] Action HandleFocusChange was dispatched, but no view handled it
+2026-09-27T18:09:29Z [INFO] Received Precmd hook
+2026-09-27T18:09:29Z [INFO] Sent SIGKILL to process group 8728
+2026-09-27T18:09:30Z [INFO] Received InputBuffer hook
+2026-09-27T18:09:31Z [INFO] Received channel versions from Warp server: dev: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.27.08.25.dev_00", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2023.05.12.08.03.dev_00"), last_prominent_update: Some("v0.2025.03.05.08.02.dev_00"), is_rollback: None, cli_version: None, tui_version: None }, overrides: [] }; preview: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.16.08.27.preview_01", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.08.05.09.03.preview_01"), last_prominent_update: Some("v0.2026.07.08.17.54.preview_02"), is_rollback: None, cli_version: None, tui_version: None }, overrides: [] }; stable: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.16.08.27.stable_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.08.05.09.03.stable_01"), last_prominent_update: Some("v0.2026.08.05.09.03.stable_01"), is_rollback: None, cli_version: Some("v0.2026.09.09.08.26.stable_03"), tui_version: None }, overrides: [] }
+2026-09-27T18:09:31Z [INFO] Already up to date with v0.2026.09.16.08.27.stable_02
+2026-09-27T18:09:31Z [INFO] No update available
+2026-09-27T18:09:31Z [INFO] Checking for update on channel stable. Update id is MLMuUhw
+2026-09-27T18:09:31Z [INFO] Fetching channel versions (without changelogs) from Warp server
+2026-09-27T18:09:31Z [INFO] Received channel versions from Warp server: dev: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.27.08.25.dev_00", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2023.05.12.08.03.dev_00"), last_prominent_update: Some("v0.2025.03.05.08.02.dev_00"), is_rollback: None, cli_version: None, tui_version: None }, overrides: [] }; preview: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.16.08.27.preview_01", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.08.05.09.03.preview_01"), last_prominent_update: Some("v0.2026.07.08.17.54.preview_02"), is_rollback: None, cli_version: None, tui_version: None }, overrides: [] }; stable: ChannelVersion { version_info: VersionInfo { version: "v0.2026.09.16.08.27.stable_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.08.05.09.03.stable_01"), last_prominent_update: Some("v0.2026.08.05.09.03.stable_01"), is_rollback: None, cli_version: Some("v0.2026.09.09.08.26.stable_03"), tui_version: None }, overrides: [] }
+2026-09-27T18:09:31Z [INFO] Already up to date with v0.2026.09.16.08.27.stable_02
+2026-09-27T18:09:31Z [INFO] No update available

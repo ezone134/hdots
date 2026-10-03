@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- dash_status — one line of dashboard telemetry for zen-shell.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/dash_body")
+dash_cmd()

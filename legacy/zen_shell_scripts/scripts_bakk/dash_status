@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# dash_status — one line of dashboard telemetry for zen-shell:
+#   bri% vol% mic% micmut(0|1) sat shaderon(0|1) sunset_state(c|a|m) kelvin caffeine(on|off)
+#   blur(0|1) shadow(0|1) opacity(0|1)
+set -u
+
+num() { tr -dc '0-9' <<<"${1-}"; }
+
+bri=$(num "$(brightness_main get 2>/dev/null)")
+vl=$(audio_main vol get 2>/dev/null)
+ml=$(audio_main mic get 2>/dev/null)
+vol=$(num "$(grep -o '[0-9]\+%' <<<"$vl" | head -1)")
+mic=$(num "$(grep -o '[0-9]\+%' <<<"$ml" | head -1)")
+mmut=0; grep -q 'muted: yes' <<<"$ml" && mmut=1
+
+sh=$(shader_main status 2>/dev/null)
+shst=${sh%% *}; shsat=${sh##* }
+# non-numeric sat (a custom .frag) → report default (100 = normal, 0..200 scale)
+case "$shsat" in ''|*[!0-9]*) shsat=100 ;; esac
+su=$(hs_main status 2>/dev/null)
+sust=${su%% *}; sukv=${su##* }
+
+caff=$(caffeine_main status 2>/dev/null)
+
+# compositor effect states — read the same state files the helpers toggle.
+# All three are per-channel (s = $(<$states2/s)).
+blur_on=0;   [ "$(<"$states/hypr_blur_${s:-d}" 2>/dev/null)" = 1 ] && blur_on=1
+shadow_on=0; [ "$(<"$states/shadow_enabled_${s:-d}" 2>/dev/null)" = 1 ] && shadow_on=1
+# opacity: active_opacity 1.0 = normal (off), <1.0 = dimming applied (on)
+opac_on=0
+opac_act=$(<"$states/opacity_active_${s:-d}" 2>/dev/null)
+[[ "$opac_act" == 1.0 || -z "$opac_act" ]] || opac_on=1
+
+printf '%s %s %s %s %s %s %s %s %s %s %s %s\n' \
+    "${bri:-0}" "${vol:-0}" "${mic:-0}" "$mmut" \
+    "${shsat:-100}" "$([[ "${shst:-0}" = 1 ]] && echo 1 || echo 0)" \
+    "${sust:-c}" "${sukv:-4000}" "${caff:-off}" \
+    "$blur_on" "$shadow_on" "$opac_on"
