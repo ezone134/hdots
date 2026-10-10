@@ -1,0 +1,36 @@
+[colors.primary]
+background = "$bg"
+foreground = "$fg"
+
+[font]
+size = 17.0
+
+[font.normal]
+family = "$alacritty_font"
+style = "Regular"
+
+[font.bold]
+family = "$alacritty_font"
+style = "Bold"
+
+[font.italic]
+family = "$alacritty_font"
+style = "Italic"
+
+[font.bold_italic]
+family = "$alacritty_font"
+style = "Bold Italic"
+
+[window.padding]
+x = 15
+y = 15
+
+[colors.normal]
+black   = "#073642"
+red     = "#dc322f"
+green   = "#859900"
+yellow  = "#b58900"
+blue    = "#268bd2"
+magenta = "#d33682"
+cyan    = "#2aa198"
+white   = "#eee8d5"

@@ -1,0 +1,18 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+dofile(SCRIPT_DIR .. "/utils")
+
+dofile(SCRIPT_DIR .. "/before_loop")
+
+while true do
+    local fire_delay = tonumber(ff(SCRIPT_DIR .. "/states/fire_delay")) or 3
+    sleep(fire_delay)
+
+    local fire_count = ff(SCRIPT_DIR .. "/fire_count") or "0"
+    if fire_count ~= "0" then
+        run(SCRIPT_DIR .. "/during_loop")
+    end
+
+    sleep(fire_delay)
+end

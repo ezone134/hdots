@@ -1,0 +1,207 @@
+# -*- mode: sh -*-
+# brightness_body — functions for the brightness_main CLI.
+# Sourced by the matching *_main CLI (see scripts/).
+# Merged 2026-08: absorbed the old bl_main + bl_gamma_body (gamma-tweak at
+# max brightness, lazy 1% steps). Those two files are deleted;
+# brightness_main is now the single brightness control.
+#
+# 2026-09: rewritten to use sysfs directly (+ systemd-logind D-Bus fallback
+# for writes).  No brightnessctl dependency.
+
+## ---- sysfs discovery (brightness / max_brightness) ----------------------
+
+_bri_dir() {
+    local d
+    for d in /sys/class/backlight/*/; do
+        [[ -f "${d}brightness" && -f "${d}max_brightness" ]] && { printf '%s' "$d"; return 0; }
+    done
+    return 1
+}
+
+## ---- brightness (sysfs) -------------------------------------------------
+
+bri_get() {
+    local d cur max
+    d=$(_bri_dir) || { printf '0\n'; return; }
+    cur=$(<"${d}brightness"); max=$(<"${d}max_brightness")
+    printf '%d\n' $(( ${cur:-0} * 100 / (${max:-1} > 0 ? ${max:-1} : 1) ))
+}
+
+bri_raw() {
+    local d
+    d=$(_bri_dir) || { printf '0\n'; return; }
+    printf '%s\n' "$(<"${d}brightness")"
+}
+
+bri_max() {
+    local d
+    d=$(_bri_dir) || { printf '65535\n'; return; }
+    printf '%s\n' "$(<"${d}max_brightness")"
+}
+
+## ---- sysfs write (+ logind D-Bus fallback) -------------------------------
+
+bri_write() {
+    local raw="${1:-0}" dir dev max
+    dir=$(_bri_dir) || return 1
+    max=$(<"${dir}max_brightness"); max=${max:-1}
+    (( raw < 1 )) && raw=1
+    (( raw > max )) && raw=$max
+
+    if [[ -w "${dir}brightness" ]]; then
+        # Direct sysfs write (group video / root / polkit ACL).
+        printf '%s\n' "$raw" > "${dir}brightness"
+    elif command -v busctl >/dev/null 2>&1; then
+        # systemd-logind: Session.SetBrightness(backlight, <dev>, <raw>).
+        dev=$(basename "${dir%/}")
+        busctl call org.freedesktop.login1 \
+            /org/freedesktop/login1/session/auto \
+            org.freedesktop.login1.Session \
+            SetBrightness ssu backlight "$dev" "$raw" >/dev/null 2>&1 \
+        || printf '%s\n' "$raw" > "${dir}brightness"   # last resort
+    else
+        printf '%s\n' "$raw" > "${dir}brightness"       # hope for the best
+    fi
+}
+
+## ---- step by percentage --------------------------------------------------
+
+bri_step() {
+    local sign="${1:-+}" step="${2:-5}" max cur raw new
+    max=$(bri_max); cur=$(bri_raw)
+    raw=$(( max * step / 100 ))
+    (( raw < 1 )) && raw=1
+    if [[ "$sign" == "+" ]]; then
+        new=$(( cur + raw ))
+        (( new > max )) && new=$max
+    else
+        new=$(( cur - raw ))
+        (( new < 1 )) && new=1
+    fi
+    bri_write "$new"
+}
+
+## ---- gamma shader (tweak beyond max brightness) -------------------------
+
+# When the panel is already at max brightness, up/down tweak a gamma shader
+# instead of stopping. State: $states2/gamma (0..16, half-steps -> 0.5..8.0);
+# the active shader is recorded in $states/shader_state_${s} +
+# $states/shader_val_${s} and applied via shader_main.
+
+gamma_up_func() {
+    local gamma frag file
+    s=$(<"$states2/s")
+    [[ -f "$states2/gamma" ]] || printf '0\n' > "$states2/gamma"
+    gamma=$(<"$states2/gamma")
+    gamma=$(( gamma + 1 ))
+    (( gamma > 16 )) && gamma=16
+    printf '%s\n' "$gamma" > "$states2/gamma"
+    frag=$(printf '%.1f' "$((gamma * 5))e-1")    # gamma/2 -> 0.5 .. 8.0
+    file="$HOME/.config/hypr/shaders/gamma/${frag}.frag"
+    if (( gamma > 0 )); then
+        printf '1\n' > "$states/shader_state_${s}"
+        printf '%s\n' "$file" > "$states/shader_val_${s}"
+    fi
+    shader_main on
+}
+
+gamma_down_func() {
+    local gamma frag file
+    s=$(<"$states2/s")
+    [[ -f "$states2/gamma" ]] || printf '0\n' > "$states2/gamma"
+    gamma=$(<"$states2/gamma")
+    gamma=$(( gamma - 1 ))
+    (( gamma < 0 )) && gamma=0
+    printf '%s\n' "$gamma" > "$states2/gamma"
+    [[ $gamma == 0 ]] && {
+        printf '0\n' > "$states/shader_state_${s}"
+        shader_main reset
+        hyprctl reload
+        return 0
+        exit 0
+    }
+    frag=$(printf '%.1f' "$((gamma * 5))e-1")
+    file="$HOME/.config/hypr/shaders/gamma/${frag}.frag"
+    printf '%s\n' "$file" > "$states/shader_val_${s}"
+    shader_main on
+}
+
+## ---- up / down (default 5% step; gamma at max) ---------------------------
+
+bri_up_func() {
+    local step="${1:-5}" cur max
+    max=$(bri_max)
+    cur=$(bri_raw)
+    # At max brightness: stop brightening, tweak the gamma shader instead.
+    if [[ -n "$cur" && "$cur" == "$max" ]]; then
+        notify-send -a Brightness -t 800 "Brightness" "Max brightness -- tweaking gamma" &
+        gamma_up_func
+        return 0
+        exit 0
+    fi
+    bri_step + "$step"
+}
+
+bri_down_func() {
+    local step="${1:-5}" gamma
+    # While a gamma shader is active, dim via gamma first (mirror of up).
+    if [[ -f "$states2/gamma" ]]; then gamma=$(<"$states2/gamma"); else gamma=0; fi
+    if (( gamma > 0 )); then
+        gamma_down_func
+        return 0
+        exit 0
+    fi
+    bri_step - "$step"
+}
+
+## ---- lazy (1% steps + notify) --------------------------------------------
+
+bri_lazy_up_func() {
+    local cur max
+    max=$(bri_max); cur=$(bri_raw)
+    if [[ -n "$cur" && "$cur" == "$max" ]]; then
+        gamma_up_func
+        return 0
+    fi
+    bri_step + 1
+    local p; p=$(bri_get)
+    notify-send -a Brightness -u low -h int:value:"$p" -t 2000 \
+        -h string:x-canonical-private-synchronous:brightness \
+        "Brightness" "${p}%"
+}
+
+bri_lazy_down_func() {
+    local gamma
+    if [[ -f "$states2/gamma" ]]; then gamma=$(<"$states2/gamma"); else gamma=0; fi
+    if (( gamma > 0 )); then
+        gamma_down_func
+        return 0
+    fi
+    bri_step - 1
+    local p; p=$(bri_get)
+    notify-send -a Brightness -u low -h int:value:"$p" -t 2000 \
+        -h string:x-canonical-private-synchronous:brightness \
+        "Brightness" "${p}%"
+}
+
+## ---- dispatch ------------------------------------------------------------
+
+bri_cmd() {
+    case "${1:-get}" in
+        get|cur) printf '%d%%\n' "$(bri_get)";;
+        set)     bri_write "$(( $(bri_max) * ${2:-50} / 100 ))";;
+        up)      bri_up_func "${2:-5}";;
+        down)    bri_down_func "${2:-5}";;
+        lazy)    shift; case "${1:-up}" in
+                     up)   bri_lazy_up_func;;
+                     down) bri_lazy_down_func;;
+                     *)    err "bri lazy: use up|down";;
+                 esac;;
+        gamma)   shift; case "${1:-up}" in
+                     up)   gamma_up_func;;
+                     down) gamma_down_func;;
+                     *)    err "bri gamma: use up|down";;
+                 esac;;
+        *)       err "bri: use get|set N|up [N]|down [N]|lazy up|down|gamma up|down";;
+    esac
+}

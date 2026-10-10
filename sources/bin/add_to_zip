@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- add_to_zip — zip a file/directory into a .zip beside it.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/zip_body")
+add_zip_cmd(arg[1])

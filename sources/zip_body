@@ -1,0 +1,15 @@
+#!/usr/bin/env luajit
+-- helper zip_body
+
+function add_zip_cmd(target)
+    if target and is_file(target) then
+        local base = basename(target)
+        local dirpath = dirname(target)
+        local r = out("command -v zip")
+        if r ~= "" then
+            run("zip -r " .. shq(dirpath .. "/" .. base .. ".zip") .. " " .. shq(target))
+        else
+            run_bg("notify-send -a Zip 'Zip' 'Zip package is not found'")
+        end
+    end
+end

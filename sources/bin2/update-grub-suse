@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+
+echo "Only for openSUSE"
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg

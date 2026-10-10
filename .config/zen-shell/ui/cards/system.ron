@@ -1,0 +1,96 @@
+(
+    // system card — fully declarative (zero Ink). There is no `Header`: this
+    // card's chrome IS its body, a two-column identity block (username /
+    // hostname / clock / date chip / UI state) on the left and a control
+    // stack (hidden-menu, bell, dark-mode, uptime, battery, chevron) on the
+    // right, each hand-positioned by the drawer. Every string the drawer
+    // truncated inline (the 12-char username, the width-capped hostname, the
+    // width-measured date chip) is published already shortened, and the two
+    // state-driven inks (the menu's open fill, the battery's low red) ride
+    // per-frame `Value` colors.
+    items: [
+        // ── LEFT column ──
+        Text(x: 16.0, y: 14.0, text: "{sys_uname}", font_size: 21.0, icon: true, color: fg),
+        Text(x: 17.0, y: 42.0, text: "{sys_hname}", font_size: 13.0, color: fg),
+        Text(
+            x: 16.0, y: 62.0, text: "{sys_clock}", font_size: 26.0,
+            font: display, weight: medium, color: fg,
+            visible: "sys_clock_on",
+        ),
+        // date chip: a pill whose width tracks the string (`sys_date_w`), so
+        // the hit rides `w`; the label is two Texts swapping on hover
+        // rather than a `Hit` label, which has no left inset of its own
+        Hit(
+            x: 14.0, y: 98.0, w: "sys_date_w", h: 22.0, r: 11.0,
+            surface: value("sys_date_bg"), surface_hover: hover_hl,
+            region_dx: 4.0, region_dy: 3.0,
+            key: 25, text: "",
+        ),
+        Text(x: 23.0, y: 103.0, text: "{sys_date}", font_size: 12.0, color: fg, visible: "sys_date_idle"),
+        Text(x: 23.0, y: 103.0, text: "{sys_date}", font_size: 12.0, color: acc, visible: "sys_date_hover"),
+        // the services-poll line, on cards tall enough to carry it
+        When(
+            min_h: 150.0,
+            items: [
+                Text(x: 16.0, y: 124.0, text: "{sys_uistate}", font_size: 9.5, color: fg, visible: "sys_uistate_on"),
+            ],
+        ),
+
+        // ── RIGHT column ──
+        // hidden menu (⋮): the fill only exists while hovered or open, and its
+        // ink differs per state — both published, so the surface is a plain
+        // gated `Surface` and the two dots take a per-frame color
+        Surface(x: 14.0, y: 10.0, w: 26.0, h: 22.0, r: 11.0, right: true, color: value("sys_menu_fill_c"), visible: "sys_menu_fill"),
+        Surface(x: 25.4, y: 16.0, w: 3.2, h: 3.2, r: 1.6, right: true, color: value("sys_dots_c")),
+        Surface(x: 25.4, y: 22.8, w: 3.2, h: 3.2, r: 1.6, right: true, color: value("sys_dots_c")),
+        Hit(
+            x: 14.0, y: 10.0, w: 26.0, h: 22.0, right: true,
+            region_dx: 3.0, region_dy: 3.0,
+            key: 34390, text: "",
+        ),
+        // notification bell: fill on hover only, glyph lifted by `glyph_pad`
+        // (the glyph path runs one px over `font_size`)
+        Hit(
+            x: 14.0, y: 40.0, w: 26.0, h: 22.0, r: 11.0, right: true,
+            surface: hover, surface_hover: hover_hl, hover_only: true,
+            glyph: "{sys_bell_glyph}", glyph_pad: 7.0, font_size: 12.0, label_dy: 4.0,
+            glyph_color: fg, glyph_color_hover: acc,
+            region_dx: 3.0, region_dy: 3.0,
+            key: 24, text: "",
+        ),
+        // unread dot, straddling the bell's top-right corner
+        Surface(x: 16.0, y: 38.0, w: 7.0, h: 7.0, r: 3.5, right: true, color: acc, visible: "sys_notif_badge"),
+        // dark / light toggle, one bell-column to the left
+        Hit(
+            x: 46.0, y: 40.0, w: 26.0, h: 22.0, r: 11.0, right: true,
+            surface: hover, surface_hover: hover_hl, hover_only: true,
+            glyph: "{sys_mode_glyph}", glyph_pad: 6.5, font_size: 12.0, label_dy: 4.0,
+            glyph_color: fg, glyph_color_hover: acc,
+            region_dx: 3.0, region_dy: 3.0,
+            key: 26, text: "",
+        ),
+        // uptime, right-aligned to the same 16 px gutter
+        Text(x: 16.0, y: 72.0, right: true, text: "{sys_uptime}", font_size: 9.5, color: fg),
+
+        // battery block — the vertical glyph, the optional % beside it (its x
+        // rides the measured glyph width), the time left and the wattage
+        Text(x: 16.0, y: 93.0, right: true, text: "{sys_batt_glyph}", font_size: 13.0, icon: true, color: value("sys_batt_c"), visible: "sys_batt"),
+        Text(
+            x: "sys_batt_pct_x", y: 94.0, right: true,
+            text: "{sys_batt_pct}", font_size: 10.5, color: value("sys_batt_c"),
+            visible: "sys_batt_pct_on",
+        ),
+        Text(x: 16.0, y: 110.0, right: true, text: "{sys_batt_time}", font_size: 9.5, color: value("sys_batt_c"), visible: "sys_batt_time_on"),
+        Text(x: 16.0, y: 124.0, right: true, text: "{sys_watts}", font_size: 9.0, color: fg, visible: "sys_watts_on"),
+
+        // ── bottom-right chevron → settings ──
+        Hit(
+            x: 14.0, y: 12.0, w: 26.0, h: 22.0, r: 11.0, right: true, bottom: true,
+            surface: hover, surface_hover: hover_hl, hover_only: true,
+            glyph: "\u{f105}", glyph_pad: 7.0, font_size: 13.0, label_dy: 4.0,
+            glyph_color: fg2, glyph_color_hover: acc,
+            region_dx: 3.0, region_dy: 3.0,
+            key: 34392, text: "",
+        ),
+    ],
+)

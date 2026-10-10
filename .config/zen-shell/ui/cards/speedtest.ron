@@ -1,0 +1,78 @@
+(
+    // speedtest card — fully declarative (zero `Ink`).
+    //
+    // Geometry of record (draw_speedtest_card): 12 px pad, 24 px header; the
+    // readout band centered `body_h / 2 − 6` below the header where
+    // `body_h = max(h − 70, 10)` — on any card ≥ 80 px tall that is exactly
+    // `card_h / 2 − 15`, which the three state captions use; the run pill is
+    // 30 px tall with its bottom edge 8 px above the card bottom, so it is
+    // `bottom: true` (it follows a resize, as the drawer does).
+    items: [
+        Header(
+            title: "Speed test",
+            glyph: "\u{f554}",
+            pad: 12.0,
+            meta: "{speed_meta}",
+            meta_color: value("st_state_ink"),
+        ),
+        // state captions, swapped by bound Toggles — only one resolves open
+        Text(
+            x: 0.0, y: -15.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "probing Cloudflare edge…", font_size: 9.0,
+            font: ui, weight: regular, color: fg3,
+            visible: "st_testing",
+        ),
+        Text(
+            x: 0.0, y: -15.0, w: 0.0,
+            center_x: true, center_y: true,
+            text: "click to measure", font_size: 9.0,
+            font: ui, weight: regular, color: fg3,
+            visible: "st_idle",
+        ),
+        // done: the three figures in equal thirds, mono, centered in each
+        Text(
+            x: 0.0, y: -15.0, w: 0.0,
+            cx_pct: 0.16667, center: true,
+            text: "{st_down}", font_size: 10.0,
+            font: mono, weight: regular, color: info,
+            visible: "st_done",
+        ),
+        Text(
+            x: 0.0, y: -15.0, w: 0.0,
+            cx_pct: 0.5, center: true,
+            text: "{st_up}", font_size: 10.0,
+            font: mono, weight: regular, color: acc,
+            visible: "st_done",
+        ),
+        Text(
+            x: 0.0, y: -15.0, w: 0.0,
+            cx_pct: 0.83333, center: true,
+            text: "{st_ping}", font_size: 10.0,
+            font: mono, weight: regular, color: fg3,
+            visible: "st_done",
+        ),
+        // the run pill: label + fill are both state/hover driven, so the
+        // shell publishes them (`st_btn_fill` / `st_btn_ink`); the hit
+        // region disappears while a probe is already running
+        Surface(
+            x: 12.0, y: 8.0, w: -12.0, h: 30.0, r: 15.0, bottom: true,
+            color: value("st_btn_fill"),
+        ),
+        // the label rides the pill: `bottom: true, y: 29` is the pill's center
+        // (8 + 15) plus the drawer's own 6 px lift, and `center_x` centers it
+        // on the card — both follow a resize exactly like the Rust button
+        Text(
+            x: 0.0, y: 29.0, w: 0.0,
+            center_x: true, bottom: true,
+            text: "{st_btn_label}", font_size: 10.5,
+            font: ui, weight: regular, color: value("st_btn_ink"),
+        ),
+        // the drawer region: 12 px inset on both sides, 8 px above the card's
+        // bottom edge, gone while a probe is already running
+        Hit(
+            x: 12.0, y: 8.0, w: -12.0, h: 30.0, bottom: true, key: 14_200,
+            visible: "st_clickable",
+        ),
+    ],
+)

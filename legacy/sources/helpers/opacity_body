@@ -1,0 +1,52 @@
+# -*- mode: sh -*-
+s=$(<$states2/s)
+
+restore_logic () {
+    active_opacity=$(<$states/opacity_active_${s})
+    inactive_opacity=$(<$states/opacity_inactive_${s})
+    echo "hl.config({
+    decoration = {
+        rounding = 10,
+        rounding_power = 2,
+        active_opacity = $active_opacity,
+        inactive_opacity = $inactive_opacity,
+    },
+    })" > $HOME/.config/hypr/configs/opacity.lua
+}
+
+opacity_restore_function () {
+    restore_logic
+    notify-send -a Opacity "Opacity" "Restored" &
+    echo 1 > $states2/opacity_done
+    exit 0
+}
+
+opacity_enable_function () {
+echo 0.8 > $states/opacity_active_${s}
+restore_logic
+notify-send -a Opacity "Opacity" "Enabled" &
+exit 0
+}
+
+opacity_disable_function () {
+echo 1.0 > $states/opacity_active_${s}
+restore_logic
+notify-send -a Opacity "Opacity" "Disabled" &
+exit 0
+}
+
+opacity_toggle_function () {
+    opacity_active=$(<$states/opacity_active_${s})
+    if [[ $opacity_active = 1.0 ]]; then
+        opacity_enable_function
+    else
+        opacity_disable_function
+    fi
+}
+
+opacity_reset_function () {
+    # Clear the generated config so the Hyprland defaults (secondary.lua) apply.
+    > $HOME/.config/hypr/configs/opacity.lua
+    notify-send -a Opacity "Opacity" "Reset" &
+    exit 0
+}

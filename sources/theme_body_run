@@ -1,0 +1,104 @@
+-- helper theme_body_run
+-- ported from bash sources/theme_body_run
+-- pure Lua: no external binaries (FFI inotify wait + in-process file reads)
+m = flagf_get(states2 .. "/" .. "m")
+
+if qpid("thunar") == "" then
+    run_bg("hyprctl dispatch \"hl.dsp.exec_cmd('thunar --daemon')\"")
+end
+
+bg_fn(function()
+    dofile(sources .. "/shadow_body")
+    shadow_restore_func()
+end)
+
+bg_fn(function()
+    dofile(sources .. "/general_body")
+    general_main_cmd(restore)
+end)
+
+bg_fn(function()
+    dofile(sources .. "/blur_body")
+    blur_restore_func()
+end)
+
+bg_fn(function()
+    dofile(sources .. "/hidle_body")
+    hi_restore_func()
+end)
+
+bg_fn(function()
+    dofile(sources .. "/mn_body")
+    mn_restore_func()
+end)
+
+bg_fn(function()
+    dofile(sources .. "/scr_body")
+    shader_restore_func()
+end)
+
+bg_fn(function()
+    dofile(sources .. "/opacity_body")
+    opacity_restore_function()
+end)
+
+
+-- Wait for all seven *_done flags, then hyprctl reload. Everything above is
+-- synchronous now, so this exits on the first pass — it stays because it is
+-- the contract the reload is gated on, and because a body that failed inside
+-- `sourced` never wrote its flag. Unlike the old infinite hang it is BOUNDED:
+-- a wedged pipeline never clears $states2/theme_lock, so name the stragglers
+-- and move on. flagf_set writes go through mmap (no inotify event), so poll
+-- the files directly.
+local done_flags = { "general_done", "scr_done", "shadow_done", "opacity_done", "shader_done", "blur_done", "monitors_done" }
+local function flags_done_count()
+    local n = 0
+    for _, flag in ipairs(done_flags) do
+        if flagf_get(states2 .. "/" .. flag) == "1" then n = n + 1 end
+    end
+    return n
+end
+local deadline = os.time() + 10
+while flags_done_count() < #done_flags do
+    if os.time() >= deadline then
+        local stuck = {}
+        for _, flag in ipairs(done_flags) do
+            if flagf_get(states2 .. "/" .. flag) ~= "1" then stuck[#stuck + 1] = flag end
+        end
+        err("theme_body_run: never finished: " .. table.concat(stuck, ", "))
+        break
+    end
+    sleep(0.2)
+end
+run_bg("hyprctl reload")
+
+local kitty_pid = qpid("kitty")
+if kitty_pid ~= "" then
+    for kpid in kitty_pid:gmatch("%d+") do
+        kill_pid(kpid, 10)
+    end
+end
+err("this is after first wait")
+
+-- Second wait: config generation is independent of the *_restore pipeline
+-- (rconfig_gen / awww_final / gen_gtk_css run in bg). Same blocking
+-- poll loop as wait_for_theme_proc_to_stop_func until configs_done,
+-- awww_done, css_done all read "1".
+local release_flags = { "configs_done", "awww_done", "css3_done", "css4_done" }
+local function release_flags_done_count()
+    local n = 0
+    for _, flag in ipairs(release_flags) do
+        if flagf_get(states2 .. "/" .. flag) == "1" then n = n + 1 end
+    end
+    return n
+end
+local rdeadline = os.time() + 2
+while release_flags_done_count() < #release_flags do
+    if os.time() >= rdeadline then break end
+    sleep(0.2)
+end
+
+flagf_set(states2 .. "/all_theme_set", "1")
+rm(states2 .. "/theme_lock")
+
+err("this is end of theme body run")

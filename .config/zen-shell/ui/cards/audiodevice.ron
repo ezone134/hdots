@@ -1,0 +1,75 @@
+(
+    // AUDIO DEVICE — sink/source rows from `wpctl status`, polled while the
+    // card is packed. Click a row to make it the default; click its mute
+    // glyph to toggle mute. The default sink carries the star; an input row
+    // carries the OUT arrow.
+    //
+    // Geometry of record (draw_audiodevice_card): a 22 px header, rows of
+    // 21 px starting 4 px under it, clipped at `card_h − 2` (the Rows
+    // bottom-clip is `card_h − 8`, one row deeper — see the note below).
+    // Row cells, all at `ry + 4`:
+    //   name  — `Ui` text in the ICON FACE (`ui::caption(..., icon)`), at
+    //           `pad + 2`, capped at `chars().take((w − 2·pad − 66) / 5.6)`
+    //           with a 4-char floor. The cap is the DRAWER's own estimator
+    //           (5.6 px/glyph, floor 4), declared in `trunc` — the engine's
+    //           `0.62·fs` / `≥ 8` average would let ~1.5 more characters
+    //           through at 220 px and ~2.6 at 320 px.
+    //   pct   — mono, right-anchored 16 px left of the pad (`edge: 28`).
+    //   glyph — the ICON FACE, right-anchored AT the pad (`edge: 12`).
+    //
+    // The row region is clipped 18 px short of the right pad and the mute
+    // box takes the last 16 (`aux`), so a click never lands on both. The
+    // drawer draws those two regions 2 px ABOVE the row top and 2 px TALLER,
+    // so consecutive rows overlap by 2 px — declared as `region_dy` /
+    // `region_dh` (the same `y`/`h` rule the `aux` box uses), which keeps
+    // even the click routing identical.
+    items: [
+        Header(title: "Audio", glyph: "\u{e050}", meta: "{auddev_meta}", pad: 12.0),
+        Text(
+            x: 0.0, y: -6.0, w: 0.0, center_x: true, center_y: true,
+            text: "no audio devices", font_size: 9.0, color: fg3,
+            visible: "auddev_empty",
+        ),
+        Rows(
+            name: "auddev_rows",
+            y: 26.0,
+            row_h: 21.0,
+            pad: 12.0,
+            row_dy: 4.0,
+            r: 5.0,
+            // the drawer's loop breaks at `card_h − 2`
+            bottom: 2.0,
+            visible: "auddev_has",
+            key_base: 31920,
+            // every row answers to TWO adjacent keys — the row itself (set
+            // default) and +1 (toggle mute) — which is what the resident
+            // handler's linear `audio_dev_pair` walk over AUDIO_DEV_BASE
+            // expects
+            key_stride: 2,
+            aux: (key: 1, edge: 12.0, w: 16.0, y: -2.0, h: 23.0, gap: 2.0),
+            // the drawer's row regions overhang 2 px up and run 2 px tall
+            region_dy: -2.0,
+            region_dh: 2.0,
+            hover_surface: raised_hl,
+            cols: [
+                // name (+ the star/arrow prefix, capped by the drawer's own
+                // char estimator); the DEFAULT row's ink is fg, everyone
+                // else fg2, and the hovered row tints its name to hover ink
+                (x: 2.0, size: 8.5, icon: true, truncate: 66.0,
+                 trunc: (glyph_px: 5.6, min_chars: 4), hover: hover_fg),
+                // vol % — always fg3, and it tints to hover ink only while
+                // the ROW (not its mute box) is hovered AND the row is not
+                // muted: the drawer tests muted FIRST, so a muted row's pct
+                // stays dim under the cursor. A col `hover` token cannot
+                // express that (it outranks the published color during hover),
+                // so the whole chain is published per row as
+                // `auddev` col_colors[1] and this cell declares no `hover`.
+                (x: 0.0, size: 8.5, right: true, edge: 28.0, font: mono,
+                 color: fg3),
+                // mute glyph — danger ink while muted (per row), no hover
+                // tint
+                (x: 0.0, size: 9.0, right: true, edge: 12.0, icon: true),
+            ],
+        ),
+    ],
+)

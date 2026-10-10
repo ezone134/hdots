@@ -1,0 +1,113 @@
+# -*- mode: sh -*-
+
+. "$SCRIPT_DIR/folders"
+. "$SCRIPT_DIR/files"
+. "$SCRIPT_DIR/others"
+. "$SCRIPT_DIR/ptc_array"
+
+fix_broken_symlink () {
+    local dirs=("/var/lib/NetworkManager" "/var/tmp" "/var/spool" "/var/adm")
+    for d in "${dirs[@]}"; do
+        if [[ ! -e "$d" ]]; then
+            rm -f "$d"
+        fi
+    done
+    mkdir -p "${dirs[@]}"
+}
+
+own_it_function () {
+    [[ ${#chown_array[@]} -gt 0 ]] && own_it "${chown_array[@]}"
+}
+
+777_it_function () {
+    [[ ${#chmod_777_array[@]} -gt 0 ]] && 777_it "${chmod_777_array[@]}"
+}
+
+zypper_donot_recommend_packages () {
+    if [[ ! -f "/etc/zypp/zypp.conf.bak" ]]; then
+        cp "/etc/zypp/zypp.conf" "/etc/zypp/zypp.conf.bak"
+        { echo ""; echo "# added by boot.sh "; echo "solver.onlyRequires = true"; } >> "/etc/zypp/zypp.conf"
+    fi
+}
+
+link_to_bossbin () {
+    local pairs=()
+    for i in "${boss_a[@]}"; do
+        if [[ -f "$i" ]]; then
+            pairs+=("$i" "$boss_bin/${i##*/}")
+        else
+            for target in "$i"/*; do
+                [[ -e "$target" ]] || continue
+                pairs+=("$target" "$boss_bin/${target##*/}")
+            done
+        fi
+    done
+    [[ ${#pairs[@]} -gt 0 ]] && link_file -s "${pairs[@]}"
+    chmod +x $boss_bin/*
+}
+
+link-busybox-applets () {
+    local bb_bin=$(command -v busybox)
+    local pairs=()
+    for applet in $($bb_bin --list); do
+        pairs+=("$bb_bin" "$busy_box/$applet")
+    done
+    [[ ${#pairs[@]} -gt 0 ]] && link_file -sf "${pairs[@]}"
+}
+
+chroot_dir () {
+    mkdir -p "$1/proc" "$1/sys" "$1/dev" "$1/run"
+    mount --types proc /proc "$1/proc"
+    mount --rbind /sys "$1/sys" && mount --make-rslave "$1/sys"
+    mount --rbind /dev "$1/dev" && mount --make-rslave "$1/dev"
+    mount --bind /run "$1/run" && mount --make-slave "$1/run"
+    cp /etc/resolv.conf "$1/etc/resolv.conf"
+    chroot "$1" /bin/bash -c "source /etc/profile; export PS1='(chroot) ${PS1}'; /bin/bash"
+}
+
+link-all () {
+    # mind the order do not mess up
+    link -s "${folders_pairs[@]}"
+    link_file -s "${files_pairs[@]}"
+    ptc "${ptc_pairs[@]}"
+    link_to_bossbin &
+}
+
+boot_logic () {
+    save_log_func () {
+        log_file=/tmp/boot.log
+        > $log_file
+        exec >> "$log_file" 2>&1
+    }
+    [[ $enable_log == 1 ]] && save_log_func
+    link-all
+    own_it_function &
+    777_it_function &
+    rfkill unblock bluetooth &
+    zypper_donot_recommend_packages &
+    {
+        if [[ "$(timedatectl show --property=Timezone --value)" != "Asia/Kathmandu" ]]; then
+            timedatectl set-timezone Asia/Kathmandu
+        fi
+
+        if [[ "$(timedatectl show --property=NTP --value)" != "yes" ]]; then
+            timedatectl set-ntp true
+        fi
+    } &
+    {
+        chown -R tmp:tmp /home/tmp
+        chmod 1755 /tmp/home-tmp
+        chown "$u:$u" $log_file
+    } &
+    wait
+    [[ -f "/var/readme" ]] || {
+        echo "HEY!!!, /var/tmp as symlink does not support gives errors. Mount tmpfs instead." > /var/readme
+    }
+    chown -R $u:$u /tmp/user-$u
+        if [[ $(systemctl is-active NetworkManager) == inactive ]]; then
+            systemctl start NetworkManager
+            echo "NetworkManager started and enabled."
+        else
+            echo "NetworkManager is already active."
+        fi
+}

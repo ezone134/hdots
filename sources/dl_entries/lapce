@@ -1,0 +1,10 @@
+[Desktop Entry]
+        Name=Lapce
+        Comment=Lapce launch
+        Exec=lapce %f
+        Icon=$r_daemon/icons/lapce.png
+        Terminal=false
+        Type=Application
+        Categories=Utility;
+        StartupNotify=true
+        Keywords=test;dummy;example;

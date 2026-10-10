@@ -1,0 +1,30 @@
+id = "nu"
+name = "Nu"
+version = "0.0.10"
+schema_version = 1
+description = "Nushell language support for Zed"
+repository = "https://github.com/zed-extensions/nu"
+authors = ["Mikayla Maki <mikayla@zed.dev>", "Joseph Lyons <joseph@zed.dev>", "Darren Schroeder"]
+themes = []
+icon_themes = []
+languages = ["languages/nu"]
+capabilities = []
+
+[lib]
+kind = "Rust"
+version = "0.7.0"
+
+[grammars.nu]
+repository = "https://github.com/nushell/tree-sitter-nu"
+rev = "47d4b4f5369c0cae866724758ae88ef07e10e4f1"
+
+[language_servers.nu]
+languages = ["Nu"]
+
+[language_servers.nu.language_ids]
+
+[context_servers]
+
+[agent_servers]
+
+[slash_commands]

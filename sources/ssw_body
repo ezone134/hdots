@@ -1,0 +1,52 @@
+#!/usr/bin/env luajit
+-- helper chsw_body
+
+function main_func_fire()
+    local dummy = flagf_get(states2 .. "/" .. "s_dummy")
+    flagf_set(states2 .. "/" .. "s", dummy)
+    flagf_set(states2 .. "/" .. "sm", dummy .. flagf_get(states2 .. "/" .. "m"))
+
+    local new_state
+    if dummy == "n" then
+        new_state = "normal"
+    else
+        new_state = "split"
+    end
+
+    flagf_set(states2 .. "/" .. "all_theme_set", "0")
+    flagf_set(states2 .. "/" .. "acc_changed", "1")
+
+    bg_fn(function()
+        rm(states2 .. "/" .. "theme_vars.lua") -- must remove this file of theme_body to read new state flag
+        sources = os.getenv("sources")
+        dofile(sources .. "/theme_main_body")
+        dofile(sources .. "/theme_body")
+        theme_cmd("srestore")
+    end)
+    exit_0()
+end
+
+function switch_cmd()
+    -- debounce logic
+    local s_dummy = flagf_get(states2 .. "/" .. "s_dummy")
+    local m = flagf_get(states2 .. "/" .. "m")
+    if s_dummy == "n" then
+        s_dummy = m
+    else
+        s_dummy = "n"
+    end
+    flagf_set(states2 .. "/" .. "s_dummy", s_dummy)
+
+    -- fork THIS interpreter: sleeps 1s then checks the debounce
+    -- (bg_fn child inherits all globals/closures — no temp script, no dofile)
+    local pid = getpid()
+    tf(states2 .. "/" .. "state_switch_pid", tostring(pid))
+    bg_fn(function()
+        sleep(1)
+        if pid == tonumber(ff(states2 .. "/" .. "state_switch_pid")) then
+            if ff(states2 .. "/" .. "s_dummy") ~= ff(states2 .. "/" .. "s") then
+                main_func_fire()
+            end
+        end
+    end)
+end

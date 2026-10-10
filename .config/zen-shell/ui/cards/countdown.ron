@@ -1,0 +1,57 @@
+(
+    // countdown card — fully declarative (zero Ink; the Rust drawer is the
+    // fallback when this file is absent). The whole body is three pieces of
+    // chrome over the event list:
+    //   · the shared `Header` chrome — "Countdown" plus the upcoming count as
+    //     its meta (the drawer's hand-rolled title/meta pair, now on the same
+    //     12/9/11 px rails as every other card);
+    //   · the add-event composer row — a `Surface` fill that lifts while the
+    //     row has focus (`countdown_input_bg`), its buffer `Text` (the
+    //     placeholder hint, in fg3, until something is typed) and an invisible
+    //     `Hit` carrying the click region the stateful keyboard path listens
+    //     on;
+    //   · the `Rows` event list (label · date caption · right
+    //     `Nd`/`today!`/`passed` chip). The label column `truncate: 120`
+    //     reserves the chip zone (Rust-parity), the chip is a `pill` cell
+    //     auto-fit to its text whose per-row ink token (from
+    //     `countdown_rows` col_colors) drives the derived fill (acc → tint,
+    //     else hover), and `del_anchor` moves the hover ✕ left of the chip.
+    //
+    // Geometry of record (draw_countdown_card), all in base px:
+    //   composer  x 12, top 26 (24 px header + 2), fill 22 tall, r 6
+    //   buffer    x 20, top 31 (8 px in, 5 px down)
+    //   region    x 12, top 26, w−24, 24 tall (the fill's own 22 + the
+    //             drawer's full-row click box)
+    //   rows      top 50 = composer top + row height
+    items: [
+        Header(title: "Countdown", glyph: None, meta: "{countdown_meta}", pad: 12.0),
+        Surface(x: 12.0, y: 26.0, w: -12.0, h: 22.0, r: 6.0,
+                color: value("countdown_input_bg")),
+        Text(x: 20.0, y: 31.0, w: 0.0, text: "{countdown_shown}", font_size: 8.5,
+             color: value("countdown_shown_ink")),
+        Hit(x: 12.0, y: 26.0, w: -12.0, h: 24.0, key: 31500),
+        Rows(
+            name: "countdown_rows",
+            y: 50.0,
+            row_h: 24.0,
+            pad: 12.0,
+            row_dy: 0.0,
+            cols: [
+                (x: 0.0, dy: 3.0, size: 9.5, truncate: 120.0),
+                (x: 0.0, dy: 13.0, size: 7.5, color: fg3),
+                (
+                    x: 0.0,
+                    edge: 12.0,
+                    right: true,
+                    dy: 6.0,
+                    size: 8.5,
+                    pill: (height: 16.0, radius: 8.0),
+                    del_anchor: true,
+                ),
+            ],
+            del_base: 31510,
+            del_pad: 20.0,
+            del_dy: 4.0,
+        ),
+    ],
+)

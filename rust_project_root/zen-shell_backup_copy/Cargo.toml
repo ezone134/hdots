@@ -1,0 +1,53 @@
+[package]
+name = "zen-shell"
+version = "0.1.0"
+edition = "2021"
+description = "Zero-overhead Wayland shell bar. Event-driven. GL-first, Vulkan next."
+license = "MIT"
+
+[[bin]]
+name = "zen-shell"
+path = "src/main.rs"
+
+[features]
+# Vulkan backend (src/render_vk.rs) is opt-in: it's only linked + compiled
+# with this feature. Default builds ship GL-only (runtimes without a Vulkan
+# loader are unaffected — ZEN_VULKAN=1 falls back to GL anyway).
+default = []
+vk = ["dep:ash", "dep:naga"]
+
+[dependencies]
+smithay-client-toolkit = { version = "0.21.1", default-features = false, features = ["calloop", "xkbcommon", "system"] }
+wayland-client = "0.31.15"
+wayland-egl = "0.32"
+egl = "0.1"
+glow = "0.16"
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+fontdb = { version = "0.24", features = ["fontconfig"] }
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ttf-parser = "0.25"
+libc = "0.2.158"
+ash = { version = "0.38", optional = true }
+naga = { version = "29", features = ["wgsl-in", "spv-out"], optional = true }
+bytemuck = { version = "1", features = ["derive"] }
+zbus = "5.19"
+png = "0.17"
+resvg = "0.45"
+image = "0.25"
+wayland-protocols = { version = "0.32", features = ["client", "staging"] }
+wayland-protocols-wlr = { version = "0.3", features = ["client"] }
+
+[profile.dev]
+# Debug builds were shipping 279 MB of DWARF. opt-level 1 keeps iteration
+# fast and runtime reasonable; strip drops the giant symbol tables.
+# Remove `strip` if you need full IDE/rust-gdb symbolication.
+opt-level = 1
+strip = "debuginfo"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

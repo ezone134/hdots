@@ -1,0 +1,63 @@
+#!/usr/bin/env luajit
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+local s = ff(states2 .. "/s")
+local cur_hex = ff(states .. "/custom_acc_" .. s)
+local now = tostring(os.time())
+
+-- `save_ca del <name>` — delete ONE saved colour from $states/sca. The shell
+-- reports only the name (after its 1.5 s hold); every decision lives here:
+-- the file's FIRST line is the sample colour and can never be deleted, the
+-- bare name `sample_color` is refused outright, and only the first matching
+-- line at index 2+ is removed. Rust never writes this file.
+local function save_del(target)
+    if not target or target == "" then
+        return
+    end
+    local lines = {}
+    for line in (ff(states .. "/sca") or ""):gmatch("[^\n]+") do
+        lines[#lines + 1] = line
+    end
+    local first = lines[1] and lines[1]:match('"([^"]+)"')
+    if #lines <= 1 or target == first or target == "sample_color" then
+        run_bg("notify-send 'Save color' 'The sample colour cannot be deleted'")
+        return
+    end
+    for i = 2, #lines do
+        if lines[i]:match('"([^"]+)"') == target then
+            table.remove(lines, i)
+            tf(states .. "/sca", table.concat(lines, "\n"))
+            run_bg(string.format("notify-send 'Save color' 'Deleted \"%s\"'", target))
+            bg_fn(function() dofile(sources .. "/gen_ca_list") end)
+            return
+        end
+    end
+    run_bg(string.format("notify-send 'Save color' '%s is not saved'", target))
+end
+
+if arg[1] == "del" then
+    save_del(arg[2])
+elseif cur_hex and cur_hex:sub(1, 1) == "#" then
+    local caml_content = ff(caml) or ""
+
+    if caml_content:find(cur_hex, 1, true) then
+        local found_name = ""
+        for line in caml_content:gmatch("[^\n]+") do
+            if line:find(cur_hex, 1, true) then
+                found_name = line:match("^([^=]+)")
+                if found_name then
+                    found_name = found_name:gsub("%s+", "")
+                end
+                break
+            end
+        end
+
+        local display_name = (found_name ~= "" and found_name) or cur_hex
+        run_bg(string.format("notify-send 'Save color' '%s (%s) is already saved in system'", display_name, cur_hex))
+    else
+        local entry_name = "saved_" .. now
+        append(states .. "/sca", string.format('{ "%s", "%s" },\n', entry_name, cur_hex))
+        run_bg(string.format("notify-send 'Save color' 'Saved \"%s\" (%s) successfully'", entry_name, cur_hex))
+        bg_fn(function() dofile(sources .. "/gen_ca_list") end)
+    end
+end

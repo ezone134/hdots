@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Zen Image (Dir)
+Comment=Open all images in the file's directory
+Exec=zen-image --dir %f
+Icon=/tmp/r_daemon/icons/zen-image.svg
+Terminal=false
+Categories=Graphics;Viewer;
+MimeType=image/png;image/jpeg;image/jpg;
+StartupNotify=true
+StartupWMClass=zen-image

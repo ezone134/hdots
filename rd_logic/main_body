@@ -1,0 +1,99 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+dofile(SCRIPT_DIR .. "/utils")
+
+local state = tonumber(ff(SCRIPT_DIR .. "/states/ps") or "0") or 0
+
+local function load_plan(plan_name)
+    local plan_vars = {}
+    local content = ff(SCRIPT_DIR .. "/states/" .. plan_name) or ""
+    for key, value in content:gmatch('([%w_]+)%s*=%s*"([^\"]*)"') do
+        plan_vars[key] = value
+    end
+    for key, value in content:gmatch("([%w_]+)%s*=%s*'([^']*)'") do
+        plan_vars[key] = value
+    end
+    for key, value in content:gmatch("([%w_]+)%s*=%s*([%d%.%-]+)") do
+        plan_vars[key] = value
+    end
+    return plan_vars
+end
+
+local function write_sysfs(path, value)
+    if value == nil or value == "" then return end
+    run("printf '%s\\n' " .. shq(value) .. " | tee " .. path)
+end
+
+local function apply_plan(plan_vars, max_mhz, label)
+    print(label)
+    write_sysfs("/sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq", tostring(max_mhz * 1000))
+    write_sysfs("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor", plan_vars.scaling_governor)
+
+    local dpm_force = plan_vars.power_dpm_force_performance_level or plan_vars.dpm_force_performance_level
+    write_sysfs("/sys/class/drm/card*/device/power_dpm_force_performance_level", dpm_force)
+    write_sysfs("/sys/class/drm/card*/device/power_dpm_state", plan_vars.power_dpm_state)
+    if dpm_force ~= "auto" then
+        write_sysfs("/sys/class/drm/card*/device/pp_dpm_sclk", plan_vars.pp_dpm_sclk or "0")
+    end
+end
+
+main_logic_function = function()
+    print(os.date() .. ": Checking power source")
+    local power_status = 0
+
+    local power_adp = "0"
+    local adp_files = list_dir("/sys/class/power_supply")
+    for _, d in ipairs(adp_files) do
+        if d:match("^ADP") then
+            local val = ff("/sys/class/power_supply/" .. d .. "/online")
+            if val then power_adp = val end
+        end
+    end
+
+    local power_usbc = "0"
+    for _, d in ipairs(adp_files) do
+        if d:match("^ucsi%-source%-psy%-") then
+            local val = ff("/sys/class/power_supply/" .. d .. "/online")
+            if val then power_usbc = val end
+        end
+    end
+
+    if tonumber(power_adp) == 1 then power_status = 1 end
+    if tonumber(power_usbc) == 1 then power_status = 1 end
+
+    if power_status == 1 then
+        local ac_plan = ff(SCRIPT_DIR .. "/states/ac_plan") or "powersave"
+        local plan_vars = load_plan(ac_plan)
+        local max_ac_mhz = tonumber(ff(SCRIPT_DIR .. "/states/max_ac_mhz") or "0") or 0
+        apply_plan(plan_vars, max_ac_mhz, "On AC")
+    else
+        local bat_plan = ff(SCRIPT_DIR .. "/states/bat_plan") or "powersave"
+        local plan_vars = load_plan(bat_plan)
+        local max_bat_mhz = tonumber(ff(SCRIPT_DIR .. "/states/max_bat_mhz") or "0") or 0
+        apply_plan(plan_vars, max_bat_mhz, "On Battery")
+    end
+end
+
+init_func_2 = function()
+    local state_file = SCRIPT_DIR .. "/last_trigger"
+    local pid = getpid()
+    tf(state_file, tostring(pid) .. "\n")
+    sleep(2)
+    local last_pid = tonumber(ff(state_file) or "0") or 0
+    if last_pid == pid then
+        main_logic_function()
+    end
+end
+
+normal_apply_function = function()
+    if state == 1 then
+        main_logic_function()
+    end
+end
+
+on_udev_trigger_function = function()
+    if state == 1 then
+        init_func_2()
+    end
+end

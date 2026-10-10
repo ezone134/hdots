@@ -1,0 +1,119 @@
+(
+    // eq card — FULLY LIVE, no `Ink`.
+    //
+    // Everything the Rust drawer measured in DEVICE px out of the card box is
+    // now stated here in base px, and the two palette MIXES it could not name
+    // (the curve panel's wash, the zero line) plus the per-band / per-preset
+    // hover tints ride published colors (`value(...)`).
+    //
+    // The header chrome is declared here too, so `scene_owns_header` is true
+    // and the drawer's own `if !self.scene_owns_header` block stands down.
+    items: [
+        // ── header: the volume glyph + the title, the drawer's own two
+        //    hand-rolled header rules (`card_show_glyph` / `card_show_title`)
+        //    rather than a `Header` item, so the glyph keeps its accent-when-
+        //    live ink and the title its own 12px size ──
+        Text(x: 12.0, y: 8.0, w: 0.0, text: "\u{f028}", font_size: 12.0,
+             color: value("eq_glyph_ink"), icon: true),
+        Text(x: 30.0, y: 9.0, w: 0.0, text: "Equalizer", font_size: 12.0,
+             color: fg),
+        // ── the ON/OFF pill, right-anchored at `w - pad - 42` (38×18, fully
+        //    round) with the drawer's ±2px halo on its region ──
+        Stack(x: 0.0, y: 5.0, w: -54.0, h: 18.0, right: true, items: [
+            Surface(x: 0.0, y: 0.0, w: 38.0, h: 18.0, r: 9.0,
+                    color: value("eq_tog_bg"), hover_key: 34370,
+                    hover_color: value("eq_tog_bg_hov")),
+            Text(x: 0.0, y: 3.0, w: 38.0, text: "{eq_tog_lbl}",
+                 font_size: 8.5, center: true, color: value("eq_tog_lab")),
+            Hit(x: -2.0, y: -2.0, w: 42.0, h: 22.0, key: 34370),
+        ]),
+        // ── everything below the header stands down when the EQ is off; this
+        //    is the drawer's own `if !active { …; return; }` ──
+        Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, visible: "eq_active", items: [
+            // ── response-curve panel ──
+            Surface(x: 12.0, y: 32.0, w: -24.0, h: 50.0, r: 4.0,
+                    color: value("eq_panel")),
+            // the zero line: a 1px-tall rect at `r: 0.5` is the drawer's own
+            // half-pixel zero rule, which is why it sits at y 56.5 (the
+            // panel's vertical midpoint) and not 57
+            Surface(x: 12.0, y: 56.5, w: -24.0, h: 1.0, r: 0.5,
+                    color: value("eq_zero")),
+            // The curve. `max: 1.0` stops the engine re-normalizing to the
+            // series' own peak, and `inset: 0.0` lets the trace span the full
+            // 50px panel — the `thickness / 2 + 1` stroke headroom the engine
+            // reserves by default would clip the curve's own extremes.
+            Spark(name: "eq_curve", x: 12.0, y: 32.0, w: -24.0, h: 50.0,
+                  color: value("eq_acc"), max: 1.0, kind: line,
+                  thickness: 2.0, inset: 0.0),
+            // The 10 band dots at LOG-frequency x, each at its own band's live
+            // gain. `item.r` is the drawer's unscaled 3 DEVICE px radius, which
+            // the publisher divides by the scale so the dot stays 6 device px
+            // at EVERY scale — the drawer's own (unintended) behaviour.
+            Repeat(model: "eq_dots", x: 12.0, y: 32.0, w: -24.0, h: 50.0,
+                   spacing: 0.0, templates: [
+                (tag: "*", items: [
+                    Surface(x: "item.x * parent.w - 3.0", y: "item.y * parent.h",
+                            w: "eq_dot_d", h: "eq_dot_d", r_var: "eq_dot_r",
+                            color: value("eq_acc")),
+                ]),
+            ]),
+            // ── the 10 band faders ──
+            // One `Repeat` across the strip: each row carries its own fill
+            // fraction, label, key and ink pair. The band slot is the drawer's
+            // `bx .. bx + band_w` at `slider_y` with the slider box's height,
+            // so `parent.h` IS the drawer's `slider_h` and the fader centres on
+            // the slot's own midpoint.
+            Repeat(model: "eq_bands", x: 12.0, y: 92.0, w: -24.0, h: 0.0,
+                   dir: right, spacing: 0.0, templates: [
+                (tag: "*", items: [ Comp(name: "eq_band") ]),
+            ]),
+            // ── the preset row ──
+            // Each row publishes its OWN width, because the drawer measured
+            // `chars * 7.5 + 14` device px — not the engine's `0.62 * fs`
+            // house estimate — so the scene only left-aligns and stacks.
+            Repeat(model: "eq_presets", x: 12.0, y: "parent.h - 28.0",
+                   w: -24.0, h: 18.0, dir: right, spacing: 4.0, templates: [
+                (tag: "*", items: [ Comp(name: "eq_preset") ]),
+            ]),
+        ]),
+        // the drawer's inactive message, centered on the card
+        Text(x: 0.0, y: "parent.cy", w: 0.0, text: "Press ON to enable",
+             font_size: 10.0, center: true, color: value("eq_lab"),
+             visible: "eq_msg_on"),
+    ],
+    components: {
+        // One band: the groove, the fill rising from the groove's BOTTOM edge,
+        // the 16×4 bar thumb riding the fill's top, and the band's label under
+        // it. `frac` is the drawer's own 0..1 gain fraction, so the fill height
+        // is `parent.h - 16` (the drawer's `groove_h`) times it.
+        //
+        // The drawer's `if fill_h > 1.0` gate is a DEVICE px test on that
+        // product, which a row cannot evaluate (`SceneValues::toggle()` only
+        // reads top-level names, so a per-row `visible:` could not express it).
+        // A zero-height fill paints nothing, so the gate is left implicit here
+        // and the parity test asserts the two agree.
+        "eq_band": [
+            Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: "item.key"),
+            Surface(x: 0.0, y: 8.0, w: 6.0, h: "parent.h - 16.0", r: 3.0,
+                    center: true, color: value("eq_groove")),
+            Surface(x: 0.0, y: "8.0 + (parent.h - 16.0) * (1.0 - item.frac)",
+                    w: 6.0, h: "(parent.h - 16.0) * item.frac", r: 3.0,
+                    center: true, color: value("item.fill")),
+            Surface(x: 0.0, y: "8.0 + (parent.h - 16.0) * (1.0 - item.frac) - 6.0",
+                    w: 16.0, h: 4.0, r: 2.0, center: true,
+                    color: value("item.thumb")),
+            Text(x: 0.0, y: "parent.h - 4.0", w: 0.0, text: "{item.label}",
+                 font_size: 7.5, center: true, color: value("eq_lab")),
+        ],
+        // One preset chip: the pill, its centered label, and the ±2px halo the
+        // drawer's `self.region(px - 2, py - 2, …)` put around it.
+        "eq_preset": [
+            Surface(x: 0.0, y: 0.0, w: "item.w", h: 18.0, r: 9.0,
+                    color: value("item.bg"), hover_key: "item.key"),
+            Text(x: 0.0, y: 3.0, w: "item.w", text: "{item.label}",
+                 font_size: 8.0, center: true, color: value("item.lab")),
+            Hit(x: -2.0, y: -2.0, w: "item.w", h: 18.0, key: "item.key",
+                region_dw: 4.0, region_dh: 4.0),
+        ],
+    },
+)

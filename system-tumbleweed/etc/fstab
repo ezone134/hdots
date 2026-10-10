@@ -1,0 +1,6 @@
+UUID=e0443e65-4a9c-4904-acbe-2748b46ee882  /      ext4  defaults,noatime      0  1
+UUID=dcd25a01-9288-4f8c-ba7d-be902083998e  /acc/data  ext4  data=ordered,noatime  0  2
+UUID=180e659d-f0f4-4335-a7bf-57db77a5ec5f   /acc/common   ext4    defaults,noatime           0 2
+
+# entry added by boot.sh
+tmpfs   /tmp   tmpfs   size=7G,noatime   0   0

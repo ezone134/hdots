@@ -1,0 +1,11 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+dofile(SCRIPT_DIR .. "/utils")
+dofile(SCRIPT_DIR .. "/main_body")
+
+local code = "arg[0] = " .. shq(SCRIPT_DIR .. "/udev_run")
+    .. "; dofile(" .. shq(SCRIPT_DIR .. "/main_body")
+    .. "); on_udev_trigger_function()"
+run_bg("luajit -e " .. shq(code) .. " >> "
+    .. shq(SCRIPT_DIR .. "/power_script.log") .. " 2>&1")

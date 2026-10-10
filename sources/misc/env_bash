@@ -1,0 +1,25 @@
+# -*- mode: sh -*-
+if [[ -f "$sources/misc/vars" ]]; then
+    . "$sources/misc/vars"
+else
+    [[ -f "$states2/launch_marker" ]] || {
+        . "$HOME/.config/${d_id}/sources/misc/vars"
+
+        rbase=$(<$dots/states/b) || rbase=/tmp
+        export rbase
+
+        . "$dots/sources/create_dummies"
+
+        [[ -e /etc/systemd/system/display-manager.service || -f /etc/X11/default-display-manager ]] || {
+            [[ -e "$HOME/env_override" ]] && while IFS= read -r line; do
+                [[ "$line" =~ ^[[:space:]]*-- ]] && continue
+                [[ "$line" == *auto_launch* ]] && {
+                    [[ "$line" == *1* ]] && auto_launch=1 || auto_launch=0
+                }
+            done < "$HOME/env_override"
+
+            [[ -z "${auto_launch}" ]] && auto_launch=$(<$dots/states/auto_launch) || auto_launch=1
+            [[ $auto_launch == 1 ]] && start-hyprland
+        }
+    }
+fi

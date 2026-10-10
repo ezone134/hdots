@@ -1,0 +1,129 @@
+(
+    // ACCENT — pick the accent source (wallpaper / scheme default / custom)
+    // and, from the `>` chevron on "Custom accent", page the one-column
+    // custom-accents subview. Mirrors the Settings Appearance block: a
+    // defined-hex is merged into the custom-acc logic, so only three
+    // sources are offered.
+    //
+    // BOTH halves are declarative — there is no `Ink` here any more (this
+    // file drops `accent.ron/accent` out of the live-Ink ratchet). The Rust
+    // `draw_accent_card` survives as the no-scene fallback and as the
+    // geometry of record its parity test draws against.
+    //
+    // Geometry of record (draw_accent_card): the block is centered in the
+    // card with `top = ((h − 156) / 2).clamp(30, 48)` — height-dependent,
+    // so every y here is a published anchor the shell computes in BASE px
+    // (the 6.5 / 5.5 insets ride in the scalar). The scheme row sits at
+    // `top + 28`, the three sources at `top + 58` on the drawer's 30 px
+    // pitch, and the subview hangs off that same anchor: back region
+    // `top + 56` / baseline `top + 58`, color row `top + 88` / `top + 96.5`,
+    // empty hint `top + 112`, paged list `top + 122`.
+    //
+    // The two halves never draw at once: `accent_picker` is
+    // `!accent_list_open`, so closing the subview is what reveals the
+    // picker again.
+    items: [
+        Header(title: "Theme & Accent", glyph: "\u{f1fc}", pad: 12.0),
+
+        // ── the picker (subview closed) ──
+        // the scheme row — its own region is 30 px tall while the source rows'
+        // are 26 (`region_dh: -4.0`), which is why this is a standalone `Hit`
+        // rather than the first row of the list. `x: 10, w: -10` is the
+        // drawer's `x + 10, w − 20`: 10 in each side (a negative `w` is the
+        // span left from `x` to `right − inset`)
+        Hit(x: 10.0, y: "accent_scheme_region_y", w: -10.0, h: 30.0, key: 28,
+            visible: "accent_picker"),
+        Text(x: 14.0, y: "accent_scheme_text_y", w: 0.0, text: "{accent_scheme}", font_size: 10.0,
+             color: value("accent_scheme_ink"),
+             visible: "accent_picker"),
+        Text(x: 18.0, y: "accent_chev_y", w: 0.0, right: true, text: "\u{f054}", font_size: 11.0,
+             icon: true, color: fg2, visible: "accent_picker"),
+        Rows(
+            name: "accent_rows",
+            y: "accent_rows_y",
+            row_h: 30.0,
+            pitch: 30.0,
+            pad: 10.0,
+            row_dy: 6.5,
+            // the drawer's loop breaks at `card_h − 3`
+            bottom: 3.0,
+            visible: "accent_picker",
+            key_base: 32000,
+            // the source regions are 4 px shorter than the 30 px row box
+            region_dh: -4.0,
+            cols: [
+                // the ACTIVE row's rail on the left edge: 3 wide × 12 tall at
+                // `top + ((30 − 4) / 2) − 6` = 7 into the row, `acc`; the other
+                // two rows publish `clear`, so the cell paints nothing. The
+                // cell text is empty and still draws because it opts into `dot`
+                (x: 0.0, dot: (size: 3.0, h: 12.0, radius: 1.5, top: 7.0)),
+                // the label, `acc` under the cursor — `light` because the
+                // drawer paints it with `ui::text` (Inter Light), which is
+                // SceneCol's own default's FIRST miss
+                (x: 8.0, size: 10.0, weight: light),
+            ],
+        ),
+        // the `>` on "Custom accent" — the subview's ONLY entry point. The
+        // glyph mirrors the scheme row's, and the click zone sits inside
+        // this row's own box at the right edge (`card_w − 60 … card_w − 10`
+        // = the drawer's `x + w − s(60)` for `s(50)`). Declared AFTER the
+        // list so it wins the overlap — the hit test walks regions
+        // backwards — leaving the rest of the row to select the source.
+        Hit(x: 10.0, right: true, w: 50.0, y: "accent_custom_row_y", h: 26.0,
+            key: 32101, visible: "accent_picker"),
+        Text(x: 18.0, y: "accent_custom_chev_y", w: 0.0, right: true, text: "\u{f054}",
+             font_size: 11.0, icon: true, color: fg2, visible: "accent_picker"),
+
+        // ── the custom-accents subview (picker hidden) ──
+        // back row: `<` + title + the accent count, on one baseline
+        Hit(x: 10.0, y: "accent_back_region_y", w: -10.0, h: 30.0, key: 32100,
+            visible: "accent_list_open"),
+        Text(x: 14.0, y: "accent_back_y", w: 0.0, text: "\u{f053}", font_size: 10.0,
+             icon: true, color: value("accent_back_icon_ink"),
+             visible: "accent_list_open"),
+        Text(x: 28.0, y: "accent_back_y", w: 0.0, text: "Custom accents", font_size: 10.0,
+             color: fg, visible: "accent_list_open"),
+        Text(x: 18.0, y: "accent_back_y", w: 0.0, right: true, text: "{accent_list_count}",
+             font_size: 9.0, color: fg3, visible: "accent_list_open"),
+        // "custom color" row — opens the gcp GUI (never an `all`-flag
+        // operation; always targets the current state)
+        Hit(x: 10.0, y: "accent_color_region_y", w: -10.0, h: 30.0, key: 32102,
+            visible: "accent_list_open"),
+        Text(x: 14.0, y: "accent_color_text_y", w: 0.0, text: "\u{f043}", font_size: 9.5,
+             icon: true, color: value("accent_color_ink"), visible: "accent_list_open"),
+        Text(x: 30.0, y: "accent_color_text_y", w: 0.0, text: "Pick from color wheel", font_size: 9.5,
+             color: value("accent_color_ink"), visible: "accent_list_open"),
+        // the paged list: every accent is published and the list windows on
+        // the CLAMPED `accent_list_scroll` (clipimg.ron's rule — a sliced
+        // window plus a bound offset would apply the offset twice). Each
+        // row's key is window-relative (`key_base` + its index IN the
+        // window), which is what `input.rs` maps back to a visible slot.
+        //
+        // `bottom: 8.0` is the drawer's row count exactly:
+        // `floor((h − 8 − ly) / 26)` = `floor((lh − 4) / 26)`.
+        Rows(
+            name: "accent_list_rows",
+            y: "accent_list_y",
+            row_h: 26.0,
+            pitch: 26.0,
+            pad: 10.0,
+            row_dy: 6.5,
+            bottom: 8.0,
+            visible: "accent_list_open",
+            key_base: 32200,
+            start: "accent_list_scroll",
+            cols: [
+                // the ACTIVE accent's 3 × 12 rail, 7 px into the row (the
+                // drawer draws it only on the live accent; `clear` on the
+                // rest paints nothing)
+                (x: 0.0, dot: (size: 3.0, h: 12.0, radius: 1.5, top: 7.0)),
+                // the name, capped at 28 chars and `acc` under the cursor
+                (x: 14.0, size: 9.5, max_chars: 28, weight: light),
+            ],
+        ),
+        // the empty state, on the drawer's own hint line
+        Text(x: 20.0, y: "accent_hint_y", w: 0.0,
+             text: "no custom accents — run gen_custom_acc_files", font_size: 8.5,
+             color: fg3, visible: "accent_list_hint"),
+    ],
+)

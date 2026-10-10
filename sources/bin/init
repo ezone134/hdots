@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+-- hypr_init — run the one-time hypr init logic.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/init_logic")

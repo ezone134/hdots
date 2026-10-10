@@ -1,0 +1,53 @@
+-- helper mn_body
+-- ported from bash sources/mn_body
+-- Two callers: the `mn_main` wrapper, and theme_body_run, which SOURCES this
+-- file and calls `mn_restore_func()` in-process instead of spawning a binary.
+-- So: functions only, no top-level side effects.
+
+local MN_FILES = {
+    output   = "m_output",
+    mode     = "m_mode",
+    position = "m_pos",
+    scale    = "m_scl",
+}
+
+function mn_restore_func()
+    -- `$(<$states/m_*)` semantics: trailing newlines stripped, missing file
+    -- reads as "". master_seeder seeds all four with tf(), so both exist.
+    local out  = ff(states .. "/m_output") or ""
+    local mode = ff(states .. "/m_mode") or ""
+    local pos  = ff(states .. "/m_pos") or ""
+    local scl  = ff(states .. "/m_scl") or ""
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/monitors.lua",
+        "hl.monitor({\n" ..
+        "    output   = \"" .. out .. "\",\n" ..
+        "    mode     = \"" .. mode .. "\",\n" ..
+        "    position = \"" .. pos .. "\",\n" ..
+        "    scale    = \"" .. scl .. "\",\n" ..
+        "})\n")
+    flagf_set(states2 .. "/monitors_done", "1")
+    run_bg("notify-send 'Monitors' 'Monitors config restored...'")
+end
+
+function mn_get_func(what) -- mn_main get mode
+    local f = MN_FILES[what]
+    if f then io.write(ff(states .. "/" .. f) or "") end
+end
+
+function mn_set_func(what, value) -- mn_main set mode preferred
+    local f = MN_FILES[what]
+    if not f then return end
+    tf(states .. "/" .. f, value)
+    mn_restore_func()
+end
+
+function mn_cmd(...)
+    local a = { ... }
+    if a[1] == "get" then
+        mn_get_func(a[2])
+    elseif a[1] == "set" then
+        mn_set_func(a[2], a[3])
+    elseif a[1] == "restore" then
+        mn_restore_func()
+    end
+end

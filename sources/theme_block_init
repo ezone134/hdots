@@ -1,0 +1,40 @@
+-- helper theme_block_init
+
+dofile(sources .. "/ptc_hr")
+
+-- copy theme tree
+copy_dir_contents(dots .. "/gtk_theme", rconf .. "/gtk_theme")
+
+-- remove stale alt index files (files/symlinks only; NEVER dirs)
+local alt_theme_dirs = {
+    rconf .. "/gtk_theme/gtk_d_alt",
+    rconf .. "/gtk_theme/gtk_l_alt",
+}
+for _, adir in ipairs(alt_theme_dirs) do
+    rm_glob(adir, "^index") -- covers index.theme and any index* file
+end
+
+-- symlink alt theme dirs to their base counterparts
+local alt_themes = {
+    {src = rconf .. "/gtk_theme/gtk_d",   dest = rconf .. "/gtk_theme/gtk_d_alt"},
+    {src = rconf .. "/gtk_theme/gtk_l",  dest = rconf .. "/gtk_theme/gtk_l_alt"},
+}
+
+for _, pair in ipairs(alt_themes) do
+    ptc_runr(pair.src, pair.dest)
+end
+
+rm(rconf .. "/gtk_theme/gtk_d_alt/index.theme")
+rm(rconf .. "/gtk_theme/gtk_l_alt/index.theme")
+
+tf(rconf .. "/gtk_theme/gtk_l_alt/index.theme",
+    '[Desktop Entry]\nType=X-GNOME-Metatheme\nName=gtk_l_alt\n' ..
+    'Comment=An Flat Gtk+ theme based on Elegant Design\nEncoding=UTF-8\n\n' ..
+    '[X-GNOME-Metatheme]\nGtkTheme=gtk_l_alt\nMetacityTheme=gtk_l_alt\n' ..
+    'IconTheme=Tela-circle-light\nCursorTheme=Graphite-cursors\nButtonLayout=close,minimize,maximize:menu\n')
+
+tf(rconf .. "/gtk_theme/gtk_d_alt/index.theme",
+    '[Desktop Entry]\nType=X-GNOME-Metatheme\nName=gtk_d_alt\n' ..
+    'Comment=An Flat Gtk+ theme based on Elegant Design\nEncoding=UTF-8\n\n' ..
+    '[X-GNOME-Metatheme]\nGtkTheme=gtk_d_alt\nMetacityTheme=gtk_d_alt\n' ..
+    'IconTheme=Tela-circle-dark\nCursorTheme=Graphite-cursors\nButtonLayout=close,minimize,maximize:menu\n')

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+. $dots/sources/create_dummies reload_hyprctl

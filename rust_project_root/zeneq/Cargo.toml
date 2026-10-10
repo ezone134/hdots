@@ -1,0 +1,9 @@
+[package]
+name = "zeneq"
+version = "0.1.0"
+edition = "2021"
+description = "A hand-written 10-band parametric equalizer as a LADSPA plugin for PipeWire"
+
+[lib]
+name = "zeneq"
+crate-type = ["cdylib", "rlib"]

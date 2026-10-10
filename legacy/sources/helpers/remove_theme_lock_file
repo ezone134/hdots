@@ -1,0 +1,34 @@
+# -*- mode: sh -*-
+
+    # 1. Check if any flag is NOT 1
+    if [[ $(<$states2/general_done) -ne 1 || \
+          $(<$states2/hs_done) -ne 1 || \
+          $(<$states2/shadow_done) -ne 1 || \
+          $(<$states2/opacity_done) -ne 1 || \
+          $(<$states2/shader_done) -ne 1 || \
+          $(<$states2/blur_done) -ne 1 || \
+          $(<$states2/configs_done) -ne 1 || \
+          $(<$states2/awww_done) -ne 1 || \
+          $(<$states2/gtk_css_generated) -ne 1 ]]; then
+
+    tries=0
+        # 2. Loop up to 40 times waiting for flags to clear
+        while [[ $tries -lt 20 && ( \
+                 $(<$states2/general_done) -ne 1 || \
+                 $(<$states2/hs_done) -ne 1 || \
+                 $(<$states2/shadow_done) -ne 1 || \
+                 $(<$states2/opacity_done) -ne 1 || \
+                 $(<$states2/shader_done) -ne 1 || \
+                 $(<$states2/blur_done) -ne 1 || \
+                 $(<$states2/configs_done) -ne 1 || \
+                 $(<$states2/awww_done) -ne 1 || \
+                 $(<$states2/gtk_css_generated) -ne 1 ) ]]; do
+            ((tries++))
+            sleep 0.5
+        done
+    fi
+
+    # 3. Proceed to remove the lock file regardless
+    echo 1 > $states2/all_theme_set
+    rm -f "$lock_files/theme_run_lock"
+#    notify-send "Themes Extra" "Removed theme lock file..." &

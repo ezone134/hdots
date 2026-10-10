@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# brightness_main — backlight control CLI (was: qs-ctl bri).
+# Thin dispatcher: sources the domain body, then calls the domain cmd with
+# "$@". Path defaults come from the exported env (states, rcache, ...).
+set -u
+. "$hypr_sources/helpers/brightness_body"
+bri_cmd "$@"

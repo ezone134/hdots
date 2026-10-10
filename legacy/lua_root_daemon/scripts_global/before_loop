@@ -1,0 +1,12 @@
+#!/usr/bin/env luajit
+
+sleep(1)
+
+local sysrq_state = read_line("/proc/sys/kernel/sysrq") or "0"
+if tonumber(sysrq_state) ~= 1 then
+    write("/proc/sys/kernel/sysrq", "1\n")
+end
+
+run("chmod 777 " .. shq(SCRIPT_DIR .. "/states/fire_delay"))
+run("chmod 777 " .. shq(SCRIPT_DIR .. "/fire_count"))
+write(SCRIPT_DIR .. "/unmounter_status", "1\n")

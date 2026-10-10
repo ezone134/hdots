@@ -1,0 +1,42 @@
+-- helper fetch_color_scheme
+-- ported from bash sources/fetch_color_scheme
+-- callers set global `fcs_caller` = "splash_init" | "center_pop" | nil (default $m)
+
+if not sm or sm == "" then
+    sm = flagf_get(states2 .. "/" .. "sm")
+    mode_var = flagf_get(states2 .. "/" .. "m")
+end
+
+local caller = fcs_caller
+if caller == "splash_init" then
+    mode_var = m_init
+else
+    mode_var = m
+end
+
+-- pre-sync splash: $states tmpfs is not synced yet -> read from persist
+local s_root = caller == "splash_init" and (dots .. "/states") or states
+
+bf = math.floor(tonumber(ff(s_root .. "/bg_alpha_" .. mode_var), 16) * 100 / 255)
+
+theme_id = ff(s_root .. "/" .. "scheme_" .. sm)
+
+flagf_set(states2 .. "/" .. "cur_scheme", theme_id)
+
+dofile(dots .. "/sources/theme_init")
+
+resolve(theme_id)
+if found == 0 then
+    local msg = "Scheme " .. theme_id .. " not found at source falling back to default_nord"
+    err(msg)
+    run_bg("notify-send 'Theme extras' " .. shq(msg))
+    resolve("default_nord")
+end
+
+if caller == "center_pop" or arg[2] == "auto_fetch" then
+    mode_var = flagf_get(states2 .. "/" .. "m")
+end
+
+if dual == 1 then
+    _G[mode_var .. "_side"]()
+end

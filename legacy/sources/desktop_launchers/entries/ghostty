@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Ghostty (Appimage)
+Comment=A simple test application
+Exec=/tmp/xyz/appimage-extract/ghostty/squashfs-root/AppRun %f
+Icon=$hypr_global/icons/ghostty.png
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+StartupNotify=true
+Keywords=test;dummy;example;

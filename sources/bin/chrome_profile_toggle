@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+if pidof chrome; then
+    notify-send "Chrome Profile Toggle" "Google Chrome is running exit it first" &
+else
+    if [[ -L $HOME/.config/google-chrome ]]; then
+        rm $HOME/.config/google-chrome
+        mv $HOME/.config/google-chrome_org $HOME/.config/google-chrome
+        notify-send "Chrome Profile Toggle" "Restored Google Chrome profile" &
+    else
+        mv $HOME/.config/google-chrome $HOME/.config/google-chrome_org
+        mkdir -p /tmp/chorme_profile_${USER} $HOME/.config
+        ln -s /tmp/chorme_profile_${USER} $HOME/.config/google-chrome
+        notify-send "Chrome Profile Toggle" "Linked Google Chrome profile to tmpfs" &
+    fi
+fi

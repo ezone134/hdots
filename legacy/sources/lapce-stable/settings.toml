@@ -1,0 +1,6 @@
+[editor]
+font-size = 18
+code-glance-font-size = 5
+
+[core]
+color-theme = "$lapce_theme"

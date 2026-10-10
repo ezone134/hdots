@@ -1,0 +1,1932 @@
+// zen-shell — whole-dashboard declarative scene (`~/.config/zen-shell/shell.ron`).
+//
+// ============================================================================
+// THIS FILE IS AUTHORITATIVE.
+//
+// `vars::shell_scene_path()` resolves here, and every scene test reads this
+// path — so what is in this file is what runs and what is verified.
+//
+// There used to be a `repo mirror: config/zen-shell/shell.ron` (read by
+// nothing) with a `cp` to re-sync it. It was deleted on 2026-10-04 along with
+// the rest of the repo's `config/`: it had already drifted twice — silently
+// for three weeks once (207 vs 742 lines), then again on 2026-10-03, when
+// phase 6's `parent.*` migration was hand-edited into the MIRROR and never
+// copied here, so the phase-6 work sat unshipped while 524/524 tests passed.
+// One file, edited in place, verified by the suite that reads it. A green
+// suite proves the file here, not a copy of it.
+// ============================================================================
+
+// Mirrors the structure of the built-in Rust layouts so a surface that is
+// declared here REPLACES its Rust draw path; a surface that is present but
+// not (yet) wired keeps its Rust body unchanged. Colors are tokens resolved
+// against the live theme (`ColorToken`); `{name}` placeholders interpolate
+// live shell values; `Ink(name)` hands the rest of a body to a Rust painter.
+//
+//   Build the cohesive structure with clean, quiet, warm tokens.
+//
+// Surfaces:
+//   - `settings` … FULLY declared: the two-pane Settings app, all six of its
+//     section bodies (Misc, Network, System, Sound, Pill, Appearance). The
+//     `settings_ink` binding and the `Ink` item that used to route the last of
+//     them to its Rust painter are gone, so this surface has no Ink either and
+//     no `settings_<tab>` painter left in Rust to disagree with it.
+//   - `notif` … FULLY live: the header chrome (title + Clear + the
+//     STATE-DRIVEN DND chip via `value(...)` dynamic colors) is declared below,
+//     and so is the card list — a `dir: down` `Repeat` over the `notif_rows`
+//     model. No Ink, and nothing Rust-side left to fall back to.
+//   - `lock` … FULLY declared at the 1920×1080 reference height: the
+//     fullscreen hero chrome (dim backdrop, clock, date, avatar), the password
+//     field, the hold-power buttons and the hint. Its `Ink("lock_screen")`
+//     route and the painter behind it are deleted.
+//   - `wallpaper` … FULLY declared: the Backgrounds header chrome (back +
+//     title) and the thumbnail grid + scrollbar. Its `Ink("wallpaper_picker")`
+//     route and the painter behind it are deleted.
+//   - `dashboard` … FULLY declared: the board (a `dash_cards` `Repeat` whose
+//     template hands every slot to a `Card`), then `dband` (the strip band),
+//     `dchips` (the strip chips) and `dconn` (the connectivity popover), each
+//     painted over the one before it. NO `Ink` — `Ink("dash_banner")` was the
+//     last shell-surface Ink and is deleted; its Rust body, `layout_banner`,
+//     now runs ONLY as the fallback for a config with no `dashboard` surface,
+//     plus the edit-mode chrome this surface never claims.
+//
+// No shell surface declares an `Ink` any more. The two that remain in the
+// whole config are CARD scenes — `ui/cards/notes.ron` and
+// `ui/cards/worldmap.ron` — whose painters `dispatch_scene_inks` routes.
+
+ShellScene(
+    components: {
+        // ── Settings chrome pieces, stamped by the `settings` surface below ──
+        // Top-left pane header ("Settings" 17px primary).
+        "stitle": [ Text(x: 22.0, y: 14.0, text: "Settings", font_size: 17.0, color: fg) ],
+        // Close button: hit region that lights only on hover (`hover_only`),
+        // plus the ✕ glyph right-anchored at w−26 — byte-for-byte the Rust
+        // header strip.
+        "sclose": [
+            Hit(x: 0.0, y: 4.0, w: 36.0, h: 30.0, r: 6.0, key: 1,
+                surface: hover_hl, hover_only: true),
+            Text(x: 26.0, y: 13.0, text: "\u{2715}", font_size: 12.0, right: true, color: fg2),
+        ],
+        // The 1px right edge of the left sidebar (from y=44 down to the floor).
+        "srail": [ Surface(x: 179.0, y: 44.0, w: 1.0, h: 0.0, color: hairline) ],
+        // Left nav: one `settings_nav` row per tab (keys 200…204, 219). The
+        // per-frame `surface` + `col_colors` carry selected/hover states, and
+        // `w` + `pitch` bound the rows to the 180px sidebar's 46px stride.
+        "snav": [ Rows(name: "settings_nav", y: 54.0, row_h: 40.0, pitch: 46.0, w: 168.0,
+                      pad: 6.0, row_dy: 15.0, r: 8.0,
+                      cols: [
+                          (x: 10.0, icon: true, size: 14.0),
+                          (x: 36.0, size: 12.5),
+                      ]) ],
+        // ── Pill section recipes (`tab_pill` below) ──
+        // `pill_switch` IS the drawer's `settings_toggle_row`, verbatim: the
+        // flat 24² icon tile, the 12px glyph on it, the 12.5px label, and the
+        // slim 36×18 switch (track + a 14² knob that slides 20px). Its box is
+        // the row's own left edge — the drawer's `cx + 12`, which is also where
+        // every `Repeat` below starts — so one delegate serves the behaviour
+        // rows, the reorderable item rows AND the floating drag ghost, each of
+        // which is its own box with the same relative geometry.
+        //
+        // The switch's travel is DECLARED here (`item.on ? 14 : 32` inset from
+        // the right edge, which is the drawer's `tx + 20` / `tx + 2`), as are
+        // the four inks it binds per row (`value("item.ink")` / `item.track` /
+        // `item.knob`, and the label's `item.lab`).
+        "pill_switch": [
+            Surface(x: 8.0, y: 8.0, w: 24.0, h: 24.0, r: 6.0, color: hover),
+            Text(x: 14.0, y: 14.0, w: 0.0, text: "{item.glyph}",
+                 font_size: 12.0, color: value("item.ink"), icon: true),
+            Text(x: 44.0, y: 14.0, w: 0.0, text: "{item.label}",
+                 font_size: 12.5, color: value("item.lab")),
+            Surface(x: 12.0, right: true, y: 11.0, w: 36.0, h: 18.0, r: 9.0,
+                    color: value("item.track")),
+            Surface(x: "item.on ? 14.0 : 32.0", right: true, y: 13.0,
+                    w: 14.0, h: 14.0, r: 7.0, color: value("item.knob")),
+        ],
+        // The behaviour toggles: the same switch plus the row's hover wash and
+        // its click region. The wash is a GATE on the row's own key rather than
+        // a published color, so "lit while hovered" is stated once here instead
+        // of in the publisher. The hit reaches 8px LEFT of the row box and
+        // stops 4px short of the pane's right edge (`x: -8, w: 0`).
+        "pill_row": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 40.0, r: 8.0, color: hover_hl,
+                    hover_key: "item.key"),
+            Comp(name: "pill_switch"),
+            Hit(x: 0.0, y: -2.0, w: 0.0, h: 36.0, key: "item.key",
+                region_dx: 8.0),
+        ],
+        // A reorderable pill item: the behaviour row plus its drag grip, which
+        // lights with the row (`value("item.gink")`) and hangs 10px left of the
+        // row box — the drawer's `cx + 2`.
+        "pill_item": [
+            Text(x: -10.0, y: 10.0, w: 0.0, text: "\u{f5d4}",
+                 font_size: 14.0, color: value("item.gink"), icon: true),
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 40.0, r: 8.0, color: hover_hl,
+                    hover_key: "item.key"),
+            Comp(name: "pill_switch"),
+            Hit(x: 0.0, y: -2.0, w: 0.0, h: 36.0, key: "item.key",
+                region_dx: 8.0),
+        ],
+        // The row the pointer is holding keeps its SLOT but paints nothing: a
+        // 36px translucent well is all that is left of it, because the floating
+        // copy below is what the eye follows. The row's `tpl` field picks this
+        // delegate, so "which row is lifted" is data, not a gate the scene
+        // engine would have to evaluate per row.
+        "pill_lifted": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 36.0, r: 10.0,
+                    color: value("pill_lifted_fill")),
+        ],
+        // ── Appearance section recipes (`tab_appearance` below) ──
+        // `app_toggle` IS the drawer's `settings_row`, verbatim: the full-row
+        // hover wash, the flat 30² icon tile, the 14px glyph, the 13px label
+        // and the 38×20 switch (track + a 16² knob that slides 19px). The knob's
+        // travel is DECLARED (`item.on ? 17 : 36` inset from the row's right
+        // edge — the drawer's `tx+21` / `tx+2`, with tx = w−62), as are the
+        // three inks it binds per row.
+        "app_toggle": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 48.0, r: 8.0, color: hover_hl,
+                    hover_key: "item.key"),
+            Surface(x: 8.0, y: 9.0, w: 30.0, h: 30.0, r: 7.0, color: hover),
+            Text(x: 15.0, y: 17.0, w: 0.0, text: "{item.glyph}",
+                 font_size: 14.0, color: value("item.gly"), icon: true),
+            Text(x: 48.0, y: 16.0, w: 0.0, text: "{item.label}",
+                 font_size: 13.0, color: fg),
+            Surface(x: 16.0, right: true, y: 14.0, w: 38.0, h: 20.0, r: 10.0,
+                    color: value("item.track")),
+            Surface(x: "item.on ? 17.0 : 36.0", right: true, y: 16.0,
+                    w: 16.0, h: 16.0, r: 8.0, color: value("item.knob")),
+            Hit(x: 0.0, y: 0.0, w: 0.0, h: 48.0, key: "item.key"),
+        ],
+        // The same row WITH a summary: the drawer lifts the label from +16 to +9
+        // to make room for the 10.5px line at +27, and a `Text` has no gate a row
+        // scope can fold — so "this one row explains itself" is a second delegate,
+        // not a per-row field.
+        "app_toggle_sub": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 48.0, r: 8.0, color: hover_hl,
+                    hover_key: "item.key"),
+            Surface(x: 8.0, y: 9.0, w: 30.0, h: 30.0, r: 7.0, color: hover),
+            Text(x: 15.0, y: 17.0, w: 0.0, text: "{item.glyph}",
+                 font_size: 14.0, color: value("item.gly"), icon: true),
+            Text(x: 48.0, y: 9.0, w: 0.0, text: "{item.label}",
+                 font_size: 13.0, color: fg),
+            Text(x: 48.0, y: 27.0, w: 0.0, text: "overlay on wallpaper",
+                 font_size: 10.5, color: fg3),
+            Surface(x: 16.0, right: true, y: 14.0, w: 38.0, h: 20.0, r: 10.0,
+                    color: value("item.track")),
+            Surface(x: "item.on ? 17.0 : 36.0", right: true, y: 16.0,
+                    w: 16.0, h: 16.0, r: 8.0, color: value("item.knob")),
+            Hit(x: 0.0, y: 0.0, w: 0.0, h: 48.0, key: "item.key"),
+        ],
+        // The 38px radio-ish row the accent-source list, the two pickers and
+        // the four icon-font slots all share: a 38² rounded fill, a 13px glyph
+        // at +16, a 12.5px label at +42, and — on the SELECTED row only — the
+        // 10² dot pinned 16px in from the right edge. The dot is what splits
+        // this into two delegates rather than one gated child: a `Surface` has
+        // no `visible` a row scope can fold, so "this row wears the dot" rides
+        // the row's `tpl` instead. All four state inks (fill, glyph, label)
+        // are per-row `value(...)` colors, because a row's hover is frame state
+        // the scene cannot see and a `Text` has no `hover_color`.
+        "app_row": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 38.0, r: 10.0,
+                    color: value("item.fill")),
+            Text(x: 16.0, y: 11.0, w: 0.0, text: "{item.glyph}",
+                 font_size: 13.0, color: value("item.gly"), icon: true),
+            Text(x: 42.0, y: 11.0, w: 0.0, text: "{item.label}",
+                 font_size: 12.5, color: value("item.lab")),
+            Hit(x: 0.0, y: 0.0, w: 0.0, h: 38.0, key: "item.key"),
+        ],
+        "app_rowsel": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 38.0, r: 10.0,
+                    color: value("item.fill")),
+            Text(x: 16.0, y: 11.0, w: 0.0, text: "{item.glyph}",
+                 font_size: 13.0, color: value("item.gly"), icon: true),
+            Text(x: 42.0, y: 11.0, w: 0.0, text: "{item.label}",
+                 font_size: 12.5, color: value("item.lab")),
+            // 26px in from the ROW's right edge — which is 34px in from the
+            // pane's, the drawer's own `w - 34`
+            Surface(x: 16.0, right: true, y: 13.0, w: 10.0, h: 10.0, r: 5.0,
+                    color: sfg),
+            Hit(x: 0.0, y: 0.0, w: 0.0, h: 38.0, key: "item.key"),
+        ],
+        // One saved-colour row (Settings → Appearance → Saved Colors): the
+        // 34 px surface (its `fill` already carries hover OR the red delete
+        // charge), the 18² swatch, the truncated name and the right-hung hint
+        // — the drawer's own `cx+20 / cx+50 / w-26` on the row box.
+        "app_saved_row": [
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 34.0, r: 8.0,
+                    color: value("item.fill")),
+            Surface(x: 12.0, y: 8.0, w: 18.0, h: 18.0, r: 9.0,
+                    color: value("item.col")),
+            Text(x: 42.0, y: 9.0, w: 0.0, text: "{item.name}",
+                 font_size: 12.0, color: value("item.lab")),
+            Text(x: 18.0, right: true, y: 11.0, w: 0.0, text: "{item.hint}",
+                 font_size: 9.5, color: fg3),
+            Hit(x: 0.0, y: 0.0, w: 0.0, h: 34.0, key: "item.key"),
+        ],
+        // One custom-accent circle: the 40² swatch, its 10-char name hanging
+        // 20px LEFT of the circle's edge (the drawer's own `cx0 - 20`), and the
+        // 48×58 click target around it. The `Stack`'s declared `w: 40` is load-
+        // bearing, not decoration: an `across` Repeat measures each slot by its
+        // widest child, and the 46px hover ring (or the 48px hit) would
+        // otherwise stretch the cell to 44/48 and break the 52px pitch.
+        //
+        // The two variants split the ring and the check exactly as `app_row`
+        // splits its dot: a hovered circle wears `hover`, a SELECTED one wears
+        // the accent tint and gains the check glyph.
+        "app_acc": [
+            Stack(x: 0.0, y: 0.0, w: 40.0, h: 72.0, items: [
+                Surface(x: -3.0, y: -3.0, w: 46.0, h: 46.0, r: 23.0,
+                        color: hover, hover_key: "item.key"),
+                Surface(x: 0.0, y: 0.0, w: 40.0, h: 40.0, r: 20.0,
+                        color: value("item.col")),
+                Text(x: -20.0, y: 42.0, w: 0.0, text: "{item.name}",
+                     font_size: 9.5, color: value("item.lab")),
+                Hit(x: 0.0, y: 0.0, w: 40.0, h: 50.0, key: "item.key",
+                    region_dx: 4.0, region_dy: 4.0),
+            ]),
+        ],
+        "app_accsel": [
+            Stack(x: 0.0, y: 0.0, w: 40.0, h: 72.0, items: [
+                Surface(x: -3.0, y: -3.0, w: 46.0, h: 46.0, r: 23.0,
+                        color: value("item.ring")),
+                Surface(x: 0.0, y: 0.0, w: 40.0, h: 40.0, r: 20.0,
+                        color: value("item.col")),
+                Text(x: 14.0, y: 11.0, w: 0.0, text: "\u{f00c}",
+                     font_size: 15.0, color: sfg, icon: true),
+                Text(x: -20.0, y: 42.0, w: 0.0, text: "{item.name}",
+                     font_size: 9.5, color: value("item.lab")),
+                Hit(x: 0.0, y: 0.0, w: 40.0, h: 50.0, key: "item.key",
+                    region_dx: 4.0, region_dy: 4.0),
+            ]),
+        ],
+        // The right content pane: the active tab's section.
+        //
+        // ALL SIX settings sections are DECLARED here — Misc, Network, System,
+        // Sound, Pill and Appearance. The `settings_ink` binding and the
+        // `Ink` item that used to route the last of them to its Rust painter
+        // are gone: there is no name left for an Ink to resolve, and no
+        // `settings_<tab>` painter in Rust to disagree with a declaration. A
+        // broken or missing `settings` surface therefore paints no body rather
+        // than falling back to a second hand-drawn set — the same trade the
+        // notif conversion made. Each tab's `tab_*` gate opens its section.
+        "scontent": [
+            Stack(
+                x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                visible: "tab_misc",
+                items: [
+                    Text(x: 188.0, y: 50.0, w: 0.0, text: "MISC",
+                         font_size: 9.5, color: fg3),
+                    // the row's leading tile — `acc_chip` is the shell's one
+                    // 20%-accent-on-hover icon well, so this is the same tile
+                    // every other settings row's glyph sits on
+                    Surface(x: 204.0, y: 64.0, w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: 71.0, w: 0.0, text: "\u{f573}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: 64.0, w: 0.0,
+                         text: "Power menu hold delay",
+                         font_size: 13.0, color: fg),
+                    Text(x: 244.0, y: 82.0, w: 0.0, text: "{misc_hold_lbl}",
+                         font_size: 10.5, color: fg3),
+                    // `ui::slider`'s exact recipe: a 4px groove at
+                    // `mix(bg, fg, .10)`, an accent fill and an accent knob
+                    // that grows 12 → 14 on hover. `groove`/`groove_hl` are
+                    // that .10/.16 pair, so the knob growth and the groove
+                    // lift are declared here rather than in the painter.
+                    Fader(
+                        name: "misc_hold_fader",
+                        x: 244.0, y: 96.0, w: -32.0, h: 10.0,
+                        key: 220,
+                        head: 12.0,
+                        fill: acc,
+                        track: groove,
+                        track_hover: groove_hl,
+                    ),
+                    Hit(x: 190.0, y: 55.0, w: -10.0, h: 44.0, key: 220),
+                ],
+            ),
+            // The NETWORK tab — DECLARED (zero Ink), the second of the six
+            // sections to leave Rust. Byte-for-byte `layout_settings_network`
+            // (settings.rs), which survives behind `#[cfg(test)]` as the
+            // parity oracle for
+            // `the_settings_network_scene_matches_its_own_drawer`.
+            //
+            // Two Android toggle rows (Wi-Fi y 64, Bluetooth y 118) on the
+            // `settings_row` recipe: hover wash, flat 30² icon tile, glyph,
+            // label + live summary, and the 38×20 switch (track + 16 px knob).
+            // The state that is NOT geometry rides published values: the
+            // summaries are `{net_*_sub}` texts, the three state inks per row
+            // (glyph, track, knob) are `value(...)` dynamic colors — the off
+            // track is a `mix(bg, fg, .14)` blend no static token spells —
+            // and the row's hover wash lights from EITHER key (row region or
+            // its switch), a two-key gate the single-key hover form can't
+            // say, so it rides the `net_*_hov` toggles.
+            //
+            // The knob's slide is the drawer's `on ? tx+21 : tx+2` with
+            // tx = w−62, declared as the right-anchored inset pair 25/44
+            // (16 px knob: right edge w−25 on, w−44 off) and spelled as the
+            // `wifi_on ? 25 : 44` ternary the binding evaluator runs — the
+            // switch's travel lives HERE, not in the publisher. The row hit
+            // stops 66 px short of the pane's right edge (`w: -66`), the
+            // switch hit is the drawer's 42×24 at w−74.
+            Stack(
+                x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                visible: "tab_network",
+                items: [
+                    Text(x: 188.0, y: 50.0, w: 0.0, text: "NETWORK & INTERNET",
+                         font_size: 9.5, color: fg3),
+                    // ── Wi-Fi row (drawer's settings_row at y 64, key 2/12) ──
+                    // the wash spans the ROW (w − 196, i.e. `w: -8`), while
+                    // the row's hit region below stops 58 px earlier
+                    Surface(x: 188.0, y: 64.0, w: -8.0, h: 48.0, r: 8.0,
+                            color: hover_hl, visible: "net_wifi_hov"),
+                    Surface(x: 196.0, y: 73.0, w: 30.0, h: 30.0, r: 7.0,
+                            color: hover),
+                    Text(x: 203.0, y: 81.0, w: 0.0, text: "\u{f1eb}",
+                         font_size: 14.0, color: value("net_wifi_glyph"), icon: true),
+                    Text(x: 236.0, y: 73.0, w: 0.0, text: "Wi-Fi",
+                         font_size: 13.0, color: fg),
+                    Text(x: 236.0, y: 91.0, w: 0.0, text: "{net_wifi_sub}",
+                         font_size: 10.5, color: fg3),
+                    Surface(x: 24.0, right: true, y: 78.0, w: 38.0, h: 20.0, r: 10.0,
+                            color: value("net_wifi_track")),
+                    Surface(x: "wifi_on ? 25 : 44", right: true, y: 80.0,
+                            w: 16.0, h: 16.0, r: 8.0,
+                            color: value("net_wifi_knob")),
+                    Hit(x: 188.0, y: 64.0, w: -66.0, h: 48.0, key: 2),
+                    Hit(x: 32.0, right: true, y: 76.0, w: 42.0, h: 24.0, key: 12),
+                    // ── Bluetooth row (y 118, key 3/13) ──
+                    Surface(x: 188.0, y: 118.0, w: -8.0, h: 48.0, r: 8.0,
+                            color: hover_hl, visible: "net_bt_hov"),
+                    Surface(x: 196.0, y: 127.0, w: 30.0, h: 30.0, r: 7.0,
+                            color: hover),
+                    Text(x: 203.0, y: 135.0, w: 0.0, text: "\u{f293}",
+                         font_size: 14.0, color: value("net_bt_glyph"), icon: true),
+                    Text(x: 236.0, y: 127.0, w: 0.0, text: "Bluetooth",
+                         font_size: 13.0, color: fg),
+                    Text(x: 236.0, y: 145.0, w: 0.0, text: "{net_bt_sub}",
+                         font_size: 10.5, color: fg3),
+                    Surface(x: 24.0, right: true, y: 132.0, w: 38.0, h: 20.0, r: 10.0,
+                            color: value("net_bt_track")),
+                    Surface(x: "bt_on ? 25 : 44", right: true, y: 134.0,
+                            w: 16.0, h: 16.0, r: 8.0,
+                            color: value("net_bt_knob")),
+                    Hit(x: 188.0, y: 118.0, w: -66.0, h: 48.0, key: 3),
+                    Hit(x: 32.0, right: true, y: 130.0, w: 42.0, h: 24.0, key: 13),
+                ],
+            ),
+            // The SYSTEM tab — DECLARED (zero Ink), the third of the six.
+            // Byte-for-byte `layout_settings_system` (settings.rs, now the
+            // cfg(test) oracle). One raised card with a hairline stroke — a
+            // stroked Surface emits the drawer's fill + `ui::outline` pair in
+            // the same order — the three stat rows as a model Repeat (label ·
+            // `ui::bar` · right-aligned percent), the optional net-rate line
+            // (its gate is the drawer's own either-empty test), and the
+            // version line bound to `parent.h − 20` because the drawer
+            // anchors it to the SURFACE bottom, not to a fixed y.
+            Stack(
+                x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                visible: "tab_system",
+                items: [
+                    Text(x: 188.0, y: 50.0, w: 0.0, text: "SYSTEM",
+                         font_size: 9.5, color: fg3),
+                    Surface(x: 188.0, y: 58.0, w: -8.0, h: 58.0, r: 14.0,
+                            color: raised, stroke: 1.0, stroke_color: hairline),
+                    Repeat(model: "sys_rows", x: 188.0, y: 66.0, w: -8.0, h: 14.0,
+                           dir: down, spacing: 0.0, templates: [
+                        (tag: "stat", items: [
+                            Text(x: 12.0, y: 0.0, w: 0.0, text: "{item.label}",
+                                 font_size: 9.0, color: fg),
+                            // `ui::bar`'s exact recipe: full-width track at
+                            // r = h/2, a fill rect of the same radius that
+                            // vanishes at 0. The bar stops 88 px short of the
+                            // row's right edge and the percent sits 16 px
+                            // inside it — the drawer's w−96 / w−24.
+                            Bar(x: 54.0, y: 1.0, w: -88.0, h: 5.0, r: 2.5,
+                                value: "{item.pct}", fill: acc, track: hover),
+                            Text(x: 16.0, right: true, y: 0.0, w: 0.0,
+                                 text: "{item.pct}%", font_size: 9.0, color: fg3),
+                        ]),
+                    ]),
+                    Text(x: 16.0, right: true, y: 122.0, w: 0.0, text: "{net_rate}",
+                         font_size: 9.0, color: fg3, visible: "sys_net_live"),
+                    Text(x: 16.0, right: true, y: "parent.h - 20", w: 0.0,
+                         text: "zen-shell v0.1.0", font_size: 9.0, color: fg3),
+                ],
+            ),
+            // The SOUND tab — DECLARED (zero Ink), the fourth of the six.
+            // Byte-for-byte `layout_settings_sound` (settings.rs, now the
+            // cfg(test) oracle). Four rows on the same leading-tile recipe
+            // as Misc/Network (`acc_chip` well + accent glyph + 13px label),
+            // and the interesting part is what this body proves about the
+            // `Fader`: it carries THREE different slider recipes at once.
+            //
+            //   brightness / volume / max volume — `ui::slider` EXACTLY:
+            //     a 4px `groove` track that lifts to `groove_hl` under the
+            //     fader's key, an accent fill, and a 12 → 14px accent knob.
+            //   balance — `ui::fader_bal`: `centered: true` grows the fill
+            //     out from the middle instead of the left edge, the groove
+            //     does NOT lift (no `track_hover`), and the knob is 10 → 12
+            //     (`head: 10.0`). Same 4px geometry, so `track: groove`.
+            //
+            // Every track is `w: -32.0` (the drawer's `w − cx − 96` measured
+            // from the same x) and every ROW hit is `w: -10.0` (the drawer's
+            // `w − cx − 20`, 10 px narrower than the painted row). The
+            // `Fader` registers its OWN hit on top of the row's, under the
+            // same key, so a click anywhere in the row still lands — and
+            // `set_dash_slider`'s key-59 arm reads `balance_rect`, which
+            // `draw_shell_surface` publishes from that same hit.
+            Stack(
+                x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                visible: "tab_sound",
+                items: [
+                    Text(x: 188.0, y: 50.0, w: 0.0, text: "SOUND & DISPLAY",
+                         font_size: 9.5, color: fg3),
+                    // ── Brightness (row y 55, key 5) ──
+                    Surface(x: 204.0, y: 64.0, w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: 71.0, w: 0.0, text: "\u{f185}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: 72.0, w: 0.0, text: "Brightness",
+                         font_size: 13.0, color: fg),
+                    Fader(name: "sound_brightness", x: 244.0, y: 90.0,
+                          w: -32.0, h: 10.0, key: 5,
+                          fill: acc, track: groove, track_hover: groove_hl),
+                    Hit(x: 190.0, y: 55.0, w: -10.0, h: 44.0, key: 5),
+                    // ── Volume (row y 99, key 4) ──
+                    Surface(x: 204.0, y: 108.0, w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: 115.0, w: 0.0, text: "\u{f028}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: 116.0, w: 0.0, text: "Volume",
+                         font_size: 13.0, color: fg),
+                    Fader(name: "sound_volume", x: 244.0, y: 134.0,
+                          w: -32.0, h: 10.0, key: 4,
+                          fill: acc, track: groove, track_hover: groove_hl),
+                    Hit(x: 190.0, y: 99.0, w: -10.0, h: 44.0, key: 4),
+                    // ── Max volume (row y 153, key 15) + the over-100 chip ──
+                    // The chip is the one control here whose FILL and GLYPH
+                    // are state (`acc_tint` + sunny / `chip` + toggle-off), so
+                    // both ride published values: the `Stack` gives the glyph a
+                    // 44px box to center in, and its `x` is a `parent.w`
+                    // expression because the chip hangs 298px off the RIGHT
+                    // edge — `right: true` cannot reach a box that starts
+                    // 24px PAST it, which is where the reset button below
+                    // lives (that one is the drawer's own overflow, kept
+                    // verbatim rather than tidied).
+                    Surface(x: 204.0, y: 152.0, w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: 159.0, w: 0.0, text: "\u{f0b2}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: 160.0, w: 0.0, text: "Max volume",
+                         font_size: 13.0, color: fg),
+                    Stack(x: "parent.w - 298.0", y: 154.0, w: 44.0, h: 24.0, items: [
+                        Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 12.0,
+                                color: value("sound_over100_fill")),
+                        Text(x: 0.0, y: 4.0, w: 0.0, center: true,
+                             text: "{sound_over100_glyph}", font_size: 10.0,
+                             color: fg, icon: true),
+                    ]),
+                    // the click halo is 4px on every side of the painted chip
+                    // (52 × 32 around 44 × 24) — the drawer's own region
+                    Hit(x: 250.0, right: true, y: 150.0, w: 52.0, h: 32.0, key: 14),
+                    Fader(name: "sound_maxvol", x: 244.0, y: 178.0,
+                          w: -32.0, h: 10.0, key: 15,
+                          fill: acc, track: groove, track_hover: groove_hl),
+                    Hit(x: 190.0, y: 153.0, w: -10.0, h: 34.0, key: 15),
+                    // ── Balance (row y 198, keys 58/59) ── the L/R fader
+                    // between a star and an eye, its caption below, and the
+                    // reset chip that overhangs the pane's right edge
+                    Text(x: 248.0, y: 197.0, w: 0.0, text: "\u{f0ec}",
+                         font_size: 9.0, color: fg, icon: true),
+                    Fader(name: "sound_balance", x: 244.0, y: 198.0,
+                          w: -32.0, h: 10.0, key: 59,
+                          fill: acc, track: groove, centered: true, head: 10.0),
+                    Text(x: 36.0, right: true, y: 197.0, w: 0.0, text: "\u{f06e}",
+                         font_size: 9.0, color: fg, icon: true),
+                    Text(x: 244.0, y: 210.0, w: 0.0, text: "Balance",
+                         font_size: 9.5, color: fg3),
+                    // `chip` is the quiet control fill (`mix(hover, fg, .10)`)
+                    // and it DARKENS to `hover_hl` under the cursor here — the
+                    // drawer's own pair, so `surface_hover` is named rather
+                    // than taken from the token ladder. The label rides 4px
+                    // below the box (`label_dy`) because the drawer centered
+                    // its text on `bal_y + 2` against a `bal_y − 2` chip.
+                    Hit(x: "parent.w - 24.0", y: 198.0, w: 52.0, h: 22.0, r: 7.0,
+                        key: 58, surface: chip, surface_hover: hover_hl,
+                        text: "\u{f0e2} Reset", font_size: 9.0, center: true,
+                        label_dy: 4.0, color: fg, color_hover: acc,
+                        region_dx: 2.0, region_dy: 2.0),
+                    Hit(x: 242.0, y: 198.0, w: -30.0, h: 24.0, key: 59),
+                ],
+            ),
+            // The PILL tab — DECLARED (zero Ink), the fifth of the six sections
+            // and the first whose body is a LIST: five behaviour toggles, then
+            // seventeen reorderable pill items, a battery-% row and the four
+            // position chips. Byte-for-byte `layout_settings_pill` (settings.rs,
+            // now the cfg(test) oracle) over the `pill_switch` / `pill_row` /
+            // `pill_item` / `pill_lifted` delegates above.
+            //
+            // Two published numbers carry the section's only geometry
+            // arithmetic, because they are FRAME state rather than layout:
+            // `pill_so` (the clamped negative scroll offset every row below
+            // adds) and `pill_tip` (the 44px expand-on-hover tip that pushes
+            // rows 1..4 and the whole item list down). Every row y is a
+            // declared constant plus those two, which is why this body has no
+            // Rust painter left to disagree with it.
+            Stack(
+                x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                visible: "tab_pill",
+                items: [
+                    Text(x: 188.0, y: 50.0, w: 0.0, text: "PILL",
+                         font_size: 9.5, color: fg3),
+                    // ── Margin (row y 55, key 36) ──
+                    Surface(x: 204.0, y: "pill_so + 64.0", w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: "pill_so + 71.0", w: 0.0, text: "\u{f303}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: "pill_so + 64.0", w: 0.0, text: "Margin",
+                         font_size: 13.0, color: fg),
+                    Text(x: 244.0, y: "pill_so + 82.0", w: 0.0, text: "{pill_margin_lbl}",
+                         font_size: 10.5, color: fg3),
+                    Fader(name: "pill_margin", x: 244.0, y: "pill_so + 94.0",
+                          w: -32.0, h: 10.0, key: 36,
+                          fill: acc, track: groove, track_hover: groove_hl),
+                    Hit(x: 190.0, y: "pill_so + 55.0", w: -10.0, h: 44.0, key: 36),
+                    // ── Pill transparency (row y 99, key 37) ──
+                    Surface(x: 204.0, y: "pill_so + 108.0", w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: "pill_so + 115.0", w: 0.0, text: "\u{f06e}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: "pill_so + 108.0", w: 0.0, text: "Pill transparency",
+                         font_size: 13.0, color: fg),
+                    Text(x: 244.0, y: "pill_so + 126.0", w: 0.0, text: "{pill_alpha_lbl}",
+                         font_size: 10.5, color: fg3),
+                    Fader(name: "pill_alpha", x: 244.0, y: "pill_so + 138.0",
+                          w: -32.0, h: 10.0, key: 37,
+                          fill: acc, track: groove, track_hover: groove_hl),
+                    Hit(x: 190.0, y: "pill_so + 99.0", w: -10.0, h: 44.0, key: 37),
+                    // ── Dashboard card transparency (row y 141, key 38) ──
+                    Surface(x: 204.0, y: "pill_so + 150.0", w: 30.0, h: 30.0, r: 9.0,
+                            color: acc_chip),
+                    Text(x: 211.0, y: "pill_so + 157.0", w: 0.0, text: "\u{f06e}",
+                         font_size: 14.0, color: acc, icon: true),
+                    Text(x: 244.0, y: "pill_so + 150.0", w: 0.0, text: "Card transparency",
+                         font_size: 13.0, color: fg),
+                    Text(x: 244.0, y: "pill_so + 168.0", w: 0.0, text: "{pill_card_alpha_lbl}",
+                         font_size: 10.5, color: fg3),
+                    Fader(name: "pill_card_alpha", x: 244.0, y: "pill_so + 182.0",
+                          w: -32.0, h: 10.0, key: 38,
+                          fill: acc, track: groove, track_hover: groove_hl),
+                    Hit(x: 190.0, y: "pill_so + 141.0", w: -10.0, h: 44.0, key: 38),
+                    // ── behaviour toggles ── the first row sits ABOVE the
+                    // expand tip and the other four BELOW it, so they are two
+                    // repeats over two models that share the `pill_row`
+                    // delegate — one y expression cannot express "0 for me, 44
+                    // for the rest". 40px rows, no gap (`spacing: 0`).
+                    Repeat(model: "pill_behavior", x: 192.0, y: "196.0 + pill_so",
+                           w: -12.0, h: 40.0, dir: down, spacing: 0.0, templates: [
+                        (tag: "*", items: [ Comp(name: "pill_row") ]),
+                    ]),
+                    Repeat(model: "pill_behavior_rest", x: 192.0,
+                           y: "236.0 + pill_so + pill_tip",
+                           w: -12.0, h: 40.0, dir: down, spacing: 0.0, templates: [
+                        (tag: "*", items: [ Comp(name: "pill_row") ]),
+                    ]),
+                    // the expand-on-hover warning, in the 44px slot under row 0
+                    // — painted only while that toggle is on (`pill_tip_live`),
+                    // which is the drawer's own `if tip > 0`.
+                    Stack(x: 192.0, y: "236.0 + pill_so", w: -12.0, h: 44.0,
+                          visible: "pill_tip_live", items: [
+                        Surface(x: 0.0, y: 0.0, w: 0.0, h: 44.0, r: 10.0, color: acc_tint),
+                        Text(x: 12.0, y: 14.0, w: 0.0, text: "\u{f05a}",
+                             font_size: 14.0, color: acc, icon: true),
+                        Text(x: 36.0, y: 7.0, w: 0.0, text: "Expand on hover is ON",
+                             font_size: 10.5, color: fg),
+                        Text(x: 36.0, y: 24.0, w: 0.0,
+                             text: "Adding clickable items to the resting pill is discouraged.",
+                             font_size: 10.5, color: fg2),
+                    ]),
+                    // ── the reorderable items ──
+                    Text(x: 188.0, y: "404.0 + pill_so + pill_tip", w: 0.0,
+                         text: "PILL ITEMS · hold & drag to reorder",
+                         font_size: 9.5, color: fg3),
+                    // The row's `tpl` field names the delegate: `row` normally,
+                    // `lifted` for the one under the pointer — so the list
+                    // reflows around a held row without a per-item gate.
+                    Repeat(model: "pill_items", x: 192.0,
+                           y: "422.0 + pill_so + pill_tip",
+                           w: -12.0, h: 40.0, dir: down, spacing: 0.0, templates: [
+                        (tag: "row",    items: [ Comp(name: "pill_item") ]),
+                        (tag: "lifted", items: [ Comp(name: "pill_lifted") ]),
+                    ]),
+                    // The floating copy: one row of the same recipe, in a box
+                    // that follows the pointer. The drawer clamps it to stay
+                    // 8px inside the pane on both sides; the clamp is stated
+                    // here, and the box is a row wide (`parent.w − 204`) so the
+                    // switch's right-anchored insets land where the row's do.
+                    // The `Stack` only exists to give that box its width — the
+                    // `Repeat` inside it is what carries the row's scope.
+                    Stack(x: "clamp(pill_drag_px - (parent.w - 204.0) / 2.0, 188.0, 196.0)",
+                          y: "pill_drag_py - 19.0",
+                          w: "parent.w - 204.0", h: 40.0, items: [
+                        Repeat(model: "pill_ghost", x: 0.0, y: 0.0, w: 0.0, h: 40.0,
+                               dir: down, spacing: 0.0, templates: [
+                            (tag: "*", items: [ Comp(name: "pill_switch") ]),
+                        ]),
+                    ]),
+                    // the battery-% readout: the 18th row of the same recipe,
+                    // 46px below the last item (`422 + 17·40 + tip`)
+                    Repeat(model: "pill_batt", x: 192.0,
+                           y: "422.0 + pill_so + 680.0 + pill_tip",
+                           w: -12.0, h: 40.0, dir: down, spacing: 0.0, templates: [
+                        (tag: "*", items: [ Comp(name: "pill_row") ]),
+                    ]),
+                    // ── Position row: four edge chips on a 40px pitch ──
+                    // the drawer's tile is `mix(hover, fg, .20)`, a blend no
+                    // token names, so the fill rides a published color while
+                    // each chip's own active/hover ink rides its row.
+                    Surface(x: 204.0, y: "1156.0 + pill_so + pill_tip", w: 30.0,
+                            h: 30.0, r: 9.0, color: value("pill_pos_tile")),
+                    Text(x: 211.0, y: "1163.0 + pill_so + pill_tip", w: 0.0,
+                         text: "\u{f0b2}", font_size: 14.0, color: fg2, icon: true),
+                    Text(x: 244.0, y: "1163.0 + pill_so + pill_tip", w: 0.0,
+                         text: "Position", font_size: 13.0, color: fg),
+                    // `across` at `auto`: each chip measures its own 34px box,
+                    // `spacing: 6` makes the stride 40 — the drawer's loop.
+                    Repeat(model: "pill_edges", x: 320.0,
+                           y: "1156.0 + pill_so + pill_tip",
+                           w: 0.0, h: 0.0, dir: across, auto: true, spacing: 6.0,
+                           templates: [
+                        (tag: "*", items: [
+                            Surface(x: 0.0, y: 0.0, w: 34.0, h: 30.0, r: 15.0,
+                                    color: value("item.bg")),
+                            Text(x: 0.0, y: 10.0, w: 34.0, center: true,
+                                 text: "{item.glyph}", font_size: 12.0,
+                                 color: value("item.ink"), icon: true),
+                            Hit(x: 0.0, y: 0.0, w: 34.0, h: 30.0, key: "item.key"),
+                        ]),
+                    ]),
+                ],
+            ),
+            // ── Appearance (the sixth and last Settings section) ──
+            //
+            // This is the densest section in the pane — 5 toggles, a slider,
+            // 4 sliders, 2 colour pickers, a scrollable 4-column popover of
+            // custom accents and 3 rows of icon fonts — and every one of those
+            // numbers is either a constant in the drawer or a published value
+            // here. What this declaration owns is the ARITHMETIC the drawer
+            // spelled as `+=` chains: one scrolling origin (`app_so`) shifts
+            // every row below, and one published offset (`app_pop_dy`) re-flows
+            // everything after the popover.
+            //
+            // The header strip is FIXED (Rust pins it at y 50/70): the accent
+            // readout's swatch and hex ride the right edge, and only the three
+            // words move.
+            Stack(
+                x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                visible: "tab_appearance",
+                items: [
+                Text(x: 188.0, y: 50.0, w: 0.0, text: "APPEARANCE",
+                     font_size: 9.5, color: fg3),
+                Text(x: 188.0, y: 70.0, w: 0.0, text: "Accent color",
+                     font_size: 13.0, color: fg),
+                Surface(x: 30.0, right: true, y: 70.0, w: 14.0, h: 14.0, r: 7.0,
+                        color: value("app_cur")),
+                Text(x: 52.0, right: true, y: 71.0, w: 0.0, text: "{app_cur_hex}",
+                     font_size: 9.5, color: fg3),
+                // ── ACCENT TOGGLES ── five 48px rows on a 52px pitch
+                Text(x: 188.0, y: "118.0 + app_so", w: 0.0, text: "ACCENT TOGGLES",
+                     font_size: 9.5, color: fg3),
+                Repeat(model: "app_toggles", x: 188.0, y: "140.0 + app_so",
+                       w: -8.0, h: 48.0, dir: down, spacing: 4.0, templates: [
+                    (tag: "*", items: [ Comp(name: "app_toggle") ]),
+                ]),
+                // ── Start icon tone: the ONE row carrying a slider in its own right
+                // half, so `Fader` is inlined here rather than folded in (a
+                // fader's NAME is the one field a row scope never touches).
+                // The grooved track is `ui::slider`'s exact recipe; the label,
+                // its 10.5px readout, the 20%-accent tile and the split hit
+                // regions are the drawer's.
+                Surface(x: 204.0, y: "400.0 + app_so", w: 30.0, h: 30.0, r: 9.0,
+                        color: value("app_ic_fill")),
+                Text(x: 211.0, y: "407.0 + app_so", w: 0.0, text: "\u{f004}",
+                     font_size: 14.0, color: acc, icon: true),
+                Text(x: 244.0, y: "402.0 + app_so", w: 0.0, text: "Start icon tone",
+                     font_size: 13.0, color: fg),
+                Text(x: 244.0, y: "420.0 + app_so", w: 0.0, text: "{app_tone_lbl}",
+                     font_size: 10.5, color: fg3),
+                Fader(name: "app_tone_fader", x: 244.0, y: "425.0 + app_so",
+                      w: -32.0, h: 10.0, key: 211, head: 12.0, fill: acc,
+                      track: groove, track_hover: groove_hl),
+                Hit(x: 190.0, y: "400.0 + app_so", w: -10.0, h: 40.0, key: 211),
+                // ── ALPHA (per-channel) ── four 44px rows, one inline `Fader`
+                // each. Not a `Repeat`: a fader's `name` is a pool name the row
+                // scope cannot fold (and its `key` drives the knob growth), so
+                // every slider in the shell is spelled out in place.
+                Text(x: 188.0, y: "452.0 + app_so", w: 0.0, text: "ALPHA",
+                     font_size: 9.5, color: fg3),
+                Surface(x: 204.0, y: "474.0 + app_so", w: 30.0, h: 30.0, r: 9.0,
+                        color: value("app_ic_fill")),
+                Text(x: 211.0, y: "481.0 + app_so", w: 0.0, text: "\u{f303}",
+                     font_size: 14.0, color: acc, icon: true),
+                Text(x: 244.0, y: "476.0 + app_so", w: 0.0, text: "Background",
+                     font_size: 13.0, color: fg),
+                Text(x: 244.0, y: "494.0 + app_so", w: 0.0, text: "{app_alpha0_lbl}",
+                     font_size: 10.5, color: fg3),
+                Fader(name: "app_alpha0_fader", x: 244.0, y: "499.0 + app_so",
+                      w: -32.0, h: 10.0, key: 212, head: 12.0, fill: acc,
+                      track: groove, track_hover: groove_hl),
+                Hit(x: 190.0, y: "474.0 + app_so", w: -10.0, h: 40.0, key: 212),
+                Surface(x: 204.0, y: "518.0 + app_so", w: 30.0, h: 30.0, r: 9.0,
+                        color: value("app_ic_fill")),
+                Text(x: 211.0, y: "525.0 + app_so", w: 0.0, text: "\u{f043}",
+                     font_size: 14.0, color: acc, icon: true),
+                Text(x: 244.0, y: "520.0 + app_so", w: 0.0, text: "Accent",
+                     font_size: 13.0, color: fg),
+                Text(x: 244.0, y: "538.0 + app_so", w: 0.0, text: "{app_alpha1_lbl}",
+                     font_size: 10.5, color: fg3),
+                Fader(name: "app_alpha1_fader", x: 244.0, y: "543.0 + app_so",
+                      w: -32.0, h: 10.0, key: 213, head: 12.0, fill: acc,
+                      track: groove, track_hover: groove_hl),
+                Hit(x: 190.0, y: "518.0 + app_so", w: -10.0, h: 40.0, key: 213),
+                Surface(x: 204.0, y: "562.0 + app_so", w: 30.0, h: 30.0, r: 9.0,
+                        color: value("app_ic_fill")),
+                Text(x: 211.0, y: "569.0 + app_so", w: 0.0, text: "\u{f2d0}",
+                     font_size: 14.0, color: acc, icon: true),
+                Text(x: 244.0, y: "564.0 + app_so", w: 0.0, text: "Scrim",
+                     font_size: 13.0, color: fg),
+                Text(x: 244.0, y: "582.0 + app_so", w: 0.0, text: "{app_alpha2_lbl}",
+                     font_size: 10.5, color: fg3),
+                Fader(name: "app_alpha2_fader", x: 244.0, y: "587.0 + app_so",
+                      w: -32.0, h: 10.0, key: 214, head: 12.0, fill: acc,
+                      track: groove, track_hover: groove_hl),
+                Hit(x: 190.0, y: "562.0 + app_so", w: -10.0, h: 40.0, key: 214),
+                Surface(x: 204.0, y: "606.0 + app_so", w: 30.0, h: 30.0, r: 9.0,
+                        color: value("app_ic_fill")),
+                Text(x: 211.0, y: "613.0 + app_so", w: 0.0, text: "\u{f0b2}",
+                     font_size: 14.0, color: acc, icon: true),
+                Text(x: 244.0, y: "608.0 + app_so", w: 0.0, text: "Border",
+                     font_size: 13.0, color: fg),
+                Text(x: 244.0, y: "626.0 + app_so", w: 0.0, text: "{app_alpha3_lbl}",
+                     font_size: 10.5, color: fg3),
+                Fader(name: "app_alpha3_fader", x: 244.0, y: "631.0 + app_so",
+                      w: -32.0, h: 10.0, key: 215, head: 12.0, fill: acc,
+                      track: groove, track_hover: groove_hl),
+                Hit(x: 190.0, y: "606.0 + app_so", w: -10.0, h: 40.0, key: 215),
+                // the accent scrim: a toggle again, but the only one whose row
+                // carries a summary, so it runs on the `app_toggle_sub` delegate
+                Repeat(model: "app_scrim", x: 188.0, y: "650.0 + app_so",
+                       w: -8.0, h: 48.0, dir: down, spacing: 0.0, templates: [
+                    (tag: "*", items: [ Comp(name: "app_toggle_sub") ]),
+                ]),
+                // ── ACCENT SOURCE ── three rows (always this-state only)
+                Text(x: 188.0, y: "702.0 + app_so", w: 0.0, text: "ACCENT SOURCE",
+                     font_size: 9.5, color: fg3),
+                // one repeater, three `tpl` variants: the source list (2 rows),
+                // the custom picker and the stock picker each publish rows with
+                // their own `fill`/`gly`/`lab`/`tpl`, so a single delegate pair
+                // serves all of them — and "this row is the live accent" is a
+                // dot in the template, never a per-row gate.
+                Repeat(model: "app_rows", x: 188.0,
+                       y: "724.0 + app_so",
+                       w: -8.0, h: 38.0, dir: down, spacing: 12.0, templates: [
+                    (tag: "row", items: [ Comp(name: "app_row") ]),
+                    (tag: "rowsel", items: [ Comp(name: "app_rowsel") ]),
+                ]),
+                // ── SAVED COLORS ($states/sca) ── the list the 232 row above
+                // expands. Row 0 is the file's `sample_color` and never charges
+                // a delete hold, so its hint reads `sample`; every other row is
+                // hold-to-delete (the fill, and the red charge under it, are
+                // published per row — a hold is frame state the scene cannot
+                // derive). The rows start 10 px under the row above; the 44 px
+                // pitch carries its own 10 px gap, so the offset everything
+                // after them absorbs is `10 + 44n` (or 30 for the empty line).
+                Repeat(model: "app_saved_rows", x: 188.0, y: "1034.0 + app_so",
+                       w: -8.0, h: 34.0, dir: down, spacing: 10.0,
+                       visible: "app_saved_open", templates: [
+                    (tag: "*", items: [ Comp(name: "app_saved_row") ]),
+                ]),
+                Text(x: 188.0, y: "1031.0 + app_so", w: 0.0,
+                     text: "No saved colors yet", font_size: 11.0, color: fg3,
+                     visible: "app_saved_blank"),
+                // ── CUSTOM ACCENT ── trigger + the 3×N popover it opens
+                Text(x: 188.0, y: "1024.0 + app_so + app_saved_dy", w: 0.0,
+                     text: "CUSTOM ACCENT", font_size: 9.5, color: fg3),
+                Stack(x: 188.0, y: "1046.0 + app_so + app_saved_dy",
+                      w: -8.0, h: 40.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 40.0, r: 10.0,
+                            color: value("app_row_fill"), hover_key: 218,
+                            hover_color: hover),
+                    Surface(x: 12.0, y: 10.0, w: 20.0, h: 20.0, r: 10.0,
+                            color: value("app_trig_col")),
+                    Text(x: 42.0, y: 12.0, w: 0.0, text: "{app_trig_lbl}",
+                         font_size: "app_trig_fs", color: value("app_trig_ink")),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 40.0, key: 218),
+                ]),
+                // the chevron hangs 48px off the PANE's right edge, not the row's
+                // — so it lives out here, where `parent.w` is the pane, rather
+                // than in the row box above (whose own `parent.w` is the 224
+                // row). Absolute like the drawer's `ui::text`, hence no `right`.
+                Text(x: "parent.w - 48.0", y: "1057.0 + app_so + app_saved_dy",
+                     w: 0.0, text: "{app_trig_chev}", font_size: 13.0, color: fg3,
+                     icon: true),
+                // Save chip on the Custom accent row — shown only while
+                // `$states/custom_acc_${s}` holds a hex (Rust caches the flag
+                // once on boot / colors reload; click runs the `save_ca`
+                // binary). Declared AFTER the trigger row's Hit so the later
+                // registration wins the overlap. Geometry mirrors the drawer:
+                // parent.w − 120, +6 into the 40px row, 64×28.
+                Stack(x: "parent.w - 120.0", y: "1052.0 + app_so + app_saved_dy",
+                      w: 64.0, h: 28.0, visible: "app_acc_save", items: [
+                    Surface(x: 0.0, y: 0.0, w: 64.0, h: 28.0, r: 8.0,
+                            color: value("app_save_fill")),
+                    Text(x: 10.0, y: 7.0, w: 0.0, text: "\u{f0c7}",
+                         font_size: 12.0, color: value("app_save_ink"), icon: true),
+                    Text(x: 26.0, y: 7.5, w: 0.0, text: "save",
+                         font_size: 11.0, color: value("app_save_ink")),
+                    Hit(x: 0.0, y: 0.0, w: 64.0, h: 28.0, key: 231),
+                ]),
+                // The popover FRAME spans the row; the GRID inside it is centred
+                // on the drawer's own measure, which follows the pane width — so
+                // the frame below takes the row box and the three repeats after
+                // it carry the centring x.
+                //
+                // 4 columns of 40px circles on a 52px stride, 3 VISIBLE rows on a
+                // 72px pitch (the 40 circle + 32px label band), 224 tall. The
+                // grid scrolls, so its three rows are three published one-row
+                // models rather than one 3-row model the scene would have to clip
+                // mid-row — three `across` repeaters can never show a half row,
+                // which is the entire point.
+                Stack(x: 188.0, y: "1090.0 + app_so + app_saved_dy",
+                      w: -8.0, h: 224.0,
+                      visible: "app_pop_has", items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 224.0, r: 12.0,
+                            color: value("app_pop_bg")),
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 2.0, r: 1.0,
+                            color: value("app_sel_fill")),
+                ]),
+                Repeat(model: "app_pop_row0",
+                       x: "188.0 + (parent.w - 196.0 - app_pop_cols * 52.0 + 12.0) / 2.0",
+                       y: "1094.0 + app_so + app_saved_dy",
+                       w: 0.0, h: 72.0, dir: across, auto: true, spacing: 12.0,
+                       visible: "app_pop_has", templates: [
+                    (tag: "acc", items: [ Comp(name: "app_acc") ]),
+                    (tag: "accsel", items: [ Comp(name: "app_accsel") ]),
+                ]),
+                Repeat(model: "app_pop_row1",
+                       x: "188.0 + (parent.w - 196.0 - app_pop_cols * 52.0 + 12.0) / 2.0",
+                       y: "1166.0 + app_so + app_saved_dy",
+                       w: 0.0, h: 72.0, dir: across, auto: true, spacing: 12.0,
+                       visible: "app_pop_has", templates: [
+                    (tag: "acc", items: [ Comp(name: "app_acc") ]),
+                    (tag: "accsel", items: [ Comp(name: "app_accsel") ]),
+                ]),
+                Repeat(model: "app_pop_row2",
+                       x: "188.0 + (parent.w - 196.0 - app_pop_cols * 52.0 + 12.0) / 2.0",
+                       y: "1238.0 + app_so + app_saved_dy",
+                       w: 0.0, h: 72.0, dir: across, auto: true, spacing: 12.0,
+                       visible: "app_pop_has", templates: [
+                    (tag: "acc", items: [ Comp(name: "app_acc") ]),
+                    (tag: "accsel", items: [ Comp(name: "app_accsel") ]),
+                ]),
+                // the 2px scrollbar, thumb sized and positioned in Rust (a
+                // scene-level scrollbar would have to round-trip the same three
+                // numbers), and the "no accents saved yet" line that stands in
+                // for the grid when the popover is open but empty
+                Surface(x: 20.0, right: true,
+                        y: "118.0 + app_so + 972.0 + app_saved_dy + 4.0 + app_pop_scroll / (app_pop_rows - 3.0) * (216.0 - clamp(216.0 * 3.0 / app_pop_rows, 14.0, 216.0))",
+                        w: 2.0,
+                        h: "clamp(216.0 * 3.0 / app_pop_rows, 14.0, 216.0)",
+                        r: 1.0, color: value("app_sel_fill"),
+                        visible: "app_pop_scrollbar"),
+                Text(x: 188.0, y: "1086.0 + app_so + app_saved_dy", w: 0.0,
+                     text: "No custom accents \u{2014} run gen_custom_acc_files",
+                     font_size: 11.0, color: fg3,
+                     visible: "app_pop_empty"),
+                // ── ICON FONT ── what follows the popover slides with it
+                // (`app_pop_dy`), which is why the 224/30/0 the Rust drawer
+                // folded into one `y0` is published as a plain offset here.
+                Text(x: 188.0, y: "1086.0 + app_so + app_saved_dy + app_pop_dy",
+                     w: 0.0, text: "ICON FONT", font_size: 9.5,
+                     color: fg3),
+                Repeat(model: "app_style_rows",
+                       y: "1108.0 + app_so + app_saved_dy + app_pop_dy",
+                       x: 188.0, w: -8.0, h: 38.0, dir: down, spacing: 12.0,
+                       templates: [
+                    (tag: "row", items: [ Comp(name: "app_row") ]),
+                    (tag: "rowsel", items: [ Comp(name: "app_rowsel") ]),
+                ]),
+                // ── Apply ── the section's only accent-filled row; its hover
+                // lift is `mix(accent, fg, .15)`, a blend no token names, so
+                // the fill rides a published color.
+                Stack(x: 188.0, y: "1308.0 + app_so + app_saved_dy + app_pop_dy",
+                      w: -8.0, h: 38.0, items: [
+                    Surface(x: 0.0, y: 0.0, w: 0.0, h: 38.0, r: 8.0, color: acc,
+                            hover_key: 217, hover_color: value("app_apply_fill")),
+                    Text(x: 16.0, y: 11.0, w: 0.0, text: "\u{f0c7}",
+                         font_size: 14.0, color: sfg, icon: true),
+                    Text(x: 42.0, y: 11.0, w: 0.0, text: "Apply changes",
+                         font_size: 12.5, color: sfg),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 38.0, key: 217),
+                ]),
+                ],
+            ),
+        ],
+        // ── Notifications chrome, stamped by the `notif` surface below ──
+        // header title (byte-for-byte the Rust strip).
+        "ntitle": [ Text(x: 16.0, y: 12.0, text: "Notifications", font_size: 15.0) ],
+        // Clear chip: right-anchored at w−196 (84 × 30, right margin 112), rests
+        // `raised`, lifts to `raised_hl` on hover — key 2. The label is
+        // left-anchored at 230 (6 px inside the chip's 224 left edge), exactly
+        // the Rust inset; the notif pane is a fixed 420 wide surface, so the
+        // absolute x is stable (only the chip needs the right anchor).
+        // Declared-lite: no hairline outline on the chip.
+        "nclear": [
+            Hit(x: 112.0, y: 10.0, w: 84.0, h: 30.0, r: 15.0, key: 2, right: true,
+                surface: raised, surface_hover: raised_hl),
+            Text(x: 230.0, y: 17.0, text: "Clear", font_size: 11.0,
+                 color: fg, weight: semibold),
+        ],
+        // DND chip: right-anchored at w−104 (88 × 30, right margin 16), key 3.
+        // The whole chip is STATE-DRIVEN through `value(...)` dynamic colors
+        // resolved per frame from the live theme in `scene_values()`: fill =
+        // accent when DND is on (hover whitens the accent), quiet hover
+        // surface when off; `surface_hover` carries the exact on-hover fill
+        // (mix(acc, fg, 0.15) when on, hover_hl off). Label left-anchored at
+        // 324 (8 px inside the chip's 316 left edge) — the Rust inset.
+        "ndnd": [
+            Hit(x: 16.0, y: 10.0, w: 88.0, h: 30.0, r: 15.0, key: 3, right: true,
+                surface: value("dnd_chip"), surface_hover: value("dnd_chip_hover")),
+            Text(x: 324.0, y: 17.0, text: "\u{f2dc} DND", font_size: 11.0,
+                 color: value("dnd_chip_fg"), weight: semibold),
+        ],
+        // ── Lock-screen hero, stamped by the `lock` surface below ──
+        // Authored for the 1920×1080 dev target: every piece is anchored to
+        // the FULLSCREEN surface's center via `center_x`/`center_y` (offsets
+        // are base px relative to that center — computed from the Rust layout's
+        // h·0.20 hero block at h=1080). The surface is only consulted at that
+        // monitor height; every other size runs the Rust layout. The password
+        // field + hold-power buttons + hint stay Rust via the `lock_screen`
+        // Ink. The dim backdrop + the avatar fill are `value(...)` dynamic
+        // colors resolved per frame in `scene_values()`.
+        "lhero": [
+            // fullscreen dim (Rust: 0x00000059 ABGR)
+            Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 0.0, color: value("lock_dim")),
+            // hero clock (Rust: centered at cx, y = h·0.20 = 216 → −324)
+            Text(x: 0.0, center_x: true, center_y: true, y: -324.0, center: true, text: "{clock}",
+                 font_size: 64.0, color: fg),
+            // date (Rust: y = 216 + 74 = 290 → −250; %d day, zero-padded)
+            Text(x: 0.0, center_x: true, center_y: true, y: -250.0, center: true, text: "{lock_date}",
+                 font_size: 16.0, color: fg3),
+            // avatar disc (Rust: cx−26, ay−26 = 334 → −206; 52² r26;
+            // fill mix(hover, acc, 0.35) → `value("lock_avatar")`)
+            Surface(x: 0.0, center_x: true, center_y: true, y: -206.0, w: 52.0, h: 52.0, r: 26.0,
+                    color: value("lock_avatar")),
+            // initial (Rust: ay−12 = 348 → −192)
+            Text(x: 0.0, center_x: true, center_y: true, y: -192.0, center: true, text: "{user_init}",
+                 font_size: 22.0, color: fg),
+            // username (Rust: ay+30 = 390 → −150)
+            Text(x: 0.0, center_x: true, center_y: true, y: -150.0, center: true, text: "{username}",
+                 font_size: 15.0, color: fg2),
+        ],
+        // ── Wallpaper header chrome, stamped by the `wallpaper` surface ──
+        // Back button (key 1, hover-only fill — a lift the Rust header lacks)
+        // + "Backgrounds" title, byte-for-byte the Rust strip positions; the
+        // thumbnail grid + scrollbar stay Rust via the `wallpaper_picker` Ink.
+        "wphead": [
+            Hit(x: 12.0, y: 8.0, w: 28.0, h: 28.0, r: 6.0, key: 1,
+                hover_only: true, surface: hover_hl),
+            Text(x: 22.0, y: 16.0, text: "\u{f053}", font_size: 14.0, icon: true,
+                 color: fg),
+            Text(x: 48.0, y: 16.0, text: "Backgrounds", font_size: 15.0, color: fg),
+        ],
+        // ── Sub-panel header chrome, stamped by the `wifi_menu` / `bt_menu` /
+        //    `audio` surfaces (the one drawer header the menus share) ──
+        // Back button (key 1) + the title + a right-anchored state label, all
+        // at the drawers' exact insets (22/48/16, baseline 16).
+        //
+        // PHASE 2 — this used to be a bare body reading four SHARED pool names
+        // (`sub_title` / `sub_meta` / `sub_meta_size` / `sub_meta_col`), which
+        // forced a Rust `match self.mode { … }` table to decide the panel's
+        // title — UI copy, chosen by the renderer. The title is a literal here
+        // and each call site names its own meta binding, so the table is gone:
+        // the only thing Rust still publishes is per-frame STATE the scene
+        // cannot know (the "On"/"Off" text, the accent-vs-fg3 color), and each
+        // of those is a prop default pointing at a pool name.
+        //
+        // The two PROP FORMS worth knowing, both of which a `Val`/`value()`
+        // reader gets for free and only a `{…}` text reader has to be told:
+        //
+        //   ink:  "pill_wifi_meta_col"   a BARE string in a `value()` slot
+        //                                means "the pool color with this name" —
+        //                                a component cannot hardcode a color
+        //                                whose choice is per-frame state.
+        //   meta: "{pill_wifi_meta}"     braces in a TEXT slot mean "resolve
+        //                                this pool name". WITHOUT braces the
+        //                                same text is LITERAL, so `title:
+        //                                "Wi-Fi Networks"` needs none — there
+        //                                is no way to tell a literal from a
+        //                                name without them.
+        //
+        // The back button has no fill in the drawers — the region only.
+        "subhead": (props: (
+                        title: "",
+                        meta: "",
+                        meta_size: 12.0,
+                        ink: value("pill_sub_meta_col"),
+                    ), items: [
+            Hit(x: 12.0, y: 8.0, w: 28.0, h: 28.0, key: 1),
+            Text(x: 22.0, y: 16.0, text: "\u{f053}", font_size: 14.0, icon: true, color: fg),
+            Text(x: 48.0, y: 16.0, text: "{title}", font_size: 15.0, color: fg),
+            Text(x: 16.0, y: 16.0, right: true,
+                 text: "{meta}", font_size: "meta_size", color: value("ink")),
+        ]),
+        // ── Dashboard viewing strip band, stamped by the `dashboard` surface ──
+        // The opaque band that covers scrolled board slides under the banner:
+        // y = BASE_BANNER_Y (12), h = BASE_BANNER_H (26), top corners CONCAVE
+        // into the screen edge following the panel shaping (r = panel radius,
+        // bottom corners square via tr: -r — the RectConcave encoding), fill
+        // = opaque theme bg. Only drawn while the strip holds chips
+        // (`banner_shown`); the empty strip collapses the band so the board
+        // rises. The Rust band only paints on the FALLBACK path (a config
+        // with no `dashboard` surface, or the edit board), where this
+        // component never draws.
+        "dband": [
+            Surface(x: 0.0, y: 12.0, w: 0.0, h: 26.0, r: 16.0, tr: -16.0,
+                    color: value("dash_opaque"),
+                    visible: "banner_shown"),
+        ],
+        // ── Dashboard viewing strip CHIPS, stamped by the `dashboard` surface ──
+        // The strip's chips are fully data-driven: `publish_banner_cells`
+        // publishes geometry/inks/labels per frame (straight from
+        // `banner_cells`, so hit-testing and rendering can never disagree)
+        // and the `BannerRow` paints them with the Rust drawer's exact
+        // per-chip recipes (text bias, icon+label insets, tray sub-regions,
+        // overflow/zone scissors). Declared after the band and the board, so
+        // scene order paints the chips over both. Gated on the viewing state;
+        // the Rust chip sweep only runs on the FALLBACK path (a config with
+        // no `dashboard` surface, the edit board or the system-card menu),
+        // where this component never draws.
+        "dchips": [
+            BannerRow(cells: "banner_cells_v", x: 0.0, y: 12.0, w: 0.0, h: 26.0,
+                      visible: "banner_shown",
+                      overflow: "banner_overflow",
+                      zones: "banner_zones"),
+        ],
+        // ── the connectivity popover, stamped by the `dashboard` surface ──
+        // The net chip expands a jump menu under the strip: a shadow ring, an
+        // opaque body, then two rows (glyph · label · value · chevron) whose
+        // hover wash is the drawer's own inset box and whose `Hit` inflates
+        // back out to the full row (`region_dx: 3.0`) for the click. One
+        // outer `Stack` carries the whole panel, so its `x` is written once:
+        // the drawer's clamp, in base px — the net chip's CENTRE
+        // (`conn_cx`) is Rust's geometry, keeping a 150 px panel 8 px inside
+        // the strip is this scene's decision. Gated on `conn_open`, published
+        // only while the surface is consulted (viewing state, net chip on the
+        // strip).
+        //
+        // OPEN (visual): the glyph at +12 and the label at +10 are BOTH
+        // left-anchored, so they overlap. That is the drawer's own numbers,
+        // copied verbatim for parity — `draw_sys_menu` has the same idiom.
+        // Both popovers need one decision about where the label starts.
+        "dconn": [
+            Stack(x: "clamp(conn_cx - 75.0, 8.0, max(parent.w - 158.0, 8.0))",
+                  y: 46.0, w: 150.0, h: 66.0, visible: "conn_open", items: [
+                // soft shadow ring, 3 px outside the body on every side
+                Surface(x: -3.0, y: -3.0, w: 156.0, h: 72.0, r: 12.0,
+                        color: value("conn_shadow")),
+                Surface(x: 0.0, y: 0.0, w: 150.0, h: 66.0, r: 10.0,
+                        color: value("conn_body")),
+                // ── Wi-Fi row ── the value's `x` is the drawer's `lw`:
+                // 10 + chars · 0.58 · 11 → 41.9 for "Wi-Fi"
+                Stack(x: 0.0, y: 3.0, w: 150.0, h: 30.0, items: [
+                    Hit(x: 3.0, y: 0.0, w: 144.0, h: 30.0, r: 8.0,
+                        surface: hover_hl, hover_only: true, region_dx: 3.0,
+                        key: 34360),
+                    Text(x: 12.0, y: 9.5, text: "\u{e63e}", font_size: 13.0,
+                         icon: true, color: value("conn_wifi_ink")),
+                    Text(x: 10.0, y: 10.5, text: "Wi-Fi", font_size: 11.0,
+                         icon: true, color: fg),
+                    Text(x: 41.9, y: 10.5, text: "{conn_wifi_text}",
+                         font_size: 11.0, color: value("conn_wifi_ink")),
+                    // right-anchored: `x` is the inset from the row's right
+                    // edge, so the chevron lands 138 in from the left
+                    Text(x: 12.0, y: 10.5, right: true, text: "\u{e5cc}",
+                         font_size: 11.0, icon: true, color: sfg),
+                ]),
+                // ── Bluetooth row ── 67.42 = 10 + 9 · 0.58 · 11
+                Stack(x: 0.0, y: 33.0, w: 150.0, h: 30.0, items: [
+                    Hit(x: 3.0, y: 0.0, w: 144.0, h: 30.0, r: 8.0,
+                        surface: hover_hl, hover_only: true, region_dx: 3.0,
+                        key: 34361),
+                    Text(x: 12.0, y: 9.5, text: "\u{e1a7}", font_size: 13.0,
+                         icon: true, color: value("conn_bt_ink")),
+                    Text(x: 10.0, y: 10.5, text: "Bluetooth", font_size: 11.0,
+                         icon: true, color: fg),
+                    Text(x: 67.42, y: 10.5, text: "{conn_bt_text}",
+                         font_size: 11.0, color: value("conn_bt_ink")),
+                    Text(x: 12.0, y: 10.5, right: true, text: "\u{e5cc}",
+                         font_size: 11.0, icon: true, color: sfg),
+                ]),
+            ]),
+        ],
+        // ── Collapsed-pill chips, stamped by the `pill` surface below ──
+        // The left cluster's three text items and the right cluster's two icon
+        // chips. Every box is a `Stack` of exactly the width `publish_pill`
+        // measured (the drawer's own `pill_item_width`), so the cluster rows
+        // below auto-size to the same numbers `collapsed_w` sums. The `Hit`s
+        // carry the drawer's `region(cx − 2, 4, iw + 4, h − 8)` halo through
+        // `anchors`, declaring the click box relative to the painted chip
+        // instead of through a second `region_d*` coordinate vocabulary.
+        "pclock": [
+            Stack(x: 0.0, y: 0.0, w: "pill_clock_w", h: 0.0,
+                  visible: "pill_clock_on", items: [
+                Text(x: 0.0, y: "pill_mid", text: "{pill_clock}", font_size: 14.0,
+                     color: value("pill_clock_ink")),
+                Hit(key: "pill_clock_key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+            ]),
+        ],
+        "pdate": [
+            Stack(x: 0.0, y: 0.0, w: "pill_date_w", h: 0.0, items: [
+                Text(x: 0.0, y: "pill_mid", text: "{pill_date}", font_size: 14.0,
+                     color: value("pill_date_ink")),
+                Hit(key: "pill_date_key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+            ]),
+        ],
+        // the battery: a vertical nerd-font glyph (13 px) with the percentage
+        // after it, both in the DANGER ink when unplugged and low
+        "pbatt": [
+            Stack(x: 0.0, y: 0.0, w: "pill_batt_w", h: 0.0,
+                  visible: "pill_batt_on", items: [
+                Text(x: 0.0, y: "pill_mid_sm", text: "{pill_batt_glyph}",
+                     font_size: 13.0, icon: true, color: value("pill_batt_ink")),
+                Text(x: "pill_batt_pct_x", y: "pill_mid",
+                     text: "{pill_batt_pct}", font_size: 14.0,
+                     color: value("pill_batt_ink"), visible: "pill_batt_pct_on"),
+                Hit(key: "pill_batt_key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+            ]),
+        ],
+        // the bell: a 22×22 hover pill that only exists while its key is live,
+        // a SECOND hit for the full-height click region (so the region's box
+        // can differ from the fill's), the glyph RIGHT-anchored at the chip's
+        // edge, then the notification dot
+        "pbell": [
+            Stack(x: 0.0, y: 0.0, w: 22.0, h: 0.0, visible: "pill_bell_on", items: [
+                Surface(x: 0.0, y: 8.0, w: "parent.w", h: 22.0, r: 11.0,
+                        hover_key_var: "pill_bell_key", color: hover),
+                Hit(key: "pill_bell_key", x: 0.0, y: 0.0, w: "parent.w", h: 0.0 ),
+                Text(x: 0.0, y: "pill_mid", w: "parent.w", right: true,
+                     text: "\u{f0f3}", font_size: 14.0, icon: true, color: fg),
+                Surface(x: 2.0, y: 5.0, w: 6.0, h: 6.0, r: 3.0, color: acc,
+                        visible: "pill_notif_dot"),
+            ]),
+        ],
+        // brightness / dark-mode toggle: sun ⇄ moon, hover pill + accent ink
+        "pbright": [
+            Stack(x: 0.0, y: 0.0, w: 22.0, h: 0.0, visible: "pill_bright_on", items: [
+                Surface(x: 0.0, y: 8.0, w: "parent.w", h: 22.0, r: 11.0,
+                        hover_key_var: "pill_bright_key", color: hover_hl),
+                Hit(key: "pill_bright_key", x: 0.0, y: 0.0, w: "parent.w", h: 0.0 ),
+                Text(x: 5.0, y: "pill_mid", text: "{pill_bright_glyph}",
+                     font_size: 14.0, icon: true, color: value("pill_bright_ink")),
+            ]),
+        ],
+    },
+    surfaces: [
+        // ---- pill — LIVE: the whole resting bar, declared. Three pieces in
+        //      one outer `Row` (spacing 0): the left cluster (auto, content
+        //      drawn at `pill_mx`), the center strip (the FILL, centered in
+        //      the space the left cluster leaves, so the outer margins stay
+        //      symmetric) and the right cluster (a fixed slot).
+        (name: "pill",
+         items: [
+            Row(x: 0.0, y: 0.0, w: 0.0, h: 0.0, spacing: 0.0, items: [
+                // ── left cluster: clock · date · battery, 6 px apart ──
+                // The slot is `pill_left_w` — the drawer's own `left_end` plus
+                // the cluster gap — NOT the row's ink. The chips are drawn at
+                // `pill_mx`, so the slot has to reserve the lead-in too; left
+                // to measure itself, the row is 18 px narrower than the drawer
+                // and hands the center strip's Fill 24 px too much room.
+                Row(x: "pill_mx", y: 0.0, w: "pill_left_w", h: 0.0, spacing: 6.0, items: [
+                    Comp(name: "pclock"),
+                    Comp(name: "pdate"),
+                    Comp(name: "pbatt"),
+                ]),
+                // ── center cluster: the widgets the user ordered, in a
+                //    `Repeat` over the `pill_ctr` MODEL (one row per enabled
+                //    widget, each carrying its own width). The row is the
+                //    FILL, so `halign: center` centers the block inside it;
+                //    its slot now begins at `left_end + g` on its own, so it
+                //    carries no `x_var` — an offset here would double-count
+                //    the gap the left slot already carries.
+                Row(x: 0.0, y: 0.0, w: 0.0, h: 0.0, halign: center, items: [
+                    // `model:` — one row per ENABLED center widget, carrying
+                    // its own `key`, `ink`, `w` and `glyph`, so a template
+                    // binds `item.key` / `value("item.ink")` / `"{item.glyph}"`
+                    // and no `pill_key_<tag>` / `pill_ink_<tag>` name has to be
+                    // published at all. The row's `tpl` field picks the
+                    // DELEGATE, so widgets that share a body share a template:
+                    // 14 templates here became 8, and a new widget whose body
+                    // matches an existing delegate needs no template at all.
+                    Repeat(model: "pill_ctr", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                           auto: true, spacing: 6.0, templates: [
+                        // the active workspace number (`ws` and `ws_short`),
+                        // in a region wider than the number's own box
+                        (tag: "ws_number", items: [
+                            Stack(x: 0.0, y: 0.0, w: "item.w", h: 0.0, items: [
+                                Text(x: 2.0, y: "pill_mid", text: "{pill_ws_n}",
+                                     font_size: 14.0, color: value("item.ink")),
+                                Hit(key: "item.key", x: -4.0, y: 8.0, w: "pill_ws_reg_w", h: -4.0),
+                            ]),
+                        ]),
+                        // long form: five fixed 18 px chips on a 20 px pitch,
+                        // the active one marked by a 3 px dot, plus the active
+                        // number appended when the workspace is >5
+                        (tag: "ws_long", items: [
+                            Row(x: 0.0, y: 0.0, w: "pill_ws_long_w", h: 0.0, spacing: 2.0, items: [
+                                Stack(x: 0.0, y: 0.0, w: 18.0, h: 0.0, items: [
+                                    Hit(key: "item.key", x: 0.0, y: 7.0, w: 18.0, h: 24.0, r: 6.0,
+                                        surface: hover_hl, hover_only: true,
+                                        key_add: 0),
+                                    Text(x: 6.0, y: "pill_mid", text: "1",
+                                         font_size: 14.0, color: fg),
+                                    Surface(x: 7.5, y: 32.0, w: 3.0, h: 3.0, r: 1.5, color: acc,
+                                            visible: "pill_ws_long_on_1"),
+                                ]),
+                                Stack(x: 0.0, y: 0.0, w: 18.0, h: 0.0, items: [
+                                    Hit(key: "item.key", x: 0.0, y: 7.0, w: 18.0, h: 24.0, r: 6.0,
+                                        surface: hover_hl, hover_only: true,
+                                        key_add: 1),
+                                    Text(x: 6.0, y: "pill_mid", text: "2",
+                                         font_size: 14.0, color: fg),
+                                    Surface(x: 7.5, y: 32.0, w: 3.0, h: 3.0, r: 1.5, color: acc,
+                                            visible: "pill_ws_long_on_2"),
+                                ]),
+                                Stack(x: 0.0, y: 0.0, w: 18.0, h: 0.0, items: [
+                                    Hit(key: "item.key", x: 0.0, y: 7.0, w: 18.0, h: 24.0, r: 6.0,
+                                        surface: hover_hl, hover_only: true,
+                                        key_add: 2),
+                                    Text(x: 6.0, y: "pill_mid", text: "3",
+                                         font_size: 14.0, color: fg),
+                                    Surface(x: 7.5, y: 32.0, w: 3.0, h: 3.0, r: 1.5, color: acc,
+                                            visible: "pill_ws_long_on_3"),
+                                ]),
+                                Stack(x: 0.0, y: 0.0, w: 18.0, h: 0.0, items: [
+                                    Hit(key: "item.key", x: 0.0, y: 7.0, w: 18.0, h: 24.0, r: 6.0,
+                                        surface: hover_hl, hover_only: true,
+                                        key_add: 3),
+                                    Text(x: 6.0, y: "pill_mid", text: "4",
+                                         font_size: 14.0, color: fg),
+                                    Surface(x: 7.5, y: 32.0, w: 3.0, h: 3.0, r: 1.5, color: acc,
+                                            visible: "pill_ws_long_on_4"),
+                                ]),
+                                Stack(x: 0.0, y: 0.0, w: 18.0, h: 0.0, items: [
+                                    Hit(key: "item.key", x: 0.0, y: 7.0, w: 18.0, h: 24.0, r: 6.0,
+                                        surface: hover_hl, hover_only: true,
+                                        key_add: 4),
+                                    Text(x: 6.0, y: "pill_mid", text: "5",
+                                         font_size: 14.0, color: fg),
+                                    Surface(x: 7.5, y: 32.0, w: 3.0, h: 3.0, r: 1.5, color: acc,
+                                            visible: "pill_ws_long_on_5"),
+                                ]),
+                                // the appended number: a 16/22 px hover pill and
+                                // a wider 20/26 px region, both keyed +5
+                                Stack(x: 0.0, y: 0.0, w: "pill_ws_w", h: 0.0,
+                                      visible: "pill_ws_tail_on", items: [
+                                    Surface(x: 0.0, y: 7.0, w: "pill_ws_tail_hover_w", h: 24.0,
+                                        r: 6.0, hover_key: "item.key", hover_key_add: 5, color: hover_hl),
+                                    Hit(key: "item.key", x: -2.0, y: 8.0, w: "pill_ws_tail_reg_w",
+                                        h: -4.0, key_add: 5),
+                                    Text(x: 4.0, y: "pill_mid",
+                                         text: "{pill_ws_tail_n}", font_size: 14.0, color: fg),
+                                    Surface(x: "pill_ws_tail_dot_x", y: "pill_ws_tail_dot_y",
+                                             w: 3.0, h: 3.0,
+                                            r: 1.5, color: acc),
+                                ]),
+                            ]),
+                        ]),
+                        // the plain 22 px icon chips (wifi, bluetooth, volume,
+                        // wallpaper, themes): `item.glyph` is the only thing
+                        // that differs, and `item.w` is the width the drawer
+                        // measured for this widget
+                        (tag: "icon_chip", items: [
+                            Stack(x: 0.0, y: 0.0, w: "item.w", h: 0.0, items: [
+                                Text(x: 4.0, y: "pill_mid", text: "{item.glyph}",
+                                     font_size: 14.0, icon: true, color: value("item.ink")),
+                                Hit(key: "item.key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+                            ]),
+                        ]),
+                        // the gear: the same chip, plus the 22 px disc it lights
+                        // under itself
+                        (tag: "icon_chip_hl", items: [
+                            Stack(x: 0.0, y: 0.0, w: "item.w", h: 0.0, items: [
+                                Surface(x: 0.0, y: 8.0, w: 22.0, h: 22.0, r: 11.0,
+                                    hover_key: "item.key", color: hover_hl),
+                                Hit(key: "item.key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+                                Text(x: 4.0, y: "pill_mid", text: "{item.glyph}",
+                                     font_size: 14.0, icon: true, color: value("item.ink")),
+                            ]),
+                        ]),
+                        // watts: a bolt glyph, then the value 14 px right of it
+                        (tag: "watts", items: [
+                            Stack(x: 0.0, y: 0.0, w: "pill_watts_w", h: 0.0, items: [
+                                Text(x: 0.0, y: "pill_mid", text: "{item.glyph}",
+                                     font_size: 14.0, icon: true, color: value("item.ink")),
+                                Text(x: 14.0, y: "pill_mid", text: "{pill_watts}",
+                                     font_size: 14.0, color: value("item.ink")),
+                                Hit(key: "item.key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+                            ]),
+                        ]),
+                        // the visualizer: 8 bars on a 24 × 14 plot box whose
+                        // ground line is `h/2 + 7`, every 4th bar full accent and
+                        // the rest mixed 35% toward fg
+                        (tag: "viz", items: [
+                            Stack(x: 0.0, y: 0.0, w: 24.0, h: 0.0, items: [
+                                // `x: -0.5` because `Block` CENTERS each bar in
+                                // its 3 px step (`x + inset`, `w = step − 2·inset`)
+                                // while the drawer left-aligns them (`cx + i·3`,
+                                // `w: 2`). Shifting the plot box half a step
+                                // left lands bar i at exactly `cx + i·3` and
+                                // keeps the drawer's 2 px width — without it
+                                // every bar sits 0.5 px right.
+                                Spectrum(name: "pill_viz", x: -0.5, y: "pill_viz_y",
+                                          w: 24.0, h: 14.0,
+                                         kind: block, inset: 0.5, min_w: 0.0, min_h: 0.0,
+                                         floor: 0.5, bar_frac: 0.0, color: acc,
+                                         accent_every: 4, tint: 0.35),
+                                Hit(key: "item.key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+                            ]),
+                        ]),
+                        (tag: "user", items: [
+                            Stack(x: 0.0, y: 0.0, w: "pill_user_w", h: 0.0, items: [
+                                Text(x: 0.0, y: "pill_mid", text: "{username}",
+                                     font_size: 14.0, color: value("item.ink")),
+                                Hit(key: "item.key", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                                    anchors: (left: -2.0, top: 4.0, right: 2.0, bottom: -4.0)),
+                            ]),
+                        ]),
+                        // the brand mark: display-only, centered in its chip
+                        (tag: "branding", items: [
+                            Stack(x: 0.0, y: 0.0, w: "pill_brand_w", h: 0.0, items: [
+                                Text(x: 0.0, y: "pill_mid", w: 0.0, center: true,
+                                     text: "{pill_brand_glyph}", font_size: 16.0, font: brand,
+                                     weight: regular, color: fg),
+                            ]),
+                        ]),
+                    ]),
+                ]),
+                // ── right cluster ──
+                // The slot is `pill_right_w`, which counts the trailing margin
+                // on purpose: the invisible control-center strip below is this
+                // whole box, so it reaches the pill's right edge (it is
+                // registered FIRST, so each chip's own region wins on
+                // overlap). The visible chips then sit in an auto row that
+                // starts at the slot's left edge.
+                Stack(x: 0.0, y: 0.0, w: "pill_right_w", h: 0.0, items: [
+                    Hit(key: "pill_cc_key", x: 0.0, y: 0.0, w: 0.0, h: 0.0 ),
+                    Row(x: 0.0, y: 0.0, w: 0.0, h: 0.0, auto: true, spacing: 6.0, items: [
+                        Comp(name: "pbell"),
+                        Comp(name: "pbright"),
+                        // the tray: one 22 px slot per item, the icon 16 px at
+                        // (+2, +11) with a quiet dot as its fallback, and a
+                        // `slot_key` so the run owns keys 65, 66, …
+                        Repeat(name: "pill_tray", x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                               auto: true, spacing: 0.0, slot_key: 65,
+                               visible: "pill_tray_on", templates: [
+                            // the `"*"` template: the model's entries are
+                            // per-item image keys, so every one of them lands
+                            // on this delegate and `{slot}` supplies the key
+                            (tag: "*", items: [
+                                Stack(x: 0.0, y: 0.0, w: 22.0, h: 0.0, items: [
+                                    Image(x: 2.0, y: 11.0, w: 16.0, h: 16.0, key: "{slot}",
+                                          fallback: Text(x: 6.5, y: 13.5, text: "\u{f111}",
+                                                              font_size: 8.0, icon: true,
+                                                              color: fg2)),
+                                    // the click column is 20×22 at y 8, but the
+                                    // hover fill it lights is 20×20 at y 9 —
+                                    // two boxes, so two nodes. `slot_key`
+                                    // ADDS to the literal, hence `key: 0`.
+                                    Hit(key: 0, x: 0.0, y: 8.0, w: 20.0, h: 22.0),
+                                    Surface(x: 0.0, y: 9.0, w: 20.0, h: 20.0, r: 10.0,
+                                            hover_key: 0, color: hover_hl),
+                                ]),
+                            ]),
+                        ]),
+                    ]),
+                ]),
+            ]),
+         ]),
+        // `nav.tab` is the FIRST scene-owned state in the shell: the sidebar
+        // rows write it (`Set`), and the content pane's `Ink` name is
+        // interpolated from it. The prop's type is fixed by this declaration,
+        // so a row writing a string instead of a number is a load error rather
+        // than a pane that silently stops changing.
+        (name: "settings",
+         stores: [ (name: "nav", props: (tab: 0.0)) ],
+         items: [
+            Comp(name: "stitle"),
+            Comp(name: "sclose"),
+            Comp(name: "srail"),
+            Comp(name: "snav"),
+            Comp(name: "scontent"),
+         ]),
+        // ---- dashboard — LIVE (viewing state): the board is DECLARED — a
+        //      `dash_cards` Repeat of `Card` delegates, each card painting
+        //      inline at the box the packer published. Scene order IS
+        //      z-order: cards, then the opaque strip band over them, then the
+        //      chips over the band, then the connectivity popover over the
+        //      board. The scrollbars overlay stays Rust inline. Edit-mode
+        //      chrome + the system ⋮ menu are skipped in Rust while they lay
+        //      out — the whole surface is a no-op then, so the Rust board
+        //      painter takes the viewing job back. NO `Ink`: this surface's
+        //      whole body is declared now, and `layout_banner` survives only
+        //      as the FALLBACK painter for a config with no `dashboard`
+        //      surface (plus the edit-mode chrome, which this surface never
+        //      sees).
+        (name: "dashboard",
+         items: [
+            // the board: one row per packed card at its published surface
+            // coordinates (`publish_dash_cards`). `free` means no slot
+            // advances — each template child reads `item.x` / `item.y`, which
+            // is the only spelling a flow-packed grid has. The `Surface` IS
+            // the plate — raised fill, `card_r`, the Settings alpha, the
+            // numbers `layout_dash_grid`'s fallback writes; nothing Rust
+            // paints it here; `Card` registers the plate's region and hands
+            // the box to the card's own drawer.
+            Repeat(model: "dash_cards", dir: free, x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                   pad: 0.0, spacing: 0.0, templates: [
+                (tag: "*", items: [
+                    Surface(x: "item.x", y: "item.y", w: "item.w", h: "item.h",
+                            r_var: "dash_card_r", color: value("dash_card_bg")),
+                    Card(name: "{item.card}", x: "item.x", y: "item.y",
+                         w: "item.w", h: "item.h", key: "item.key"),
+                ]),
+            ]),
+            // the strip band over the scrolled board (authored after the
+            // cards → painted over them), the chips over the band, then the
+            // connectivity popover over both
+            Comp(name: "dband"),
+            Comp(name: "dchips"),
+            Comp(name: "dconn"),
+         ]),
+        // ---- notif — FULLY LIVE, no `Ink`: the header chrome is declared above
+        //      (title + Clear + dynamic DND chip) AND the card list below, as a
+        //      model `Repeat`. The Rust drawer survives only as the parity
+        //      oracle in `scene::tests::the_notif_scene_matches_its_own_drawer`,
+        //      behind `#[cfg(test)]` — it ships in no binary.
+        (name: "notif",
+         items: [
+            Comp(name: "ntitle"),
+            Comp(name: "nclear"),
+            Comp(name: "ndnd"),
+            // The card list — DECLARED, not routed to a Rust painter. One model
+            // row per notification (`notif_rows`, newest first, capped at 8 by
+            // the publisher) and one template that draws them all, so the
+            // urgency→strip-color branch is a row field rather than a `match`
+            // in a drawer. Geometry of record (layout_notifs_body):
+// cards start at y 52 on a 52 px stride with a 46 px box, so
+            // `h: 46.0` + `spacing: 6.0`; `dir: down` makes this a LIST —
+            // each card is the whole inner box and rows stack on y. The box is
+            // inset 16 px each side: `x: 16` plus a `w: -16.0` span, since a
+            // negative `w` measures from the item's OWN left edge, so the pair
+            // is the drawer's 32 px. Every child below is positioned RELATIVE
+            // to that box, which is what the drawer's `self.scale.s(k)` + `ry
+            // +` arithmetic was.
+            //   card bg   0,0 fill, r 12, `raised` lit to `raised_hl` on hover — a
+            //             SWAP (`hover_key` + `hover_color`), since the card is
+            //             always painted and only its fill changes
+            //   strip     4,10  4×26 r 2   — `acc`, or DANGER when critical
+            //   icon     16, 4 20×20      — absent rows publish has_icon=false
+            //   app      44, 6  10 px fg3
+            //   summary  44,18  13 px fg
+            //   body     44,32  11 px fg2 — absent rows publish has_body=false
+            Repeat(model: "notif_rows", x: 16.0, y: 52.0, w: -16.0, h: 46.0,
+                   dir: down, spacing: 6.0, templates: [
+                (tag: "card", items: [
+                    Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, items: [
+                        Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 12.0,
+                                hover_key: "item.key", color: raised,
+                                hover_color: raised_hl),
+                        Surface(x: 4.0, y: 10.0, w: 4.0, h: 26.0, r: 2.0,
+                                color: value("item.strip")),
+                        Image(x: 16.0, y: 4.0, w: 20.0, h: 20.0, key: "{item.icon}",
+                              visible: "item.has_icon"),
+                        Text(x: 44.0, y: 6.0, text: "{item.app}", font_size: 10.0,
+                             color: fg3),
+                        Text(x: 44.0, y: 18.0, text: "{item.summary}", font_size: 13.0,
+                             color: fg),
+                        Text(x: 44.0, y: 32.0, text: "{item.body}", font_size: 11.0,
+                             color: fg2, visible: "item.has_body"),
+                        Hit(key: "item.key", x: 0.0, y: 0.0, w: 0.0, h: 0.0),
+                    ]),
+                ]),
+            ]),
+            // the empty state, gated on the same count the model caps at
+            Text(x: 24.0, y: 70.0, text: "No notifications", font_size: 12.0,
+                 color: fg3, visible: "notif_none"),
+         ]),
+        // ---- lock — LIVE at the 1920×1080 reference height: hero chrome
+        //      above (`lhero`) and the whole body DECLARED below. Every y that
+        //      the Rust body derived from the surface height rides `parent.h`
+        //      instead of a baked constant, because `layout_lock` consults this
+        //      surface for a ±24 px band (|h − 1080| < 24) — a fixed offset
+        //      would drift up to 11 px off the drawer's own `h` math inside
+        //      that band. Geometry of record (layout_lock_body):
+        //
+        //   field    (w − 340)/2 × 58 r16, `hover` lifted to `hover_hl` while
+        //            key 1 is live (a SWAP, so the fill always exists)
+        //   pw text  centered on the field's middle, y = field + 22 — the
+        //            drawer's `(fh − 14)/2`
+        //   err/caps centered on the field's middle at field + 80, and the
+        //            caps line drops another 22 only when an error is showing
+        //            (`lock_err_shown` read as 1/0 × 22), because the drawer
+        //            advances one shared `err_y`
+        //   buttons  3 × 150×52 r14 on a 16 px gap (482 total), centered, with
+        //            their top at `parent.h − 120`
+        //   hold     each button's liquid is a bottom-anchored `Bar` (2 px
+        //            inset, r13) gated on the drawer's own 1.5 px sliver
+        //            threshold; `acc_tint` fills the button while held
+        //   hint     centered, `parent.h − 46` = below the buttons' 52 + 22
+        (name: "lock",
+         items: [
+            Comp(name: "lhero"),
+            Stack(x: "parent.w / 2 - 170.0",
+                  y: "max(parent.h * 0.45, parent.h * 0.2 + 230.0)",
+                  w: 340.0, h: 58.0, items: [
+                Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 16.0,
+                        hover_key: 1, color: hover, hover_color: hover_hl),
+                Text(x: 0.0, y: 22.0, w: 0.0, text: "{lock_pw_text}",
+                     font_size: 14.0, center: true, color: value("lock_pw_ink")),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 1),
+            ]),
+            Text(x: 0.0, center_x: true,
+                 y: "max(parent.h * 0.45, parent.h * 0.2 + 230.0) + 80.0",
+                 w: 0.0, text: "{lock_err}", font_size: 13.0, center: true,
+                 color: danger, visible: "lock_err_on"),
+            Text(x: 0.0, center_x: true,
+                 y: "max(parent.h * 0.45, parent.h * 0.2 + 230.0) + 80.0 + lock_err_shown * 22.0",
+                 w: 0.0, text: "{lock_caps}", font_size: 13.0, center: true,
+                 icon: true, color: danger, visible: "lock_caps_on"),
+            Stack(x: "parent.w / 2 - 241.0", y: "parent.h - 120.0",
+                  w: 150.0, h: 52.0, items: [
+                Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 14.0,
+                        color: value("lock_bg_0")),
+                Bar(x: 2.0, y: -2.0, w: 146.0, h: 52.0, r: 13.0,
+                    vertical: true, max: 1.0, value: "{lock_hold_0}",
+                    fill: value("lock_hold_fill"), track: value("clear"),
+                    visible: "lock_hold_on_0"),
+                Text(x: 66.0, y: 10.0, text: "\u{f08b}", font_size: 18.0,
+                     icon: true, color: fg),
+                Text(x: 0.0, y: 32.0, w: 0.0, text: "Logout", font_size: 12.0,
+                     center: true, color: fg2),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 2),
+            ]),
+            Stack(x: "parent.w / 2 - 75.0", y: "parent.h - 120.0",
+                  w: 150.0, h: 52.0, items: [
+                Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 14.0,
+                        color: value("lock_bg_1")),
+                Bar(x: 2.0, y: -2.0, w: 146.0, h: 52.0, r: 13.0,
+                    vertical: true, max: 1.0, value: "{lock_hold_1}",
+                    fill: value("lock_hold_fill"), track: value("clear"),
+                    visible: "lock_hold_on_1"),
+                Text(x: 66.0, y: 10.0, text: "\u{f021}", font_size: 18.0,
+                     icon: true, color: fg),
+                Text(x: 0.0, y: 32.0, w: 0.0, text: "Restart", font_size: 12.0,
+                     center: true, color: fg2),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 3),
+            ]),
+            Stack(x: "parent.w / 2 + 91.0", y: "parent.h - 120.0",
+                  w: 150.0, h: 52.0, items: [
+                Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 14.0,
+                        color: value("lock_bg_2")),
+                Bar(x: 2.0, y: -2.0, w: 146.0, h: 52.0, r: 13.0,
+                    vertical: true, max: 1.0, value: "{lock_hold_2}",
+                    fill: value("lock_hold_fill"), track: value("clear"),
+                    visible: "lock_hold_on_2"),
+                Text(x: 66.0, y: 10.0, text: "\u{f011}", font_size: 18.0,
+                     icon: true, color: danger),
+                Text(x: 0.0, y: 32.0, w: 0.0, text: "Shutdown", font_size: 12.0,
+                     center: true, color: fg2),
+                Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 4),
+            ]),
+            Text(x: 0.0, center_x: true, y: "parent.h - 46.0", w: 0.0,
+                 text: "{lock_hint}", font_size: 10.0, center: true,
+                 color: fg3),
+         ]),
+        // ---- wallpaper — FULLY declared: header chrome (`wphead`) + the picker
+        //      body. The `wallpaper_picker` Ink is gone.
+        //
+        // The `wps_*` numbers are the picker's OWN geometry, which is not the
+        // wallpapers CARD's: the card's grid adapts its cell until ≥5 columns
+        // fit, while the picker's cell is the user's zoom setting and the
+        // column count is whatever that cell divides the panel into. One flat
+        // pool holds both surfaces' numbers, hence the namespace.
+        //
+        // `gap_var` is load-bearing: the Rust body kept its 10 px pitch in
+        // DEVICE px while every scene-literal gap scales, so a plain `gap: 10.0`
+        // would agree at scale 1.0 and drift at every other one.
+        (name: "wallpaper",
+         items: [
+            Comp(name: "wphead"),
+            Grid(
+                name: "wps_cells",
+                x: "wps_grid_x",
+                y: "wps_grid_y",
+                w: 0.0, h: 0.0,
+                cols_var: "wps_cols",
+                cell_var: "wps_cell",
+                square: true,
+                gap_var: "wps_gap",
+                // which thumbnails are on the page, and how many rows of them
+                // fit — the pair is what makes the window scrollable at all
+                start: "wps_scroll",
+                max_rows_var: "wps_rows",
+                r: 12.0,
+                surface: hover,
+                hover_surface: hover_hl,
+                image_inset: 4.0,
+                key_base: 10,
+                visible: "wps_has"
+            ),
+            Text(
+                x: 24.0, y: 64.0, w: 0.0,
+                text: "No images — set [wallpaper] dir in config/shell.toml",
+                font_size: 12.0, color: fg3,
+                visible: "wps_none"
+            ),
+
+            // ---- the right-edge scrollbar: track + thumb ----
+            // The track is 6 px wide with its right side 6 px in, so both
+            // edges are literals rather than a `right: true` margin — the
+            // drawer's framing is `(w - 12, w - 6)`, and expressing that as
+            // "6 px in from the right, 6 px wide" is two numbers, not three.
+            Surface(
+                x: "wps_sb_track_x", y: "wps_sb_track_y",
+                w: "wps_sb_track_w", h: "wps_sb_track_h",
+                r_var: "wps_sb_r", color: hover,
+                visible: "wps_sb"
+            ),
+            Surface(
+                x: "wps_sb_track_x", y: "wps_sb_thumb_y",
+                w: "wps_sb_track_w", h: "wps_sb_thumb_h",
+                r_var: "wps_sb_r", color: value("wps_sb_thumb"),
+                visible: "wps_sb"
+            ),
+            // the grab strip is WIDER than the 6 px track it rides — 8 px of
+            // slack on each side and 4 px vertically — so the strip is a
+            // target rather than a hairline
+            Hit(
+                x: "wps_sb_track_x - 8.0", y: "wps_sb_track_y - 4.0",
+                w: "wps_sb_track_w + 14.0", h: "wps_sb_track_h + 8.0",
+                key: 2,
+                visible: "wps_sb"
+            ),
+         ]),
+
+
+        // ---- osd — the transient volume / brightness / mute HUD. The whole
+        //      surface is the click-to-dismiss region (key 1) and both texts
+        //      are gated on `osd_on` (the OSD is absent between events, and
+        //      the Rust drawer returns before drawing then). The two anchors
+        //      are the drawer's own `(h − fs)/2` centring: the glyph 11 px
+        //      above the mid line, the label 7 px.
+        // ---- workspace_switcher — the Tide Island grid: the dismiss region
+        //      (key 1) + the title + the workspace count are chrome, and the
+        //      cards are two `Rows` lists side by side on the drawer's own
+        //      2 × 274 px geometry (a 14 px gutter, a 14 px left inset, a
+        //      56 px card on a 70 px stride, 14 px corners, keys 10+). There
+        //      is no `x` on `Rows`, so the column offset rides `pad` — the
+        //      row box IS `x + pad` wide `w` (that is how every card list
+        //      insets itself), which puts column 1 exactly where the drawer's
+        //      `14 + col * (274 + 14)` lands.
+        //      Each row is the accent rail (a 4 × 40 bar cell at `top: 8`,
+        //      value 1.0 on the active workspace and 0 elsewhere, on a clear
+        //      track), the number at 20 px on the row's 12 px rail, and
+        //      "Desktop" at 11 px four px lower — both inks published per
+        //      row, because the wash (active = a 20% accent blend of the
+        //      hover fill) and the number ladder are the drawer's own
+        //      per-frame arithmetic.
+        (name: "workspace_switcher",
+         items: [
+             Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 1),
+             Text(x: 16.0, y: 14.0, text: "Workspaces", font_size: 17.0, color: fg),
+             Text(x: 20.0, y: 16.0, right: true, text: "{ws_count}", font_size: 13.0, color: fg3),
+             Rows(name: "ws_col0", y: 44.0, w: 274.0, pad: 14.0, row_h: 56.0, pitch: 70.0,
+                  row_dy: 12.0, r: 14.0, key_base: 10,
+                  cols: [
+                      SceneCol(x: 0.0, w: 4.0,
+                               bar: BarCellSpec(height: 40.0, top: 8.0, radius: 2.0,
+                                                      fill: acc, track: value("clear"))),
+                      SceneCol(x: 16.0, size: 20.0),
+                      SceneCol(x: 44.0, size: 11.0, dy: 16.0, color: fg3),
+                  ]),
+             Rows(name: "ws_col1", y: 44.0, w: 274.0, pad: 302.0, row_h: 56.0, pitch: 70.0,
+                  row_dy: 12.0, r: 14.0, key_base: 10,
+                  cols: [
+                      SceneCol(x: 0.0, w: 4.0,
+                               bar: BarCellSpec(height: 40.0, top: 8.0, radius: 2.0,
+                                                      fill: acc, track: value("clear"))),
+                      SceneCol(x: 16.0, size: 20.0),
+                      SceneCol(x: 44.0, size: 11.0, dy: 16.0, color: fg3),
+                  ]),
+         ]),
+        // ---- polkit_auth — the privileged-action dialog. Every string is
+        //      the drawer's own (the message / action-id truncation rides
+        //      `polkit_msg` / `polkit_act`, already clipped by the shell),
+        //      and every fill that moves with hover, focus or the verifying
+        //      state rides a per-frame color. The icon keeps the drawer's
+        //      48 px centering box (a `cx_pct` box with the glyph left inside
+        //      it) rather than centering the string, which is not the same
+        //      thing. The password field is `x: 24, w: -24` — the field spans
+        //      from the 24 px inset to 24 px short of the right edge — and
+        //      the cursor rides a bound x (its run is measured: 12 +
+        //      chars · 13 · 0.62), gated on the field's hover key.
+        //      The two buttons are one `Row(bottom: true, y: 60, halign:
+        //      center)` — the drawer's `h − 24 − 36` baseline and its
+        //      `(w − 256)/2` centering — each a `Stack` so the label centers
+        //      on its OWN 120 px button.
+        (name: "polkit_auth",
+         items: [
+             Text(x: 0.0, cx_pct: 0.5, w: 48.0, y: 32.0, text: "\u{f1ac}", font_size: 36.0,
+                  icon: true, color: acc),
+             Text(x: 0.0, w: 0.0, center_x: true, y: 88.0, text: "{polkit_msg}", font_size: 13.0,
+                  color: fg),
+             Text(x: 0.0, w: 0.0, center_x: true, y: 108.0, text: "{polkit_act}", font_size: 10.0,
+                  color: fg3),
+             Text(x: 0.0, w: 0.0, center_x: true, y: 136.0, text: "{polkit_user}", font_size: 14.0,
+                  color: fg),
+             // the field is focusable (key 92): the drawer's `region` over the
+             // same box, so hover/focus and click land identically
+             Stack(x: 24.0, y: 164.0, w: -24.0, h: 36.0, items: [
+                 Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 8.0, color: value("polkit_pw_bg")),
+                 Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 92),
+             ]),
+Text(x: 36.0, y: 174.0, text: "{polkit_pw_disp}", font_size: 13.0,
+                  color: value("polkit_pw_ink")),
+              // The cursor is animated, not jumped: each keystroke moves it one
+              // glyph (~8.06 px at 13 px mono) and a snap there is the single
+              // most legible sign that a password field is a Rust hack. `ms: 0`
+              // here would restore the snap without removing the declaration.
+              Surface(x: (val: "polkit_cursor_x", anim: (ms: 90)), y: 172.0, w: 2.0, h: 20.0, r: 1.0,
+                      color: fg, visible: "polkit_cursor_on"),
+             Text(x: 0.0, w: 0.0, center_x: true, y: 208.0, text: "{polkit_err}", font_size: 11.0,
+                  color: value("polkit_err_ink"), visible: "polkit_err_on"),
+             // `bottom: true` anchors the row's own height, so `h` must be
+             // declared: the pair's top edge lands `y` px above the bottom.
+             Row(x: 0.0, bottom: true, y: 24.0, h: 36.0, halign: center, spacing: 16.0, items: [
+                 Stack(w: 120.0, h: 36.0, items: [
+                     Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 8.0, color: value("polkit_cancel_bg")),
+                     Text(x: 0.0, y: 10.0, w: 0.0, h: 0.0, text: "Cancel", font_size: 13.0, center: true,
+                          color: fg),
+                     Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 91),
+                 ]),
+                 Stack(w: 120.0, h: 36.0, items: [
+                     Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 8.0, color: value("polkit_auth_bg")),
+                     Text(x: 0.0, y: 10.0, w: 0.0, h: 0.0, text: "{polkit_auth_label}", font_size: 13.0,
+                          center: true, color: sfg),
+                     Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 90),
+                 ]),
+             ]),
+         ]),
+        (name: "osd",
+         items: [
+             Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 1),
+             Text(x: 18.0, y: -11.0, center_y: true, text: "{osd_glyph}", font_size: 22.0,
+                  icon: true, color: acc, visible: "osd_on"),
+             Text(x: 52.0, y: -7.0, center_y: true, text: "{osd_text}", font_size: 14.0,
+                  color: fg, visible: "osd_on"),
+         ]),
+        // ---- power — the Power mode's five 92 px action tiles, held in one
+        //      `Row` so the block centres itself in the panel (the drawer's
+        //      `(w − 516)/2` / `(h − 92)/2`) and every tile is a `Stack`: the
+        //      per-frame background wash, the bottom-anchored hold-to-confirm
+        //      liquid (gated on the drawer's own 1.5 px sliver), the glyph,
+        //      the label and the click region. The inks + fill ride per-frame
+        //      values because the panel's ladder is its OWN (keys 1..=5, and
+        //      only Shutdown is a danger here — the power CARDS red their
+        //      Logout / Restart too, so `power_ink_*` can't be reused).
+        //      The glyph is the drawer's `(tile_w − fs)/2` = 34 px inset (the
+        //      same left-anchored icon slot powerv.ron uses) and the label its
+        //      `text_c(tile_w/2, tile_h − 32)`.
+        (name: "power",
+         items: [
+             Text(x: 22.0, y: 16.0, text: "Power", font_size: 15.0, color: fg),
+             Row(x: 0.0, y: 0.0, w: 0.0, h: 0.0, spacing: 14.0, halign: center, valign: middle,
+                 items: [
+                     Stack(w: 92.0, h: 92.0, items: [
+                         Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 18.0, color: value("ppower_bg_0")),
+                         Bar(x: 2.0, y: -2.0, w: "parent.w - 4", h: "parent.h", r: 16.0, vertical: true, max: 1.0,
+                             value: "{ppower_hold_0}", fill: value("power_hold_fill"), track: value("clear"),
+                             visible: "ppower_hold_on_0"),
+                         Text(x: 34.0, y: 24.0, w: 0.0, h: 0.0, text: "\u{f023}", font_size: 24.0, icon: true,
+                              color: value("ppower_ink_0")),
+                         Text(x: 0.0, y: 60.0, w: "parent.w", h: 0.0, text: "Lock", font_size: 12.0, center: true,
+                              color: fg2),
+                         Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 1),
+                     ]),
+                     Stack(w: 92.0, h: 92.0, items: [
+                         Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 18.0, color: value("ppower_bg_1")),
+                         Bar(x: 2.0, y: -2.0, w: "parent.w - 4", h: "parent.h", r: 16.0, vertical: true, max: 1.0,
+                             value: "{ppower_hold_1}", fill: value("power_hold_fill"), track: value("clear"),
+                             visible: "ppower_hold_on_1"),
+                         Text(x: 34.0, y: 24.0, w: 0.0, h: 0.0, text: "\u{f08b}", font_size: 24.0, icon: true,
+                              color: value("ppower_ink_1")),
+                         Text(x: 0.0, y: 60.0, w: "parent.w", h: 0.0, text: "Logout", font_size: 12.0, center: true,
+                              color: fg2),
+                         Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 2),
+                     ]),
+                     Stack(w: 92.0, h: 92.0, items: [
+                         Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 18.0, color: value("ppower_bg_2")),
+                         Bar(x: 2.0, y: -2.0, w: "parent.w - 4", h: "parent.h", r: 16.0, vertical: true, max: 1.0,
+                             value: "{ppower_hold_2}", fill: value("power_hold_fill"), track: value("clear"),
+                             visible: "ppower_hold_on_2"),
+                         Text(x: 34.0, y: 24.0, w: 0.0, h: 0.0, text: "\u{f186}", font_size: 24.0, icon: true,
+                              color: value("ppower_ink_2")),
+                         Text(x: 0.0, y: 60.0, w: "parent.w", h: 0.0, text: "Sleep", font_size: 12.0, center: true,
+                              color: fg2),
+                         Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 3),
+                     ]),
+                     Stack(w: 92.0, h: 92.0, items: [
+                         Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 18.0, color: value("ppower_bg_3")),
+                         Bar(x: 2.0, y: -2.0, w: "parent.w - 4", h: "parent.h", r: 16.0, vertical: true, max: 1.0,
+                             value: "{ppower_hold_3}", fill: value("power_hold_fill"), track: value("clear"),
+                             visible: "ppower_hold_on_3"),
+                         Text(x: 34.0, y: 24.0, w: 0.0, h: 0.0, text: "\u{f021}", font_size: 24.0, icon: true,
+                              color: value("ppower_ink_3")),
+                         Text(x: 0.0, y: 60.0, w: "parent.w", h: 0.0, text: "Restart", font_size: 12.0, center: true,
+                              color: fg2),
+                         Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 4),
+                     ]),
+                     Stack(w: 92.0, h: 92.0, items: [
+                         Surface(x: 0.0, y: 0.0, w: 0.0, h: 0.0, r: 18.0, color: value("ppower_bg_4")),
+                         Bar(x: 2.0, y: -2.0, w: "parent.w - 4", h: "parent.h", r: 16.0, vertical: true, max: 1.0,
+                             value: "{ppower_hold_4}", fill: value("power_hold_fill"), track: value("clear"),
+                             visible: "ppower_hold_on_4"),
+                         Text(x: 34.0, y: 24.0, w: 0.0, h: 0.0, text: "\u{f011}", font_size: 24.0, icon: true,
+                              color: value("ppower_ink_4")),
+                         Text(x: 0.0, y: 60.0, w: "parent.w", h: 0.0, text: "Shutdown", font_size: 12.0, center: true,
+                              color: fg2),
+                         Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0, key: 5),
+                     ]),
+                 ]),
+         ]),
+        // ---- wifi_menu — the Wi-Fi submenu: the shared `subhead` chrome plus
+        //      one `Rows` list on the drawer's own geometry (36 px rows on a
+        //      42 px stride, 16 px side inset, 12 px radius). The row wash
+        //      chain (hover → raised_hl, connected → acc_tint, else raised)
+        //      rides each row's published `surface`, so a connected row keeps
+        //      its tint under the pointer exactly like the drawer. Cols: the
+        //      0..100 signal (a `bars` staircase CENTERED on the row's mid
+        //      rail, block-anchored 46 px off the panel's right edge), the
+        //      "{lock} {ssid}" label the drawer composes itself, and the
+        //      connected ✓ right-anchored 28 px in.
+        (name: "wifi_menu",
+         items: [
+             Comp(name: "subhead",
+                  props: (title: "Wi-Fi Networks",
+                          meta: "{pill_wifi_meta}",
+                          meta_size: "pill_wifi_meta_size",
+                          ink: "pill_wifi_meta_col")),
+             Rows(name: "wifi_menu_rows", y: 56.0, row_h: 36.0, pitch: 42.0, w: 0.0,
+                  pad: 16.0, row_dy: 10.0, r: 12.0, key_base: 10,
+                  cols: [
+                      (x: 0.0, w: 0.0, right: true, edge: 46.0,
+                       bars: SegmentsSpec(count: 4, max: 100.0, width: 5.0, gap: 2.0, height: 4.0,
+                                               step: 3.0, radius: 2.0, base: 18.0, center: true,
+                                               fill: acc, track: fg3)),
+                      (x: 14.0, size: 12.0, color: fg),
+                      (x: 0.0, w: 0.0, right: true, edge: 28.0, size: 13.0, icon: true, dy: 9.0),
+                  ]),
+             Text(x: 24.0, y: 56.0, text: "{wifi_empty}", font_size: 12.0, color: fg3,
+                  visible: "wifi_empty_on"),
+         ]),
+        // ---- bt_menu — the Bluetooth submenu: the same `subhead` chrome and
+        //      the same row geometry as the Wi-Fi list, but the right column
+        //      is the connection state ("Connected" in accent / "Tap to
+        //      connect" in fg3, published per row) instead of a ✓ + signal
+        //      staircase.
+        (name: "bt_menu",
+         items: [
+             Comp(name: "subhead",
+                  props: (title: "Bluetooth",
+                          meta: "{pill_bt_meta}",
+                          meta_size: "pill_bt_meta_size",
+                          ink: "pill_bt_meta_col")),
+             Rows(name: "bt_menu_rows", y: 56.0, row_h: 36.0, pitch: 42.0, w: 0.0,
+                  pad: 16.0, row_dy: 10.0, r: 12.0, key_base: 10,
+                  cols: [
+                      (x: 14.0, size: 12.0, color: fg),
+                      (x: 0.0, w: 0.0, right: true, edge: 28.0, size: 11.0),
+                  ]),
+             Text(x: 24.0, y: 56.0, text: "{bt_empty}", font_size: 12.0, color: fg3,
+                  visible: "bt_empty_on"),
+         ]),
+    ]
+
+)

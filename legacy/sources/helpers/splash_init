@@ -1,0 +1,12 @@
+# -*- mode: sh -*-
+. $hdots/sources/helpers/fetch_color_scheme splash_init
+. $hdots/sources/msg/splash_loading_texts
+random_msg="${loading_msgs[RANDOM % ${#loading_msgs[@]}]}"
+s=$(<$states2/s)
+# two popup mode the "center_b_text":1 means the big text is rendered exactly at center of screen and loading animation, small text below it
+# when "center_b_text":0 ,, we use it as pop oup notification so big text is not rendered centered instead whole content is rendered center..
+# "alpha" (0-100) is the overlay/card opacity; undefined $bf → 100 (opaque)
+printf '{"w":100,"h":100,"bg":"%s","fg":"%s","b_text":"p","b_font":"distro_splash","b_size":600,"s_text":"%s","s_font":"JetBrainsMonoNL Nerd Font","s_size":18,"duration":3,"spacing":50,"loading_id":2,"show_loading_animation":true,"center_b_text":1,"corner_rounding":0,"alpha":%s}' \
+    "${bg}$(<$states/bg_alpha_${s})" "$fg" "$random_msg" "${bf:-100}" > $states2/splash_vars
+
+$hdots/sources/helpers/splash & # run binary in bg

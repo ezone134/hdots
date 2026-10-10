@@ -1,0 +1,66 @@
+#!/usr/bin/env luajit
+
+local fire_count = tonumber(read_line(SCRIPT_DIR .. "/fire_count") or "0")
+local new_count = fire_count - 1
+if new_count < 0 then new_count = 0 end
+write(SCRIPT_DIR .. "/fire_count", tostring(new_count) .. "\n")
+
+local flag_cpu = read_line(SCRIPT_DIR .. "/flag_cpu") or "0"
+if flag_cpu == "1" then
+    run(SCRIPT_DIR .. "/set_cpu_freqs")
+    write(SCRIPT_DIR .. "/flag_cpu", "0\n")
+end
+
+local umount_counter = 0
+
+while umount_counter < 10 do
+    local files = list_dir(SCRIPT_DIR .. "/disks_to_unmount_batch")
+    if #files == 0 then break end
+
+    for _, file in ipairs(files) do
+        local full_path = SCRIPT_DIR .. "/disks_to_unmount_batch/" .. file
+        local base_name = basename(file)
+        local mount_point = "/dev/" .. base_name
+
+        if base_name:match("%d") then
+            print(base_name .. " contains a number.")
+            local unmount_all = 0
+            local mounts = read("/proc/mounts") or ""
+            if mounts:find(mount_point, 1, true) then
+                spawn(string.format(
+                    "umount %s || umount -l %s && sleep 0.5 && grep -qF %s /proc/mounts || rm -f %s",
+                    shq(mount_point), shq(mount_point), shq(mount_point), shq(full_path)
+                ))
+            else
+                rm(full_path)
+            end
+        else
+            print(base_name .. " does not contain a number.")
+            print(base_name .. " does not contain a number. Finding partitions in /proc/mounts...")
+
+            local awk_cmd = string.format(
+                "awk '$1 ~ /^\\/dev\\/%s[0-9]/ {print $1}' /proc/mounts", base_name
+            )
+            local partitions = out(awk_cmd) or ""
+
+            if partitions == "" then
+                rm(full_path)
+            else
+                for part in partitions:gmatch("%S+") do
+                    spawn(string.format("echo 'Unmounting %s...' && umount %s || umount -l %s",
+                        part, shq(part), shq(part)))
+                end
+            end
+        end
+    end
+
+    umount_counter = umount_counter + 1
+    run("sleep 1")
+end
+
+run(string.format("chmod 777 %s %s %s 2>/dev/null",
+    shq(SCRIPT_DIR .. "/fire_count"),
+    shq(SCRIPT_DIR .. "/set_cpu_freqs"),
+    shq(SCRIPT_DIR .. "/flag_disk_unmount")))
+
+write(SCRIPT_DIR .. "/loop_is_running", "hi_from_inside_loop\n")

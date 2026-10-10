@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+. $sources/dissmiss_notif_bash
+notify-send -a center_all_red -t 3000 "Kill Mode" "Click a window to terminate it. Right-click or Esc to cancel." &
+hyprctl kill

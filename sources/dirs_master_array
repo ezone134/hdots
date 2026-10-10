@@ -1,0 +1,18 @@
+#!/usr/bin/env luajit
+-- array dirs_master_array
+-- ported from bash sources/dirs_master_array
+-- master dirs array; hypr-init creates every dir listed here
+
+local home = os.getenv("HOME")
+local rcache = os.getenv("rcache")
+
+dirs_array = {
+    states,
+    home .. "/Downloads",
+    home .. "/Documents",
+    r_daemon .. "/icons",
+    r_daemon .. "/states",
+    rconf .. "/dl",
+    rconf .. "/gtk_theme",
+    rcache .. "/accents",
+}

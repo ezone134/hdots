@@ -1,0 +1,34 @@
+mod accent;
+mod alarms;
+mod calendar;
+mod clipimg;
+mod compositor;
+mod countdown;
+mod customacc;
+
+mod eq;
+mod expenses;
+mod lyrics;
+mod media;
+mod mirror;
+pub(crate) mod moon;
+mod shared;
+mod sliders;
+mod snippets;
+mod speedtest;
+mod system;
+mod systeminfo;
+
+mod toggles;
+mod wallpaper;
+mod audiodevice;
+mod audiorec;
+pub(crate) mod latency;
+mod powerdraw;
+mod weather;
+mod weatherv2;
+mod wifi;
+mod worldclock;
+pub(crate) use worldclock::fmt_hhmm_min;
+mod workspaces;
+mod worldmap;

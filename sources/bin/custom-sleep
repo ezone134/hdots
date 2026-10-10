@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# I have overheating issue so I normally disable it.
+# just uncomment below line to enable sleep
+# systemctl suspend

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Settings
+GenericName=System Settings
+Comment=Rofi-based configuration and settings menu
+Exec=quickshell ipc call panel settings
+Icon=org.gnome.Settings
+Terminal=false
+Type=Application
+Categories=Settings;DesktopSettings;Utility;System;
+StartupNotify=true
+Keywords=options;config;hyprland;rofi;setup;
+StartupWMClass=rofi

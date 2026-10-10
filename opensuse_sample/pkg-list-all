@@ -1,0 +1,9 @@
+
+sudo zypper --installroot /tmp/aajpt in --no-recommends patterns-base-base zypper sypper NetworkManager  sudo shadow NetworkManager-tui kernel-default kernel-firmware-mediatek dracut
+
+
+sudo zypper in --no-recommends bluetui brightnessctl btop cliphist fastfetch flatpak foot fuse geany git glibc gparted grub2-x86_64-efi gsettings-desktop-schemas gvfs-backends htop hypridle hyprland hyprlock ImageMagick imv iotop kernel-default kernel-firmware-amdgpu kernel-firmware-mediatek libfuse2 libva-utils mako mate-polkit Mesa-libva mousepad ncdu NetworkManager NetworkManager-tui nwg-look patterns-base-base pipewire pipewire-pulseaudio python311-pipx rofi-wayland rsync sudo swww zypper sypper tar thunar tlp tree tumbler ucode-amd udisks2 unzip vim waybar wireplumber hyprsunset wofi xwayland zip libnotify-tools
+
+
+sudo zypper --installroot /tmp/aajpt in --no-recommends bluetui brightnessctl btop cliphist fastfetch flatpak foot fuse geany git glibc gparted grub2-x86_64-efi gsettings-desktop-schemas gvfs-backends htop hypridle hyprland hyprlock ImageMagick imv iotop kernel-default kernel-firmware-amdgpu kernel-firmware-mediatek libfuse2 libva-utils mako mate-polkit Mesa-libva mousepad ncdu NetworkManager NetworkManager-tui nwg-look patterns-base-base pipewire pipewire-pulseaudio python311-pipx rofi-wayland rsync sudo swww zypper sypper tar thunar tlp tree tumbler ucode-amd udisks2 unzip vim waybar wireplumber hyprsunset wofi xwayland zip libnotify-tools
+

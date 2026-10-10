@@ -1,0 +1,6 @@
+# -*- mode: sh -*-
+[[ -n $hdots ]] && {
+. $hdots/sources/helpers/prelaunch_body
+main_logic
+notify-send -a System "System" "Synced bins and sources to $rconf" &
+}

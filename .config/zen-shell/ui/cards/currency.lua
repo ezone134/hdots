@@ -1,0 +1,23 @@
+-- Currency card — fully declarative. The module owns the layout decision and
+-- hands the engine the item tree; Rust renders it (`ctx.ui.scene`). Offline
+-- reference rates from `currency_rows`; the base re-base chip sits at the
+-- header right. Rows register `currency_key_base + index` for the click-to-
+-- rebase plumbing; the window follows `currency_scroll` (published in Rust as
+-- a `Ring`, read here through the scene's own binding resolution).
+local SCENE = [==[
+(
+    items: [
+        Header(title: "Currency", glyph: "\u{f155}", pad: 12.0),
+        Text(x: 12.0, y: 9.0, text: "{currency_chip}", font_size: 8.5, right: true, color: acc),
+        Rows(name: "currency_rows", y: 26.0, pad: 12.0, row_h: 20.0, cols: [
+            (x: 6.0, size: 10.0),
+            (x: 36.0, size: 8.0, color: fg3),
+            (x: 0.0, w: 0.0, edge: 12.0, right: true, size: 9.5),
+        ], key_base: 14400, hover_surface: hover, start: "currency_scroll"),
+    ],
+)
+]==]
+
+function draw(ctx)
+    ctx.ui.scene(SCENE)
+end

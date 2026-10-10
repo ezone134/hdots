@@ -1,0 +1,56 @@
+# -*- mode: sh -*-
+
+base="${wall##*/}"
+
+color_pick_logic () {
+hex=""  # reset value
+COLOR_ENGINE="$hypr_sources/helpers/color_engine" # color_engine will generate shades too no need to seperately call it again
+intelligen_vibrant () { hex=$("$COLOR_ENGINE" pick_from_wall "$wall" "v"); }
+intelligen_balanced () { hex=$("$COLOR_ENGINE" pick_from_wall "$wall" "b"); }
+intelligen_style_11 () {
+    hex=$("$COLOR_ENGINE" pick_from_wall "$wall" "d")  # d means default
+}
+extract_most_saturated_color_2 () {
+    hex=$("$COLOR_ENGINE" pick_from_wall "$wall" "s")
+}
+extract_accent_from_wallpaper_2 () {
+    hex=$("$COLOR_ENGINE" pick_from_wall "$wall" "f")  # pick very fast
+}
+functions_to_pick_colors=(
+    intelligen_vibrant
+    intelligen_balanced
+    intelligen_style_11    # this is more like matugen style
+    extract_most_saturated_color_2
+    extract_accent_from_wallpaper_2
+)
+
+# Loop through the function names in the array
+for func_name in "${functions_to_pick_colors[@]}"; do
+    $func_name
+    if [[ -n "$hex" ]]; then
+        echo "Successfully found hex: $hex using $func_name"
+        break
+    fi
+done
+}
+
+export shades_list="$rcache/accent_files/from_wall_${sm}/${base}/shades_list"
+
+if [[ $scrim_mode == 0 ]]; then
+        if [[ -f $shades_list ]]; then
+            msg="Shades list already exists"
+            echo "$msg"
+            notify-send -a theme-extras "Theme extras" "$msg" &
+            halt_pipeline="yes"
+        else
+            echo "Generating hex from wallpaper, so far so good"
+            notify-send -a theme-extras "Theme extras" "Generating wallpaper accent cache…" &
+            color_pick_logic
+        fi
+
+else
+color_pick_logic
+scrim_hex=$hex
+echo $scrim_hex > $states2/scrim_hex_${s}
+export scrim_hex=$scrim_hex
+fi

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# pp_main — power profile (power-profiles-daemon) CLI. Was: qs-ctl pp.
+set -u
+. "$hypr_sources/helpers/pp_body"
+pp_cmd "$@"

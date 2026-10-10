@@ -1,0 +1,90 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+
+local state = tonumber(read_line(SCRIPT_DIR .. "/states/enable_power_script") or "0")
+
+main_logic_function = function()
+    print(os.date() .. ": Checking power source")
+    local power_status = 0
+
+    local power_adp = "0"
+    local adp_files = list_dir("/sys/class/power_supply")
+    for _, d in ipairs(adp_files) do
+        if d:match("^ADP") then
+            local val = read_line("/sys/class/power_supply/" .. d .. "/online")
+            if val then power_adp = val end
+        end
+    end
+
+    local power_usb_c = "0"
+    for _, d in ipairs(adp_files) do
+        if d:match("^ucsi%-source%-psy%-") then
+            local val = read_line("/sys/class/power_supply/" .. d .. "/online")
+            if val then power_usb_c = val end
+        end
+    end
+
+    if tonumber(power_adp) == 1 then power_status = 1 end
+    if tonumber(power_usb_c) == 1 then power_status = 1 end
+
+    local plan_vars = {}
+    local function load_plan(plan_name)
+        local plan_path = SCRIPT_DIR .. "/states/" .. plan_name
+        local content = read(plan_path) or ""
+        for line in content:gmatch("[^\n]+") do
+            local key, val = line:match("^(%w+)=(.*)")
+            if key then
+                plan_vars[key] = val
+            end
+        end
+    end
+
+    if power_status == 1 then
+        local power_plan_ac = read_line(SCRIPT_DIR .. "/states/power_plan_ac") or "powersave"
+        load_plan(power_plan_ac)
+        local max_ac_freq_mhz = tonumber(read_line(SCRIPT_DIR .. "/states/max_ac_freq_mhz") or "0")
+        print("On AC")
+        run("echo " .. tostring(max_ac_freq_mhz * 1000) .. " | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq")
+        run("echo " .. shq(plan_vars["scaling_governor"] or "") .. " | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+        run("echo " .. shq(plan_vars["power_dpm_force_performance_level"] or "") .. " | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level")
+        run("echo " .. shq(plan_vars["power_dpm_state"] or "") .. " | sudo tee /sys/class/drm/card*/device/power_dpm_state")
+        if (plan_vars["power_dpm_force_performance_level"] or "") ~= "auto" then
+            run("echo " .. shq(plan_vars["pp_dpm_sclk"] or "") .. " | sudo tee /sys/class/drm/card*/device/pp_dpm_sclk")
+        end
+    else
+        local power_plan_bat = read_line(SCRIPT_DIR .. "/states/power_plan_bat") or "powersave"
+        load_plan(power_plan_bat)
+        local max_bat_freq_mhz = tonumber(read_line(SCRIPT_DIR .. "/states/max_bat_freq_mhz") or "0")
+        print("On Battery")
+        run("echo " .. tostring(max_bat_freq_mhz * 1000) .. " | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq")
+        run("echo " .. shq(plan_vars["scaling_governor"] or "") .. " | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+        run("echo " .. shq(plan_vars["power_dpm_force_performance_level"] or "") .. " | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level")
+        run("echo " .. shq(plan_vars["power_dpm_state"] or "") .. " | sudo tee /sys/class/drm/card*/device/power_dpm_state")
+        if (plan_vars["power_dpm_force_performance_level"] or "") ~= "auto" then
+            run("echo " .. shq(plan_vars["pp_dpm_sclk"] or "") .. " | sudo tee /sys/class/drm/card*/device/pp_dpm_sclk")
+        end
+    end
+end
+
+init_func_2 = function()
+    local state_file = SCRIPT_DIR .. "/last_trigger"
+    write(state_file, tostring(os.getpid()) .. "\n")
+    run("sleep 2")
+    local last_pid = tonumber(read_line(state_file) or "0")
+    if last_pid == os.getpid() then
+        main_logic_function()
+    end
+end
+
+normal_apply_function = function()
+    if state == 1 then
+        main_logic_function()
+    end
+end
+
+on_udev_trigger_function = function()
+    if state == 1 then
+        init_func_2()
+    end
+end

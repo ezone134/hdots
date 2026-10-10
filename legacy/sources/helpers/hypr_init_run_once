@@ -1,0 +1,36 @@
+# -*- mode: sh -*-
+
+# it is run before theme body run
+run_one_time_function ()  {
+> $lock_files/run_one_time_function_marker
+[[ -f $states2/gamma ]] || echo 0 > $states2/gamma #
+
+. /etc/os-release
+echo "$NAME" > $states2/distro_name
+case "$ID" in
+    *arch*)
+        distro="arch"
+        d=a
+        ;;
+    *fedora*)
+        distro="fedora"
+        d=f
+        ;;
+    *tumbleweed*)
+        distro="tumbleweed"
+        d=o
+        ;;
+    *leap*)
+        distro="leap"
+        d=o
+        ;;
+    *)
+        # Optional: fallback to strip 'opensuse-' if you add new SUSE variants
+        distro=generic
+        ;;
+esac
+echo $distro > $states2/distro
+echo $d > $states2/d
+echo opensuse > $states2/branding_font
+}
+[[ -f $lock_files/run_one_time_function_marker ]] || run_one_time_function &

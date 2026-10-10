@@ -1,0 +1,7 @@
+#!/usr/bin/env luajit
+if user == nil or user == "" then
+    sources = os.getenv("sources")
+    dofile(sources .. "/utils")
+end
+dofile(sources .. "/link_it_defs")
+link_it_dir_func(arg[1], arg[2])

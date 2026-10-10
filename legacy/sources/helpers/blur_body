@@ -1,0 +1,72 @@
+# -*- mode: sh -*-
+
+s=$(<$states2/s)
+
+blur_restore_func () {
+    state=$(<$states/hypr_blur_${s})
+        blur_size=$(<$states/hypr_blur_size_${s})
+        blur_passes=$(<$states/hypr_blur_passes_${s})
+        blur_vibrancy=$(<$states/hypr_blur_vibrancy_${s})
+    echo "hl.config({
+    decoration = {
+        blur = {
+            enabled = $state,
+            size = $blur_size,
+            passes = $blur_passes,
+            vibrancy = $blur_vibrancy,
+        },
+    },
+    })" > $HOME/.config/hypr/configs/blur.lua
+    notify-send -a Blur "Blur" "Restored" &
+    echo 1 > $states2/blur_done
+    exit 0
+}
+
+blur_on_func () {
+echo 1 > $states/hypr_blur_${s}
+    blur_size=$(<$states/hypr_blur_size_${s})
+    blur_passes=$(<$states/hypr_blur_passes_${s})
+    blur_vibrancy=$(<$states/hypr_blur_vibrancy_${s})
+echo "hl.config({
+decoration = {
+    blur = {
+        enabled = 1,
+        size = $blur_size,
+        passes = $blur_passes,
+        vibrancy = $blur_vibrancy,
+    },
+},
+})" > $HOME/.config/hypr/configs/blur.lua
+
+notify-send -a Blur "Blur" "Enabled" &
+exit 0
+}
+
+blur_off_func () {
+echo 0 > $states/hypr_blur_${s}
+echo "hl.config({
+decoration = {
+    blur = {
+        enabled = 0,
+    },
+},
+})" >  $HOME/.config/hypr/configs/blur.lua
+notify-send -a Blur "Blur" "Disabled" &
+exit 0
+}
+
+blur_toggle_func () {
+state=$(<$states/hypr_blur_${s})
+if (( state == 0 )); then
+blur_on_func
+else
+blur_off_func
+fi
+}
+
+blur_reset_func () {
+    # Clear the generated config so the Hyprland defaults (secondary.lua) apply.
+    > $HOME/.config/hypr/configs/blur.lua
+    notify-send -a Blur "Blur" "Reset" &
+    exit 0
+}

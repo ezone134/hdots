@@ -1,0 +1,174 @@
+(
+    // eq card — FULLY LIVE, no `Ink`.
+    //
+    // Everything the Rust drawer measured in DEVICE px out of the card box is
+    // now stated here in base px, and the two palette MIXES it could not name
+    // (the curve panel's wash, the zero line) plus the per-band / per-preset
+    // hover tints ride published colors (`value(...)`).
+    //
+    // The header chrome is declared here too, so `scene_owns_header` is true
+    // and the drawer's own `if !self.scene_owns_header` block stands down.
+    items: [
+        // ── header: the volume glyph + the title, the drawer's own two
+        //    hand-rolled header rules (`card_show_glyph` / `card_show_title`)
+        //    rather than a `Header` item, so the glyph keeps its accent-when-
+        //    live ink and the title its own 12px size ──
+        Text(x: 12.0, y: 8.0, w: 0.0, text: "\u{f028}", font_size: 12.0,
+             color: value("eq_glyph_ink"), icon: true),
+        Text(x: 30.0, y: 9.0, w: 0.0, text: "Equalizer", font_size: 12.0,
+             color: fg),
+        // ── the ON/OFF pill ──
+        // The drawer's `tx = x + w - pad - s(42)`, so the pill's LEFT edge is
+        // `parent.w - 54` and its own box is 38×18, fully round. Stated as
+        // card-relative expressions rather than a right-anchored `Stack`: the
+        // pill is left-positioned, and a `Stack` carrying `right:` is not a
+        // field the item has — an unknown key parses silently, so the mistake
+        // would paint at x 0 instead of failing.
+        Surface(x: "parent.w - 54.0", y: 5.0, w: 38.0, h: 18.0, r: 9.0,
+                color: value("eq_tog_bg"), hover_key: 34370,
+                hover_color: value("eq_tog_bg_hov")),
+        Text(x: "parent.w - 54.0", y: 8.0, w: 38.0, text: "{eq_tog_lbl}",
+             font_size: 8.5, center: true, color: value("eq_tog_lab")),
+        // the drawer's `region(tx - 2, ty - 2, tw + 4, th + 4)` halo
+        Hit(x: "parent.w - 56.0", y: 3.0, w: 42.0, h: 22.0, key: 34370),
+        // ── everything below the header stands down when the EQ is off; this
+        //    is the drawer's own `if !active { …; return; }` ──
+        Stack(x: 0.0, y: 0.0, w: 0.0, h: 0.0, visible: "eq_active", items: [
+            // ── response-curve panel ──
+            Surface(x: 12.0, y: 32.0, w: "parent.w - 24.0", h: 50.0, r: 4.0,
+                    color: value("eq_panel")),
+            // the zero line: the drawer's own half-pixel zero rule, `h: 1.0`
+            // / `r: 0.5` DEVICE px at `zero_y - 0.5` — so unlike the panel it
+            // does NOT scale, and `eq_hp` (published 0.5 ÷ scale) is what keeps
+            // it a half-device-pixel rule at every scale. `57.0 - eq_hp` is the
+            // panel's vertical midpoint (32 + 50 / 2) in base px
+            Surface(x: 12.0, y: "57.0 - eq_hp", w: "parent.w - 24.0", h: "eq_zl_h",
+                    r_var: "eq_hp", color: value("eq_zero")),
+            // The curve. `max: 1.0` stops the engine re-normalizing to the
+            // series' own peak, and `inset: 0.0` lets the trace span the full
+            // 50px panel — the `thickness / 2 + 1` stroke headroom the engine
+            // reserves by default would clip the curve's own extremes.
+            Spark(name: "eq_curve", x: 12.0, y: 32.0, w: "parent.w - 24.0", h: 50.0,
+                  color: value("eq_acc"), max: 1.0, kind: line,
+                  thickness: 2.0, inset: 0.0),
+            // ── the 10 band dots ──
+            // At LOG-frequency x (the drawer's `log2(freq) / log2(20000)`),
+            // each at its own band's live gain via `eq_doty_<i>`. Ten FIXED
+            // slots, so ten literal surfaces: the log-fraction is a constant
+            // of `BAND_FREQS`, and a `Repeat` could not carry them — inside a
+            // template `parent.*` is the SLOT's box (the band strip below
+            // measures against it), and these x's need the CARD's, which
+            // would force the card-relative x to be published per row.
+            // `eq_dot_d` / `eq_dot_r` are the drawer's unscaled 6px / 3px
+            // DEVICE box, published ÷ scale so the dot stays 6px at every
+            // scale — the drawer's own behaviour, bug and all. The `- eq_dot_r`
+            // on both axes is the drawer's own centering (`sx - 3, sy - 3`):
+            // it halves 6 DEVICE px, which is exactly what `r_var` already
+            // holds, so the dot centers on the band's point at any scale.
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.346745 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_0 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.416735 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_1 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.487537 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_2 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.557527 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_3 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.627517 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_4 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.697507 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_5 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.767498 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_6 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.837488 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_7 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.907478 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_8 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            Surface(x: "12.0 + (parent.w - 24.0) * 0.977468 - eq_dot_r",
+                    y: "32.0 + 50.0 * eq_doty_9 - eq_dot_r", w: "eq_dot_d",
+                    h: "eq_dot_d", r_var: "eq_dot_r", color: value("eq_acc")),
+            // ── the 10 band faders ──
+            // One `Repeat` across the strip; the template is INLINE because a
+            // `CardScene` has no `components` table (`Comp` is a `ShellScene`
+            // feature — a card's `components:` key parses and is then dropped
+            // on the floor, so a template there draws nothing at all).
+            //
+            // Everything is slot-local. The slot's box IS the drawer's
+            // `bx .. bx + band_w` × `slider_y .. slider_y + slider_h`: the
+            // `h` binding keeps `h.num() > 0` so the engine sizes each slot
+            // from `sh` rather than from the card edge, and it is the drawer's
+            // own `slider_h = card_h - 92 - 36`.
+            //
+            // The slot widths come out equal because every band's template
+            // content is the same width — the label carries an explicit 20 px
+            // box, because `Repeat`'s `across` slots are content-sized and
+            // "31" and "16k" are not the same width. Equal content + the
+            // leftover `share` = the drawer's exact `band_w`.
+            Repeat(model: "eq_bands", x: 12.0, y: 92.0, w: "parent.w - 24.0",
+                   h: "parent.h - 128.0", dir: across, spacing: 0.0,
+                   templates: [
+                (tag: "*", items: [
+                    // groove; `parent.cx` is the drawer's `fader_x`
+                    Surface(x: "parent.cx - 3.0", y: 8.0, w: 6.0,
+                            h: "parent.h - 16.0", r: 3.0,
+                            color: value("eq_groove")),
+                    // fill, rising from the groove's bottom edge. The drawer's
+                    // `if fill_h > 1.0` gate is a DEVICE-px test on a product a
+                    // row cannot evaluate (`SceneValues::toggle()` reads only
+                    // top-level names, so a per-row `visible:` cannot express
+                    // it). A zero-height rect paints nothing, so the gate is
+                    // left implicit and the parity test pins that the two agree.
+                    Surface(x: "parent.cx - 3.0",
+                            y: "8.0 + (parent.h - 16.0) * (1.0 - item.frac)",
+                            w: 6.0, h: "(parent.h - 16.0) * item.frac",
+                            r: 3.0, color: value("item.fill")),
+                    // the 16×4 bar thumb riding the fill's top
+                    Surface(x: "parent.cx - 8.0",
+                            y: "8.0 + (parent.h - 16.0) * (1.0 - item.frac) - 6.0",
+                            w: 16.0, h: 4.0, r: 2.0,
+                            color: value("item.thumb")),
+                    // the label, centered under the groove
+                    Text(x: "parent.cx - 10.0", y: "parent.h - 4.0", w: 20.0,
+                         text: "{item.label}", font_size: 7.5, center: true,
+                         color: value("eq_lab")),
+                    Hit(x: 0.0, y: 0.0, w: 0.0, h: 0.0,
+                        key: "item.key", region_dw: 0.0, region_dh: 16.0),
+                ]),
+            ]),
+            // ── the preset row ──
+            // `auto: true` packs the chips to their content, because the
+            // drawer walked them left to right with `px += tw + s(4)`; without
+            // it the engine would spread the leftover width as `share` and
+            // pull every chip off its own. Each row publishes its OWN width,
+            // because the drawer measured `chars * 7.5 + 14` DEVICE px — not
+            // the engine's `0.62 * fs` house estimate — so the scene only
+            // left-aligns and stacks.
+            Repeat(model: "eq_presets", x: 12.0, y: "parent.h - 28.0",
+                   w: "parent.w - 24.0", h: 18.0, dir: across, spacing: 4.0,
+                   auto: true, templates: [
+                (tag: "*", items: [
+                    Surface(x: 0.0, y: 0.0, w: "item.w", h: 18.0, r: 9.0,
+                            color: value("item.bg")),
+                    Text(x: 0.0, y: 3.0, w: "item.w", text: "{item.label}",
+                         font_size: 8.0, center: true,
+                         color: value("item.lab")),
+                    // the drawer's `region(px - 2, py - 2, tw + 4, th + 4)`
+                    Hit(x: -2.0, y: -2.0, w: "item.w", h: 18.0,
+                        key: "item.key", region_dw: 4.0, region_dh: 4.0),
+                ]),
+            ]),
+        ]),
+        // the drawer's inactive message, centered on the card
+        Text(x: 0.0, y: "parent.cy", w: 0.0, text: "Press ON to enable",
+             font_size: 10.0, center: true, color: value("eq_lab"),
+             visible: "eq_msg_on"),
+    ],
+)

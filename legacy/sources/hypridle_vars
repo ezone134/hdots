@@ -1,0 +1,10 @@
+# -*- mode: sh -*-
+# This runs every time hypr_init is run
+
+if [ -f $states2/keyboard_id ]; then
+    keyboard_id="$(<$states2/keyboard_id)"
+else
+keyboard_id="$(brightnessctl -l | grep kbd | cut -d"'" -f2)"
+echo "$keyboard_id" > $states2/keyboard_id
+fi
+export keyboard_id=$keyboard_id

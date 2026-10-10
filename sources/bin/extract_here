@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+. "$sources/extract_body"
+extract_cmd "$1"

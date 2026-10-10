@@ -1,0 +1,8 @@
+#!/usr/bin/env luajit
+if user == nil or user == "" then
+    sources = os.getenv("sources")
+    dofile(sources .. "/utils")
+end
+dofile(sources .. "/theme_main_body")
+dofile(sources .. "/theme_body")
+theme_cmd("restore")

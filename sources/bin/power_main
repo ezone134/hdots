@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- power_main — battery/AC + session control CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/power_main_body")
+power_main_cmd(unpack(arg))

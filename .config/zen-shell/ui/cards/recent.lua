@@ -1,0 +1,21 @@
+-- Recent files card — fully declarative. Open-glyph + name rows from
+-- `recent_rows`; the visible window follows `recent_scroll` (wheel scrolling),
+-- rows register `recent key_base + index` for the open-file click plumbing.
+-- Querying is gated on `recent_files_n` / `recent_status`.
+local SCENE = [==[
+(
+    items: [
+        Header(title: "Recent files", glyph: "\u{f15c}", meta: "{recent_files_n}", pad: 12.0),
+        Text(x: 0.0, y: -6.0, w: 0.0, text: "{recent_status}", font_size: 9.0,
+             center_x: true, center_y: true, color: fg3),
+        Rows(name: "recent_rows", y: 26.0, pad: 12.0, row_h: 19.0, cols: [
+            (x: 6.0, size: 9.5),
+            (x: 0.0, w: 0.0, right: true, icon: true, size: 8.0, color: fg3),
+        ], key_base: 14300, hover_surface: hover, start: "recent_scroll"),
+    ],
+)
+]==]
+
+function draw(ctx)
+    ctx.ui.scene(SCENE)
+end

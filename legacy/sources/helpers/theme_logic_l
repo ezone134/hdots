@@ -1,0 +1,53 @@
+# -*- mode: sh -*-
+        bg_tint_strength=$(<$states/bg_tint_strength_${s})
+        # Resolve Hex Values via Indirect Expansion
+        t_bg_acc="shade_$(( bg_tint_strength * accent_anchor / 100 ))"; bg_accented="${!t_bg_acc}"
+        #t_acc="shade_$((accent_anchor * 70 / 100))"; acc="${!t_acc}"
+
+        t_acc="shade_$((accent_anchor * 100 / 100))"; acc="${!t_acc}"
+
+        t_us="shade_$((accent_anchor * 80 / 100))"; acc_us="${!t_us}"
+        t_hc="shade_$((accent_anchor * 140 / 100))"; acc_hc="${!t_hc}"
+        t_ec="shade_$((accent_anchor * 190 / 100))"; acc_ec="${!t_ec}"
+
+        border="$acc"
+        border8="${border}${border_alpha}"
+
+        echo "$m $acc $border $bg $accent_anchor $acc_target_thresh_light"
+        contrast_check_function_${m} "$acc" "$bg" "$accent_anchor" "$acc_target_thresh_light" acc_boosted "Accent Color"
+
+        case 1 in
+            $(( scaled_diff < 50 )) )
+            export sfg_mode=d
+                t_gtk="shade_$((accent_anchor * 80 / 100))"; gtk_acc_bak="${!t_gtk}"
+                t_sub="shade_$((accent_anchor * 85 / 100))"; acc="${!t_sub}"
+                gtk_acc_override=1
+                ;;
+            $(( scaled_diff < acc_flip_thresh_light )) )
+            export sfg_mode=d
+                t_sub="shade_$((accent_anchor * 101 / 100))"; acc="${!t_sub}"
+                ;;
+            $(( scaled_diff >= acc_flip_thresh_light && scaled_diff < acc_manual_override )) )
+                export needs_color_boost_flag=0
+                export sfg_mode=d
+                t_sub="shade_$((accent_anchor * 120 / 100))"; acc="${!t_sub}"
+                ;;
+        esac
+
+        (( needs_color_boost_flag == 1 )) && [[ $sfg_mode == l ]] && acc="$acc_boosted"
+
+        t_focus="shade_$((accent_anchor * 80 / 100))"; focus="${!t_focus}"
+
+        (( start_icon_flag == 1 )) && {
+            t_icon="shade_$((accent_anchor - start_icon_contrast))"
+            start_icon="${!t_icon}"
+        }
+
+        # Background Logic
+        t_bg2="shade_$((accent_anchor * 195 / 100))"; bg2="${!t_bg2}"
+        bg2_8="${bg2}ff"
+
+        t_useful_acc="shade_$((accent_anchor * 55 / 100))"; useful_acc_l="${!t_useful_acc}"
+
+
+common_sfg_assign_func

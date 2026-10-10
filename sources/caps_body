@@ -1,0 +1,64 @@
+#!/usr/bin/env luajit
+-- helper caps_body
+-- ported from bash caps_lock_trigger:
+--   kill any running pop, toggle $states2/caps_lock_state, show the OSD
+--   immediately (no 0.4s lead here), then 2s later reconcile against the
+--   real sysfs LED. If the hardware disagrees, re-show the real state and
+--   rewrite our flag so $states2 tracks the keyboard again; if it already
+--   matches, this logic is ignored.
+
+-- Phosphor has NO ligature substitutions (verified: GSUB LigatureSubst count
+-- is 0), so icon NAMES like "arrow-fat-up" render as that literal ASCII text.
+-- Only Private Use Area CODEPOINTS draw icons. Values are upstream
+-- phosphor-icons/web @master src/regular/style.css, each verified present in
+-- the installed ~/.fonts/hypr-fonts/Phosphor.ttf (all 1530 icons check out).
+-- NOTE: the gap MUST be ASCII spaces — U+0020 is a real glyph in Phosphor,
+-- while U+2002/U+2007/U+00A0 are unmapped and land on .notdef, which is blank
+-- in this font (a zero-length glyf), so a typographic space = no gap at all.
+local PH_UP = "\u{e52e}"      -- arrow-fat-up: left side
+local PH_LOCK = "\u{e308}"    -- lock-simple: right side, locked
+local PH_UNLOCK = "\u{e30a}"  -- lock-simple-open: right side, unlocked
+
+function caps_show(state)
+    pkill("sp")
+    -- source $states2/theme_vars.lua (returns the live palette table):
+    -- ink only — chrome (bg8/bf) is center_pop's job, never derived here
+    local ok, tv = pcall(dofile, states2 .. "/theme_vars.lua")
+    if not ok or type(tv) ~= "table" then tv = {} end
+
+    -- LOCKED -> danger red ink; unlocked -> normal fg
+    local locked = tonumber(state) == 1
+    fg = locked and tv.danger or tv.fg
+    big = PH_UP .. " " .. (locked and PH_LOCK or PH_UNLOCK)
+    small = locked and "CAPS LOCK ON" or "Caps Lock Off"
+    dofile(sources .. "/center_pop")
+end
+
+function caps_cmd()
+    run("pkill splash") -- kill any running instance
+
+    local state = tonumber(flagf_get(states2 .. "/" .. "caps_state")) or 0
+    local new_state = 1 - state
+    flagf_set(states2 .. "/" .. "caps_state", tostring(new_state))
+
+    caps_show(new_state)
+
+    -- 2s later: align with the real capslock LED state
+    bg_fn(function()
+        local my_pid = getpid()
+        tf(states2 .. "/caps_pid", tostring(my_pid))
+        sleep(3)
+        local current_pid_str = ff(states2 .. "/caps_pid")
+        if tonumber(current_pid_str) == my_pid then
+        local rp = ff(states2 .. "/caps_lock_file_path")
+        local rs = nil
+        if rp and rp ~= "" then rs = tonumber(ff(rp)) end
+        if rs and rs ~= new_state then
+            flagf_set(states2 .. "/" .. "caps_state", tostring(rs))
+            caps_show(rs)
+        end
+        end
+    end)
+
+    exit_0()
+end

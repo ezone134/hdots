@@ -1,0 +1,4 @@
+scaling_governor=powersave
+power_dpm_force_performance_level=manual
+power_dpm_state=battery
+pp_dpm_sclk=0

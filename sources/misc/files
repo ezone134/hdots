@@ -1,0 +1,17 @@
+# -*- mode: sh -*-
+files_pairs=(
+    "$dots/.bashrc" "$home_dir/.bashrc"
+    "$dots/.profile" "$home_dir/.profile"
+    "$dots/.bash_history" "$home_dir/.bash_history"
+    "$dots/.bashrc_r" "/root/.bashrc" # for root user
+    "$dots/.bash_history_r" "/root/.bash_history"
+    "$dots/.profile_r" "/root/.profile"
+    "$dots/.zsh_history" "$home_dir/.zsh_history"
+    "$dots/.zshrc" "$home_dir/.zshrc"
+    "$dots/.zshrc_r" "/root/.zshrc" # for root user
+    "$dots/.zsh_history_r" "/root/.zsh_history" # for root user
+    "$dots/.bashrc" "/home/tmp/.bashrc" # for tmp user
+    "$dots/.profile" "/home/tmp/.profile" # for tmp user
+    "$dots/.bash_history" "/home/tmp/.bash_history"
+    "/var-p/log/zypp/history" "/var/log/zypp/history"
+)

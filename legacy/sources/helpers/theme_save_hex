@@ -1,0 +1,89 @@
+# -*- mode: sh -*-
+# set -u
+echo "$border" > "$states2/border"
+echo "$border8" > "$states2/border8"
+echo "$acc_ec" > "$states2/acc_ec"
+echo "$sfg_ec" > "$states2/sfg_ec"
+export acc_ec sfg_ec sfg_hc
+echo "${acc_ec}${acc_alpha}" > "$states2/acc_ec8"
+echo "theme_save_hex acc_ec is $acc_ec and acc_hc is $acc_hc"
+
+echo "$acc" > "$states2/acc"
+acc8="${acc}${acc_alpha}"
+echo "$acc8" > "$states2/acc8"
+
+export gtk_acc=$(. "$hypr_sources/helpers/hex_to_rgba" "$acc8")
+
+echo "$acc_virgin" > "$states2/acc_virgin"
+echo "${acc_virgin}${acc_alpha}" > "$states2/acc_virgin8"
+
+echo "$bg" > "$states2/bg"
+bg8="${bg}${bg_alpha}"
+echo "$bg8" > "$states2/bg8"
+
+(( gtk_app_bg_flag == 1 )) || bg_gtk="$bg_bak"
+echo "$bg_gtk" > "$states2/bg_gtk"
+
+echo "$fg" > "$states2/fg"
+echo "${fg}ff" > "$states2/fg8"
+
+echo "$acc_alpha" > "$states2/acc_alpha"
+echo "border alpha is $border_alpha"
+echo "$border_alpha" > "$states2/border_alpha"
+echo "$bg_alpha" > "$states2/bg_alpha"
+echo "${bg8#\#}" > "$states2/bg_rgba"
+
+if (( hyprland_border_flag == 0 )); then
+    hyprland_border_active="$border8_bak"
+else
+    hyprland_border_active="$border8"
+fi
+hyprland_border_active="${hyprland_border_active#\#}"
+echo "rgba(${hyprland_border_active})" > "$states2/hyprland_border_active"
+
+# Inactive border always uses bg color
+hyprland_border_inactive="${bg}${border_alpha}"
+hyprland_border_inactive="${hyprland_border_inactive#\#}"
+echo "rgba(${hyprland_border_inactive})" > "$states2/hyprland_border_inactive"
+
+echo "$gtk_acc" > "$states2/gtk_acc"
+echo "$sfg" > "$states2/sfg"
+
+# Extended palette — defined per theme in $states/themes, parsed by
+# fetch_color_scheme into plain vars, written here for the shell to read
+echo "$fg2" > "$states2/fg2"
+echo "$fg3" > "$states2/fg3"
+echo "$bg2" > "$states2/bg2"
+echo "$bg3" > "$states2/bg3"
+echo "$hover" > "$states2/hover"
+echo "$focus" > "$states2/focus"
+echo "$disabled" > "$states2/disabled"
+echo "$success" > "$states2/success"
+echo "$warning" > "$states2/warning"
+echo "$danger" > "$states2/danger"
+echo "$info" > "$states2/info"
+echo "$series1" > "$states2/series1"
+echo "$series2" > "$states2/series2"
+echo "$series3" > "$states2/series3"
+echo "$series4" > "$states2/series4"
+echo "$series5" > "$states2/series5"
+echo "$series6" > "$states2/series6"
+
+{
+    # For our rust shell
+    printf '{\n  "fg": "%s",\n  "fg2": "%s",\n  "fg3": "%s",\n  "bg": "%s",\n  "bg2": "%s",\n  "bg3": "%s",\n  "acc": "%s",\n  "sfg": "%s",\n  "hover": "%s",\n  "focus": "%s",\n  "disabled": "%s",\n  "success": "%s",\n  "warning": "%s",\n  "danger": "%s",\n  "info": "%s",\n  "series1": "%s",\n  "series2": "%s",\n  "series3": "%s",\n  "series4": "%s",\n  "series5": "%s",\n  "series6": "%s"\n}\n' \
+      "$fg" "$fg2" "$fg3" "$bg" "$bg2" "$bg3" "$acc" "$sfg" "$hover" "$focus" "$disabled" "$success" "$warning" "$danger" "$info" "$series1" "$series2" "$series3" "$series4" "$series5" "$series6" > "$states2/shell_vars.json"
+
+    # Also call zen-shell reload since we only need this config here
+    echo "calling zen-shell reload colors"
+    zen-shell reload
+} &
+
+# Quoted: values can contain spaces
+echo "$font_name"    > "$states2/cur_font"
+echo "$theme_name"   > "$states2/cur_theme"
+echo "$icon_name"    > "$states2/cur_icon"
+echo "$cursor_name"  > "$states2/cur_cursor"
+
+echo "sfg_mode is $sfg_mode"
+echo "$sfg_mode" > "$states2/sfg_mode"

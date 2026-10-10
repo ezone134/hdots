@@ -1,0 +1,58 @@
+(
+    // CLIPIMG — the clipboard image list, fully declarative. The Rust body
+    // survives as the no-scene fallback and is the geometry of record.
+    //
+    // Each row is a picture cell (the cell's text IS the renderer's image
+    // key, over the drawer's 24 x 22 `hover` tile with the 18 x 18 paste 3 px
+    // in) plus the name capped at 28 characters. The band behind the selected
+    // row comes from the row's own `surface`, and the hovered row's band from
+    // the list's `hover_surface` — both the drawer's `hover_hl`.
+    //
+    // The name ink is published per row (selected → acc, hovered → hover_fg,
+    // else fg) rather than left to a per-column `hover` token, which would
+    // outrank the selection.
+    //
+    // `y: 32` + `pitch: 28` + `bottom: 4` reproduce the drawer's own
+    // `floor((h − 36) / 28)` row count: the last row must clear
+    // `card_h − 4`.
+    items: [
+        Header(title: "Clipboard images", pad: 14.0),
+        Rows(
+            name: "clipimg_rows",
+            y: 32.0,
+            row_h: 28.0,
+            pitch: 28.0,
+            pad: 10.0,
+            row_dy: 0.0,
+            r: 6.0,
+            // every entry is published; the list windows on the scroll
+            start: "clipimg_start",
+            key_base: 140,
+            hover_surface: hover_hl,
+            surface_dy: -2.0,
+            surface_dh: -4.0,
+            // the clickable band is that same inset box, not the row box
+            region_dy: -2.0,
+            region_dh: -4.0,
+            bottom: 4.0,
+            cols: [
+                (
+                    x: 4.0,
+                    image: (
+                        tile_w: 24.0, tile_h: 22.0, tile_r: 5.0, tile_dy: -1.0,
+                        w: 18.0, h: 18.0, inset_x: 3.0, inset_y: 3.0,
+                        color: hover,
+                    ),
+                ),
+                (x: 36.0, dy: 5.0, size: 8.5, max_chars: 28),
+            ],
+        ),
+        // the empty state, centered on the card (the drawer's own
+        // `text_c(x + w/2, y + h/2)`)
+        Text(
+            x: 0.0, y: 0.0, w: 0.0, center_x: true, center_y: true,
+            text: "No images copied yet", font_size: 9.5,
+            visible: "clipimg_empty",
+        ),
+    ],
+)

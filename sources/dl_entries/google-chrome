@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Google Chrome (Appimage)
+Comment=A simple test application
+Exec=google-chrome %U
+Icon=$r_daemon/icons/chrome.svg
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+StartupNotify=true
+Keywords=test;dummy;example;

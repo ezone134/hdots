@@ -1,0 +1,47 @@
+# -*- mode: sh -*-
+# gen_keybinds_cache — parse every `-- hdots` comment line in
+# $HOME/.config/hypr/keybinds.lua and emit two caches:
+#
+#   1. $states2/keybinds_cache  — rust-shell JSON [{key,desc},…]
+#   2. $rcache/keybinds     — legacy plain-text (one display line per
+#                                  bind, for rofi show_keybinds)
+#
+# Each hdots comment is authored as:
+#     -- hdots | SUPER + KEY   →   What it does
+# (variable whitespace around the → is tolerated). Commented-out binds
+# (--hl.bind…) are skipped. Sourced by hypr_init_logic at boot.
+
+kbl=$HOME/.config/hypr/keybinds.lua
+[[ -f $kbl ]] || { echo "gen_keybinds_cache: $kbl missing" >&2; return 1; }
+
+menu_options=""
+{
+    printf '['
+    first=1
+    while IFS= read -r line; do
+        [[ "$line" == *"-- hdots"* ]] || continue
+        # skip commented-out binds (--hl.bind…)
+        trimmed="${line#"${line%%[![:space:]]*}"}"
+        [[ "$trimmed" == "--"* ]] && continue
+        part="${line#*-- hdots | }"
+        [[ -n "$part" ]] || continue
+        # --- plain-text list (legacy rofi / show_keybinds) ---
+        menu_options+="${part}\n"
+        # --- JSON cache (rust shell) ---
+        keys="${part%%→*}"
+        desc="${part#*→}"
+        keys="${keys#"${keys%%[![:space:]]*}"}"
+        keys="${keys%"${keys##*[![:space:]]}"}"
+        desc="${desc#"${desc%%[![:space:]]*}"}"
+        desc="${desc%"${desc##*[![:space:]]}"}"
+        [[ -n "$keys" && -n "$desc" ]] || continue
+        (( first == 0 )) && printf ','
+        printf '\n  {"key":"%s","desc":"%s"}' "$keys" "$desc"
+        first=0
+    done < "$kbl"
+    printf '\n]\n'
+} > "$states2/keybinds_cache"
+
+# legacy plain-text cache (rofi show_keybinds reads this)
+menu_options="${menu_options::-2}"
+echo "$menu_options" > "$rcache/keybinds"
