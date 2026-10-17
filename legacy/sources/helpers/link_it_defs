@@ -1,0 +1,28 @@
+# -*- mode: sh -*-
+link_it_file_func () {
+dn_1="${1%/*}"
+dn_2="${2%/*}"
+[[ -e "$dn_1" && -e "$dn_2" ]] || mkdir -p "$dn_1" "$dn_2"
+[[ -f $1 ]]	|| > $1
+	[[ "$1" -ef "$2" ]] || {
+	[[ -L $2 ]] && {
+	mv $2 /tmp/moved_deleted.${rnd}
+	}
+	mv $2 $2.bak.$rnd 2>/dev/null
+	ln -s $1 $2  2>/dev/null
+}
+}
+
+link_it_dir_func () {
+mkdir -p $1 "${2%/*}"
+dn_1="${1}"
+dn_2="${2%/*}"
+[[ -e "$dn_1" && -e "$dn_2" ]] || mkdir -p "$dn_1" "$dn_2"
+[[ "$1" -ef "$2" ]] || {
+    [[ -L $2 ]] && {
+	mv $2 /tmp/moved_deleted.${rnd}
+    }
+    mv $2 $2.$rnd 2>/dev/null
+    ln -s $1 $2 2>/dev/null
+}
+}

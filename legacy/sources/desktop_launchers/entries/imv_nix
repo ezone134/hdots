@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=imv_nix
+Comment=Custom nix application launcher
+Exec=imv %F
+Icon=$hypr_global/icons/wayland.svg
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true
+Keywords=test;dummy;example;

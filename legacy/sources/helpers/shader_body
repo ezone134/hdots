@@ -1,0 +1,90 @@
+# -*- mode: sh -*-
+s=$(<$states2/s)
+state=$(<$states/shader_state_${s}) || state=0
+
+shader_reset_func () {
+    > $HOME/.config/hypr/configs/shader.lua
+    echo 0 > $states/shader_state_${s}
+    notify-send -a Shader "Shader" "Turned off / Reset" &
+}
+
+shader_restore_func () {
+    shader_dir="$HOME/.config/hypr/shaders/saturations"
+state=$(<$states/shader_state_${s}) || state=0
+if (( state == 1 )); then
+val=$(<$states/shader_val_${s})
+[[ -f $val ]] || { # maybe only passed as base name or raw number like 50 80 etc
+
+    case true in
+        $([[ -f "$shader_dir/$val" ]] && echo true))
+            val="$shader_dir/$val"
+            ;;
+        $([[ -f "$shader_dir/$val.glsl" ]] && echo true))
+            val="$shader_dir/$val.glsl"
+            ;;
+        *)
+            val="$shader_dir/100.glsl"
+            ;;
+    esac
+
+}
+[[ "$val" == "$shader_dir/100.glsl" ]] && {
+    shader_reset_func
+    exit 0
+}
+
+notify-send -a Shader "Shader" "Using $val" &
+
+cat << EOF > $HOME/.config/hypr/configs/shader.lua
+hl.config({
+    decoration = {
+        screen_shader = "$val"
+    }
+})
+EOF
+fi
+echo 1 > $states2/shader_done
+}
+
+shader_on_func () {
+    echo 1 > $states/shader_state_${s}
+    shader_restore_func
+}
+
+shader_toggle_func () {
+if (( ${state:-0} == 0 )); then
+    shader_on_func
+else
+    shader_reset_func
+fi
+}
+
+# Shell passes integer 0..200 only (raw):
+#   shader_main set 0    → grayscale
+#   shader_main set 100  → normal (default)
+#   shader_main set 200  → 200% vibrance
+shader_set_func () {
+    local n="${1-}"
+    n="${n//$'\r'/}"
+    n="${n#"${n%%[![:space:]]*}"}"
+    n="${n%"${n##*[![:space:]]}"}"
+
+    # allow bare N.glsl too
+    n="${n%.glsl}"
+    n="${n##*/}"
+
+    case "$n" in
+        ''|*[!0-9]*)
+            printf '%s\n' "shader_main set: need integer 0..200, got: ${1-}" >&2
+            return 1
+            ;;
+    esac
+    if (( n > 200 )); then
+        printf '%s\n' "shader_main set: $n out of range 0..200" >&2
+        return 1
+    fi
+
+    printf '%s\n' "$shaders/saturations/${n}.glsl" > "$states/shader_val_${s}"
+    echo 1 > "$states/shader_state_${s}"
+    shader_restore_func
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+
+dofile(SCRIPT_DIR .. "/main_body.lua")
+
+spawn(string.format(
+    "on_udev_trigger_function >> %s 2>&1",
+    shq(SCRIPT_DIR .. "/power_script.log")
+))

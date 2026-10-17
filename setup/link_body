@@ -1,0 +1,39 @@
+# -*- mode: sh -*-
+link_main() {
+export dots="$HOME/.config/hdots"
+
+export continue=0
+
+[[ "$SCRIPT_DIR" == "$HOME/.config" || "$SCRIPT_DIR" == "$HOME/.config/"* ]] && {
+echo "Do not run install from $HOME/.config.
+Put dots in $HOME/.local/share/ and run from there."
+exit 1
+}
+
+BODY_DIR="${BASH_SOURCE[0]%/*}"
+. $BODY_DIR/dirs_perms_body
+setup_dirs_and_perms
+
+folders_pairs=(
+    "$SCRIPT_DIR" "$dots"
+    "$dots/mconfig/hypr_${USER}" "$HOME/.config/hypr"
+    )
+
+mv $HOME/.bashrc $HOME/.bashrc.$RANDOM
+cat $SCRIPT_DIR/.bashrc > $HOME/.bashrc
+mv $HOME/.profile $HOME/.profile.$RANDOM
+cat $SCRIPT_DIR/.profile > $HOME/.profile
+
+
+ptc_pairs=(
+    "$dots/wms" "$dots/mconfig/hypr_${USER}"
+)
+
+export PATH="$SCRIPT_DIR/sources/misc:$PATH"
+link -s "${folders_pairs[@]}"
+ptc "${ptc_pairs[@]}"
+
+echo "Linking is done"
+export continue=1
+
+}

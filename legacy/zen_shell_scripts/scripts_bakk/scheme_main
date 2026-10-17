@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# scheme_main — theme grid CLI: list/apply <id>
+# set -u
+. $hypr_sources/helpers/scheme_body
+scheme_cmd "$@"

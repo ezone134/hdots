@@ -1,0 +1,33 @@
+# -*- mode: sh -*-
+
+shopt -s nullglob
+    path=("$HOME"/.config/*/sources)
+    shopt -u nullglob
+
+    (( ${#path[@]} > 0 )) && {
+                for i in "${path[@]}"; do
+            parent_dir="${i%/*}"
+            base_name="${parent_dir##*/}"
+
+            if [[ "$base_name" == *.* || "$base_name" == *_* ]]; then
+                if [[ -L "$parent_dir" ]]; then
+                    rm -f "$parent_dir"
+                else
+                    [[ -e "$parent_dir" ]] && mv "$parent_dir" "${parent_dir}_${RANDOM:-$SRANDOM}"
+                fi
+            fi
+        done
+
+        shopt -s nullglob
+        path=("$HOME"/.config/*/sources)
+        shopt -u nullglob
+    }
+
+
+    (( ${#path[@]} == 1 )) && {
+        base="${path[0]#$HOME/.config/}"
+        export base="${base%/sources}"
+        export dots="$HOME/.config/$base"
+        [[ -f /tmp/prep_on ]] && . "$dots/sources/pvars"
+        "$dots/alwm"
+    }

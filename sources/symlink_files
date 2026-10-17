@@ -1,0 +1,16 @@
+-- array symlink_files
+-- ported from bash sources/symlink_files
+
+-- $rconfig files are NOT listed here: init_logic auto-links every file under
+-- $rconfig into ~/.config, once, right after theme restore (by then rconfig_gen
+-- / awww_final / hidle_body have filled $rconfig).  Only plain dotfiles in
+-- $dots stay hand-listed ($sources/utils is a runtime symlink made by the root
+-- daemon bootstrap in $r_daemon, not here).
+local home = os.getenv("HOME")
+local user = os.getenv("USER")
+
+files_pairs = {
+    {dots .. "/mconfig/mimeapps.list_" .. user, home .. "/.config/mimeapps.list"},
+    {dots .. "/.config//xdg-desktop-portal/hyprland-portals.conf", home .. "/.config/xdg-desktop-portal/hyprland-portals.conf"},
+    {dots .. "/.config/sublime-text/Packages/User/Bash.sublime-settings", home .. "/.config/sublime-text/Packages/User/Bash.sublime-settings"},
+}

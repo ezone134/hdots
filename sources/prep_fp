@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
+. "$SCRIPT_DIR/pvars"
+. "$SCRIPT_DIR/prep_others"
+[[ ${#chmod_1777_array[@]} -gt 0 ]] && sudo chmod 1777 "${chmod_1777_array[@]}"
+[[ ${#chmod_777_array[@]} -gt 0 ]] && sudo chmod 777 "${chmod_777_array[@]}"
+[[ ${#chown_array[@]} -gt 0 ]] && sudo chown -R $USER:$USER "${chown_array[@]}"

@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- caffeine_main — idle-inhibit (hypridle swap) CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/caffeine_body")
+caffeine_cmd(unpack(arg))

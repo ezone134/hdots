@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# shot_main — screenshot (grim/slurp) CLI. Was: qs-ctl shot.
+set -u
+. "$hypr_sources/helpers/shot_body"
+shot_cmd "$@"

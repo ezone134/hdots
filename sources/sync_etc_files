@@ -1,0 +1,68 @@
+#!/usr/bin/env luajit
+-- helper: sync_etc_files
+
+-- 1. Load the shared utilities module
+local sources = os.getenv("sources") or (os.getenv("HOME") .. "/.config/hypr/sources")
+dofile(sources .. "/utils")
+
+-- 2. Define path with proper slash separation
+local save_dir = dots .. "/etc_synced"
+
+-- Ensure state flag exists
+mkdir_p(states2)
+touch(states2 .. "/etc_sync_marker")
+
+function sync_it_file(l, r)
+    if not is_file(l) then return end
+    mkdir_p(dirname(r))
+
+    local lc = raw_read(l)
+    if not lc then return end
+
+    local rc = raw_read(r)
+    if lc ~= rc then
+        raw_write(r, lc)
+    end
+end
+
+function sync_it_dir(l, r)
+    if is_dir(l) then
+        copy_dir_contents(l, r)
+    end
+end
+
+function sync_files_11()
+    local files_pairs = {
+        {"/etc/fstab", save_dir .. "/etc/fstab"},
+        {"/etc/group", save_dir .. "/etc/group"},
+        {"/etc/group-", save_dir .. "/etc/group-"},
+        {"/etc/tlp.conf", save_dir .. "/etc/tlp.conf"},
+        {"/etc/hosts", save_dir .. "/etc/hosts"},
+        {"/etc/host.conf", save_dir .. "/etc/host.conf"},
+        {"/etc/machine-id", save_dir .. "/etc/machine-id"},
+        {"/etc/hostname", save_dir .. "/etc/hostname"},
+        {"/usr/etc/sudoers", save_dir .. "/usr/etc/sudoers"},
+        {"/etc/sudoers", save_dir .. "/etc/sudoers"},
+        {"/etc/zypp/zypp.conf", save_dir .. "/etc/zypp/zypp.conf"},
+        {"/etc/zypp/zypper.conf", save_dir .. "/etc/zypp/zypper.conf"},
+        {"/etc/zypp/repos.d/oss.repo", save_dir .. "/etc/zypp/repos.d/oss.repo"},
+    }
+
+    for _, pair in ipairs(files_pairs) do
+        sync_it_file(pair[1], pair[2])
+    end
+end
+
+function sync_folders_11()
+    local folders_pairs = {
+        {"/etc/zypp/repos.d", save_dir .. "/etc/zypp/repos.d"},
+    }
+
+    for _, pair in ipairs(folders_pairs) do
+        sync_it_dir(pair[1], pair[2])
+    end
+end
+
+-- Execute sync routines
+sync_files_11()
+sync_folders_11()

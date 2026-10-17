@@ -1,0 +1,37 @@
+base="hdots"
+dots="$HOME/.config/$base"
+rdmnb="rdmn"                  # root daemon base name 
+rdmnp="/run/$rdmnb"           # root daemon path
+rstates="$rdmnp/states"
+rstates2="$rdmnp/states2"
+
+SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
+
+[[ -L $dots && -e $dots ]] && { # This logic useful only after dots symlink is set up
+    
+    # 1. Write all variables to the Bash file
+    file_b="$dots/vars_b"
+    content_b="base=\"$base\"
+dots=\"\$HOME/.config/\$base\"
+rdmnb=\"$rdmnb\"
+rdmnp=\"$rdmnp\"
+rstates=\"$rstates\"
+rstates2=\"$rstates2\""
+
+    [[ -f "$file_b" && $(< "$file_b") == "$content_b" ]] || {
+        printf '%s\n' "$content_b" > "$file_b" && echo "Updated $file_b"
+    }
+
+    # 2. Write all variables to the Lua file
+    file_l="$dots/vars_l"
+    content_l="base = \"$base\"
+dots = (os.getenv(\"HOME\") or \"\") .. \"/.config/\" .. base
+rdmnb = \"$rdmnb\"
+rdmnp = \"$rdmnp\"
+rstates = \"$rstates\"
+rstates2 = \"$rstates2\""
+
+    [[ -f "$file_l" && $(< "$file_l") == "$content_l" ]] || {
+        printf '%s\n' "$content_l" > "$file_l" && echo "Updated $file_l"	
+    }
+}

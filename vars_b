@@ -1,0 +1,6 @@
+base="hdots"
+dots="$HOME/.config/$base"
+rdmnb="rdmn"
+rdmnp="/run/rdmn"
+rstates="/run/rdmn/states"
+rstates2="/run/rdmn/states2"

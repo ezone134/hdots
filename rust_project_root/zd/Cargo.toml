@@ -1,0 +1,36 @@
+[package]
+name = "zd"
+version = "0.1.0"
+edition = "2021"
+description = "zenity-compatible dialog tool. No GTK. No Qt. One Wayland surface + EGL/GL, blazing fast."
+license = "MIT"
+
+[[bin]]
+name = "zd"
+path = "src/main.rs"
+
+[dependencies]
+smithay-client-toolkit = { version = "0.21.1", default-features = false, features = ["calloop", "xkbcommon", "system"] }
+wayland-client = { version = "0.31.15", features = ["dlopen"] }
+wayland-egl = "0.32"
+egl = "0.1"
+glow = "0.16"
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+fontdb = { version = "0.24", features = ["fontconfig"] }
+ttf-parser = "0.25"
+libc = "0.2.158"
+calloop = "0.14"
+
+[profile.dev]
+# Same reasoning as sp: opt-level 1 keeps iteration fast and runtime sane.
+opt-level = 1
+strip = "debuginfo"
+
+[profile.release]
+# opt-level "z" + fat LTO + panic=abort: zd is a fork-and-die dialog tool, code
+# size and startup dominate. No catch_unwind anywhere; errors exit directly.
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true

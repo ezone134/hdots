@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# pick_accent_main — screen color picker for the shell's accent color.
+#
+# Accepts a preset hex as `$1` (settings preset circles) or runs hyprpicker
+# (autocopy + lowercase hex; Esc = cancel → no-op). The chosen color is the
+# CUSTOM accent now (defined-hex is merged into custom_acc): it is written
+# directly to `$states/custom_acc_<ch>` and the source flag flipped to `c`,
+# then `$states2/acc_changed` + a theme restore make the shell/GTK pick it up.
+set -u
+
+QS_MAIN_DIR=${BASH_SOURCE[0]%/*}
+[[ "$QS_MAIN_DIR" == */* ]] || QS_MAIN_DIR=.
+
+ch=$(<"$states2/s") || ch=n
+
+hex="${1:-}"
+if [[ -z "$hex" ]]; then
+    # hyprpicker prints the picked color to stdout; Esc → no output + exit != 0.
+    hex="$(hyprpicker -a -l -q 2>/dev/null)"
+    hex="$(printf '%s' "$hex" | tr -d '[:space:]')"
+    [[ -z "$hex" ]] && exit 0
+fi
+
+case "$hex" in
+    '#'*) ;;
+    *) hex="#$hex" ;;
+esac
+
+echo "$hex" > "$states/custom_acc_${ch}"
+echo c > "$states/acc_source_${ch}"
+echo 1 > "$states2/acc_changed"
+"$QS_MAIN_DIR/theme_main" restore

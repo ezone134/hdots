@@ -1,0 +1,3 @@
+# -*- mode: sh -*-
+. "$hypr_sources/helpers/hs_body"
+restore_func

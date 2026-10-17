@@ -1,0 +1,89 @@
+[package]
+name = "zen-shell"
+version = "0.1.0"
+edition = "2021"
+description = "Zero-overhead Wayland shell bar. Event-driven. GL-first, Vulkan next."
+license = "MIT"
+
+[[bin]]
+name = "zen-shell"
+path = "src/main.rs"
+
+[features]
+# Vulkan backend is opt-in at build time: it's only linked + compiled with this
+# feature. When it IS built, the shell prefers Vulkan on a hardware GPU, then GL
+# (hardware), and only falls back to software. Default builds ship GL-only and
+# carry no Vulkan code at all (no loader dependency). The backends themselves
+# live in the shared `zen-render` crate.
+default = []
+vk = ["zen-render/vk"]
+
+[dependencies]
+zen-ui = { path = "../zen-ui" }
+# Shared GL/EGL + Vulkan renderers (extracted from this crate).
+zen-render = { path = "../zen-render" }
+# Shared session paths + live shell palette / theme cards (extracted from this
+# crate's `vars.rs` + `themes.rs` so gcp/sp/zen-image/zov/wfm read them too).
+zen-theme = { path = "../zen-theme" }
+smithay-client-toolkit = { version = "0.21.1", default-features = false, features = ["calloop", "xkbcommon", "system"] }
+wayland-client = "0.31.15"
+wayland-egl = "0.32"
+egl = "0.1"
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+fontdb = { version = "0.24", features = ["fontconfig"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ttf-parser = "0.25"
+libc = "0.2.158"
+bytemuck = { version = "1", features = ["derive"] }
+zbus = "5.19"
+png = "0.17"
+resvg = "0.45"
+# Codec set trimmed to what is actually decoded, which is exactly what the
+# code gates on: `img::THUMB_EXTS` = jpg/jpeg/png/gif (wallpapers + thumbs,
+# with `supported_formats_only` asserting webp is REJECTED) and
+# `clipboard::IMAGE_MIME` = "image/png" (the only image mime ever requested
+# from the compositor). The default feature set dragged in exr, tiff, qoi,
+# bmp, dds, hdr, ico, ff, pnm, avif, rayon and webp for files that can never
+# reach a decoder here (~1.2 MB of code, measured per-crate).
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif"] }
+wayland-protocols = { version = "0.32", features = ["client", "staging"] }
+wayland-protocols-wlr = { version = "0.3", features = ["client"] }
+# The UI script host — the migration target that replaces the `.ron` scene
+# DSL: every card/surface becomes a `.lua` module (LuaJIT, vendored so it
+# builds from source), Rust stays the backend + renderer. See the Lua host in
+# `src/lua/mod.rs` and the migration section of `QUICKSHELL_MODEL.md`.
+# NOTE: being retired (WIDGETS.md stage 7) — the widget system is replacing
+# the script host; this dep dies with it.
+# The per-state master config (`$states/shell_{s}`) is TOML — parsed and
+# written by `Config::load`/`save`.
+toml = "0.8"
+# Data-provider modules from $sources/lib/*.so (src/mods.rs). Deliberately
+# tiny — libc only, no serde/font/image stack — so it costs the bar almost
+# nothing and plugins can be written in any language.
+zmod = { path = "../zmod" }
+
+[dev-dependencies]
+# RON is retained ONLY for the test suite: the scene types still derive
+# `Deserialize`, and the scene-engine tests author their fixtures in RON.
+# Nothing in the shipped shell parses RON any more (the runtime UI is Lua
+# tables), so this is not linked into the binary.
+ron = "0.12"
+
+[profile.dev]
+# Debug builds were shipping 279 MB of DWARF. opt-level 1 keeps iteration
+# fast and runtime reasonable; strip drops the giant symbol tables.
+# Remove `strip` if you need full IDE/rust-gdb symbolication.
+opt-level = 1
+strip = "debuginfo"
+
+[profile.release]
+# `lto = "fat"` (was "thin") folds cross-crate generics harder; the panic
+# unwind strategy is deliberately left at the default because the shell runs a
+# catch_unwind net around layout/draw/IPC handlers (viz.rs, app/mod.rs,
+# app/ipc_srv.rs) — panic = "abort" would turn "recover, keep the bar up" into
+# "bar is gone".
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true

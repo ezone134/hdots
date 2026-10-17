@@ -1,0 +1,75 @@
+#!/usr/bin/env luajit
+
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+
+local WATCHDOG_PID = states2 .. "/pid_watchdog"
+local LOOP_PID = states2 .. "/pid_user_loop"
+local LOOP_PATH = sources .. "/daemon/user_loop"
+local LOG_FILE = sources .. "/daemon/watchdog.log"
+
+local function log(msg)
+    append(LOG_FILE, os.date() .. ": " .. msg .. "\n")
+end
+
+if is_file(WATCHDOG_PID) then
+    local old_watchdog_pid = ff(WATCHDOG_PID)
+    if old_watchdog_pid and old_watchdog_pid ~= "" then
+        local pid = num_only(old_watchdog_pid)
+        if pid ~= "" and process_alive(pid) then
+            log("Old watchdog (PID " .. pid .. ") detected. Killing it...")
+            kill_pid(pid, 9)
+            sleep(1)
+        end
+    end
+    rm(WATCHDOG_PID)
+end
+
+tf(WATCHDOG_PID, tostring(getpid()))
+log("Watchdog started fresh with PID " .. tostring(getpid()))
+
+log("Watchdog entering loop - forcing initial restart of user loop...")
+
+if is_file(LOOP_PID) then
+    local old_loop_pid = ff(LOOP_PID)
+    if old_loop_pid and old_loop_pid ~= "" then
+        local pid = num_only(old_loop_pid)
+        if pid ~= "" and process_alive(pid) then
+            log("User loop PID " .. pid .. " detected. Killing it...")
+            kill_pid(pid, 15)
+            sleep(1)
+        end
+    end
+    rm(LOOP_PID)
+end
+
+run_bg(LOOP_PATH)
+sleep(0.5)
+
+while true do
+    local should_restart = false
+
+    if is_file(LOOP_PID) then
+        local pid = ff(LOOP_PID)
+        if pid and pid ~= "" then
+            if not process_alive(pid) then
+                log("User loop PID " .. tostring(pid) .. " is dead.")
+                should_restart = true
+            end
+        else
+            should_restart = true
+        end
+    else
+        log("User loop PID file missing.")
+        should_restart = true
+    end
+
+    if should_restart then
+        log("Launching " .. LOOP_PATH .. "...")
+        rm(LOOP_PID)
+        run_bg(LOOP_PATH)
+        sleep(0.5)
+    end
+
+    sleep(120)
+end

@@ -1,0 +1,24 @@
+# -*- mode: sh -*-
+
+DIR=$hypr_sources/custom_accents
+. $DIR/vlt
+. $DIR/lt
+. $DIR/lmt
+. $DIR/mt
+. $DIR/ht
+. $DIR/vht
+. $DIR/neutrals
+. $DIR/hypr
+. $DIR/hc # high contrasty
+
+colors_external=(
+    "${vlt[@]}"
+    "${lt[@]}"
+    "${lmt[@]}"
+    "${mt[@]}"
+    "${ht[@]}"
+    "${vht[@]}"
+    "${neutrals[@]}"
+    "${hypr[@]}"
+    "${hc[@]}"
+)

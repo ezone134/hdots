@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+-- own_it — thin wrapper: all shared logic lives in utils
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+perm_main("own")

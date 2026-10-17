@@ -1,0 +1,178 @@
+#1789987042
+/home/tw/.config/hdots/sources/misc/boot
+#1789987232
+echo $HOME
+#1789987285
+echo ~
+#1790054886
+link-all
+#1790065801
+/acc/common/misc/boot
+#1790067375
+/acc/common/misc/boot
+#1790067384
+exit
+#1790067815
+own_it /tmp/user-tw
+#1790067838
+chown -R /home/tw/
+#1790067844
+chown -R tw:tw /home/tw/
+#1790067865
+chown -R tw:tw /tmp/user-tw
+#1790069229
+own_it /tmp/aa
+#1790069438
+own_it /tmp/user-tw
+#1790069544
+/acc/common/misc/boot
+#1790071284
+vim 
+#1790071293
+vim /etc/systemd/system/boot.service
+#1790071470
+/acc/common/misc/boot
+#1790071490
+link-all
+#1790071700
+/acc/common/misc/boot
+#1790862779
+vim /etc/systemd/system/prep.service
+#1790930148
+vim
+#1790930151
+vi
+#1790930181
+/bin/busybox vi /etc/systemd/system/prep.service
+#1790930264
+/acc/common/misc/prep
+#1790930268
+exit
+#1790930610
+/acc/common/misc/prep
+#1790931009
+/acc/common/misc/prep
+#1790931017
+exit
+#1790934673
+/acc/common/misc/prep
+#1790934678
+exit
+#1790954190
+/acc/common/misc/prep
+#1790954192
+eexit
+#1790954194
+exit
+#1791014578
+/acc/common/misc/prep
+#1791014582
+exit
+#1791014960
+echo $dots
+#1791018462
+/acc/common/misc/prep
+#1791018896
+time /acc/common/misc/prep
+#1792076076
+777_it /home/tmp/.config/hdots/.config/
+#1792076621
+time /acc/common/misc/prep
+#1792121136
+vim /etc/systemd/system/prep.service
+#1792122065
+time /acc/common/sources/misc/prep
+#1792122831
+which 777_it
+#1792122852
+time /acc/common/sources/misc/prep
+#1792136717
+reboot
+#1792136824
+time /acc/common/sources/misc/prep
+#1792146689
+time /acc/common/sources/p_bin/prep
+#1792147141
+vim /etc/systemd/system/prep.service
+#1792147188
+time /acc/common/sources/p_bin/prep
+#1792161558
+vim /etc/fstab
+#1792161828
+mkdir -p /acc/cmn
+#1792161841
+umount /acc/common
+#1792161850
+reboot
+#1792167315
+/acc/cmn/sources/prep
+#1792167321
+exit
+#1792167449
+/acc/cmn/sources/prep
+#1792167454
+exit
+#1792172421
+/acc/cmn/sources/prep
+#1792209162
+echo $u
+#1792209463
+echo $u
+#1792209442
+echo $u
+#1792209454
+foot
+#1792209565
+/acc/cmn/sources/prep
+#1792210076
+echo $sources
+#1792210104
+which own_it
+#1792210247
+echo $sources
+#1792210250
+which own_it
+#1792210309
+/acc/cmn/sources/prep
+#1792210826
+cat /tmp/prep.log
+#1792210844
+/acc/cmn/sources/prep
+#1792210868
+which 777_it
+#1792210907
+cat /acc/cmn/sources/prep
+#1792210992
+busybox vi /acc/cmn/sources/pvars
+#1792211097
+/acc/cmn/sources/prep
+#1792211105
+reboot
+#1792211158
+/acc/cmn/sources/prep
+#1792211163
+exit
+#1792212031
+echo $u
+#1792212096
+/acc/cmn/sources/prep
+#1792224467
+echo $XDG_RUNTIME_DIR
+#1792224510
+ls -ld /run/user/0
+#1792233497
+/acc/cmn/sources/prep
+#1792234096
+echo $PATH
+#1792234108
+which 777_it
+#1792234120
+/acc/cmn/sources/prep
+#1792252638
+cat /run/rdmn/states2/rdvars
+#1792252850
+rd_run
+#1792253096
+/acc/cmn/sources/prep
+#1792253100
+exit

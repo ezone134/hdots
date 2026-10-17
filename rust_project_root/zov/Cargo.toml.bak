@@ -1,0 +1,30 @@
+[package]
+name = "zov"
+version = "0.3.0"
+edition = "2021"
+description = "Niri-like scrollable workspace overview for Hyprland. Standalone layer-shell overlay."
+license = "MIT"
+
+[[bin]]
+name = "zov"
+path = "src/main.rs"
+
+[dependencies]
+smithay-client-toolkit = { version = "0.21", default-features = false, features = [
+    "calloop",
+    "xkbcommon",
+    "system",
+] }
+wayland-client = { version = "0.31", features = ["system"] }
+tiny-skia = "0.11"
+cosmic-text = "0.19"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+libc = "0.2"
+log = "0.4"
+
+[profile.release]
+opt-level = 2
+lto = "thin"
+codegen-units = 1
+strip = true

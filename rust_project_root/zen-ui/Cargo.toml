@@ -1,0 +1,20 @@
+[package]
+name = "zen-ui"
+version = "0.1.0"
+edition = "2021"
+description = "Shared zen UI primitives: Cmd stream, Pal, TextEngine, widgets, icons"
+license = "MIT"
+
+[lib]
+name = "zen_ui"
+path = "src/lib.rs"
+# rlib: Rust projects link it directly (one source of truth). cdylib:
+# deployed to $sources/lib/zen_ui.so so the shared-lib pool stays complete.
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+zen-color = { path = "../zen-color" }
+cosmic-text = { version = "0.19", features = ["fontconfig"] }
+serde = { version = "1", features = ["derive"] }
+ttf-parser = "0.25"
+fontdb = { version = "0.24", features = ["fontconfig"] }

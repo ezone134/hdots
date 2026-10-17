@@ -1,0 +1,40 @@
+# -*- mode: sh -*-
+cleanup_main() {
+    msg="This script is to cleanup leftover items of other users.., so use responsively !!!"
+
+    set -euo pipefail
+
+    [[ $SCRIPT_DIR == $HOME/* ]] && {
+    echo "$msg"
+    target=$(readlink -f $SCRIPT_DIR)
+    sudo chown -R $USER:$USER $target
+
+    shopt -s nullglob
+
+    for i in "$SCRIPT_DIR"/mconfig/mimeapps.list_*; do
+        [[ "$i" == "$SCRIPT_DIR/mconfig/mimeapps.list_${USER}" ]] && continue
+        if [[ -f "$i" ]]; then
+            rm -f -- "$i"
+        fi
+    done
+
+    for i in "$SCRIPT_DIR"/mconfig/hypr_*; do
+        [[ "$i" == "$SCRIPT_DIR/mconfig/hypr_${USER}" ]] && continue
+        if [[ -d "$i" ]]; then
+            rm -f -- "$i"/*
+            rmdir -- "$i"
+        fi
+    done
+
+    for i in "$SCRIPT_DIR"/states_*; do
+        [[ "$i" == "$SCRIPT_DIR/states_${USER}" ]] && continue
+        if [[ -d "$i" ]]; then
+            rm -f -- "$i"/*
+            rmdir -- "$i"
+        fi
+    done
+
+    shopt -u nullglob
+
+    }
+}

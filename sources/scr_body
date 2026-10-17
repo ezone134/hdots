@@ -1,0 +1,728 @@
+#!/usr/bin/env luajit
+-- helper scr_body
+-- Single owner of the whole screen-look path: ONE GLSL shader that bakes all
+-- three knobs -- saturation, gamma and colour temperature.
+--
+-- There is NO switch file. The knobs ARE the switch, and each knob's OFF value
+-- is the one that asks for no shift:
+--
+--   all three knobs OFF ->  nothing is applied, shader.lua is emptied
+--   any one knob ON     ->  $shaders/master.glsl is baked and hyprland aimed at it
+--
+-- and "off" is not the same number on all three dials:
+--
+--   satu_$s  saturation id 0..200, OFF = 100 (neutral)      -> SATURATION_VAL
+--   gamma_v  gamma level   0..19,   OFF = 0                 -> GAMMA_VAL
+--   ctemp_v  Kelvin      1200..6500, OFF = 0 AND 6500       -> TEMP_VAL
+--
+-- Saturation is the one that bites: 100 is its neutral notch, and 0 is NOT off
+-- -- it is the far end of the dial, full grayscale. Reading 0 as "no shift" (as
+-- this file once did) drained the screen to luma and then called the result
+-- "normal", so a deliberate grayscale look could not be told from a disabled
+-- one. It can now.
+--
+-- The Kelvin has TWO off values because it has a neutral notch of its own: 0 is
+-- the parked one (the tile's off, and the only value that frees the shader when
+-- nothing else is asking), and 6500 K bakes as no shift either -- the divisor in
+-- main() is exactly 1,1,1 there. So a screen someone has dialled back to neutral
+-- is off, not "on with nothing to show", and it does not keep the shader loaded.
+--
+-- $states/ms_$s is gone with it. It only ever answered "should anything be
+-- drawn", which the three values already answer between them -- and it could
+-- disagree with them, which is how a card click used to be able to say "off"
+-- while a fader said 40%.
+--
+-- gamma has no tile of its own (brightness_body drives it), so it never needs a
+-- memory: it is only ever turned UP, and a level of 0 is its own off.
+--
+-- satu_$s and ctemp_v each back a toggle tile, and a tile that forgets its
+-- value on the way off is a tile that cannot come back, so the last ON value of
+-- each is parked in $states2 (volatile -- a reboot is a fresh start):
+--   $states2/last_satu   last saturation that was not 100,        else SAT_SEED
+--   $states2/last_ctemp  last Kelvin under 6500 K (0 is off too),  else TEMP_SEED
+--
+-- Saturation and the Kelvin can also arrive SMOOTHLY. $states/sst is that
+-- switch: with it on, a change to either knob is eased over SST_STEPS frames
+-- instead of snapping -- see _anim_step. Nothing else about the rule moves: the
+-- knobs still hold the values, the ramp still ends on them exactly, and sst 0
+-- (or no file) is the same one-shot bake it has always been. Gamma is never
+-- eased -- it is a brightness dial, dialled by keypress, and a ramp there would
+-- only lag the key.
+--
+-- The shader applies saturation, then temperature, then gamma -- see main()
+-- below for why that order is the whole ballgame.
+--
+-- ~/.config/hypr/luas/shader.lua points hyprland at master.glsl, or is emptied
+-- for off, so every apply diffs the target and reloads only when it really
+-- changed (keeps OSD ticks from reloading for nothing).
+
+GAMMA_MAX   = 19
+SAT_MAX     = 200
+SAT_NEUTRAL = 100
+TEMP_MIN    = 1200
+TEMP_NEUTRAL = 6500
+TEMP_MAX    = 6500
+-- what a toggle falls back to when $states2 has no memory of its own (first
+-- run, or a reboot -- both volatile). Deliberately visible shifts, not neutral
+-- ones: a tile you click on has to visibly do something.
+SAT_SEED    = 70
+TEMP_SEED   = 5500
+-- the eased ramp: SST_STEPS - 1 eased frames plus one exact landing, one every
+-- SST_INTERVAL.
+--
+-- Tuned against the panel, not picked: 60Hz here, so a frame is 16.7 ms, and one
+-- frame of this ramp COSTS a `hyprctl eval` -- measured ~10 ms end to end on
+-- this box (process spawn, IPC, config reparse) plus the recompile it triggers.
+-- The old 25 ms sleep sat ON TOP of that, so the real cadence was ~35 ms: about
+-- 28 fps of a 10-step ramp, i.e. eight visible pops. Hence a sleep sized to the
+-- BUDGET -- 4 ms of sleep + ~10 ms of hand-off = ~14 ms, just under the refresh
+-- period, so a bake can never be missed by a displayed frame.
+--
+-- The step count is the other half. Saturation is an integer 0..200, so a 10-step
+-- 40 -> 200 ramp moves 16 units per frame at its peak: a plainly visible
+-- staircase. 30 steps with a quintic ease peaks at ~6 and spends most of the
+-- ramp under 3.
+--
+-- ~0.4s end to end. Longer stops reading as "the screen is catching up" and
+-- starts reading as lag, which is worse on a fader drag: a drag re-targets the
+-- ramp on every release, and each of those has to feel like it answered.
+SST_STEPS    = 30
+SST_INTERVAL = 0.004
+
+s = flagf_get(states2 .. "/s") or "n"
+
+-- ------------------------------------------------------------- state files --
+
+function _shader_master_path()
+    return os.getenv("shaders") .. "/master.glsl"
+end
+
+function _shader_lua_path()
+    return os.getenv("HOME") .. "/.config/hypr/luas/shader.lua"
+end
+
+-- The switch, asked as a QUESTION and never stored: anything to shift? Each dial
+-- is asked with its OWN off value, because they do not share one -- 100 for
+-- saturation, 0 for gamma, and 0-or-6500 for the Kelvin (which is why the Kelvin
+-- goes through temp_on() rather than a `~= 0` of its own).
+--
+-- gamma_v counts too: it is a knob like the other two, and on a gamma-only
+-- session it is the only thing holding the shader up.
+function shader_active()
+    if _sat_off(shader_sat_get()) == false then return true end
+    if gamma_get_func() ~= 0 then return true end
+    if temp_on() then return true end
+    return false
+end
+
+-- state files are ids only; a stray path is read as its trailing id so a
+-- hand-edited file still lands on a real value
+local function _id(raw, max, neutral)
+    raw = tostring(raw or ""):match("^%s*(.-)%s*$")
+    local n = tonumber(raw) or tonumber(raw:match("(%d+)"))
+    if not n then return neutral end
+    if n < 0 then n = 0 end
+    if n > max then n = max end
+    return n
+end
+
+-- saturation id 0..200. 100 is the NEUTRAL notch and the one value that means
+-- "no saturation shift" -- the Saturation tile's off, and what a missing file
+-- reads as. 0 is NOT off: it is the far end of the dial, full grayscale, a real
+-- effect the shader has to stay up for. So the neutral fallback here is 100, and
+-- a file that cannot be read leaves the colours alone instead of draining them.
+function shader_sat_get()
+    return _id(ff(states .. "/satu_" .. s), SAT_MAX, SAT_NEUTRAL)
+end
+
+-- gamma level 0..19 -- 0 = normal
+function gamma_get_func()
+    return _id(ff(states .. "/gamma_v"), GAMMA_MAX, 0)
+end
+
+-- colour temperature -- 1200..6500 Kelvin, 6500 = TEMP_NEUTRAL, the off notch
+-- and the one value that bakes as no shift at all. `_id`, not tonumber: the
+-- seeded file may still hold the quoted form (`"4500"`), which tonumber reads
+-- as nil.
+function temp_get_func()
+    return _id(ff(states .. "/ctemp_v"), TEMP_MAX, 0)
+end
+
+-- ---------------------------------------------- toggle memory ($states2) --
+-- What a tile puts back when it is clicked on again. The memory is only ever a
+-- hint, so a missing file, an unreadable one and one holding an OFF value all
+-- land on the seed -- an off value is not a "last", it is the absence of one.
+-- The off test is per knob (the two dials park in opposite places, and the
+-- Kelvin has two off values), so it travels as a predicate rather than a number.
+
+function _sat_off(v)
+    return v == SAT_NEUTRAL
+end
+
+function _temp_off(v)
+    return v == 0 or v == TEMP_NEUTRAL
+end
+
+-- `neutral` is the fallback for an unreadable memory, and it has to be one of
+-- the knob's own off values -- otherwise a missing file would read as a
+-- remembered 0, which for saturation is full grayscale rather than "nothing".
+local function _last_get(name, max, neutral, is_off, seed)
+    local v = _id(ff(states2 .. "/" .. name), max, neutral)
+    if is_off(v) then return seed end
+    return v
+end
+
+local function _last_set(name, v, is_off)
+    if v == nil or is_off(v) then return end
+    tf(states2 .. "/" .. name, tostring(v))
+end
+
+function sat_last_get()
+    return _last_get("last_satu", SAT_MAX, SAT_NEUTRAL, _sat_off, SAT_SEED)
+end
+
+function temp_last_get()
+    return _last_get("last_ctemp", TEMP_MAX, 0, _temp_off, TEMP_SEED)
+end
+
+-- the Kelvin's 0 still normalises to the neutral constant for the bake, and
+-- 6500 K needs no help -- it divides by itself. Saturation needs neither: 100
+-- already IS neutral and 0 is a real value, so the raw id goes to the GLSL
+-- untouched.
+function temp_eff()
+    local t = temp_get_func()
+    if t == 0 then return TEMP_NEUTRAL end
+    return t
+end
+
+-- true when the Kelvin asks for an actual shift, i.e. anything but the neutral
+-- notch. This is what the status line reports and what temp_toggle_func flips on.
+function temp_on()
+    local t = temp_get_func()
+    return t > 0 and t < TEMP_NEUTRAL
+end
+
+-- ------------------------------------------------------------------ glsl --
+
+local GLSL_TEMPLATE = [[#version 300 es
+precision highp float;
+in vec2 v_texcoord;
+layout(location = 0) out vec4 fragColor;
+uniform sampler2D tex;
+
+#define SATURATION_VAL %d.0
+#define GAMMA_VAL %d.0
+#define TEMP_VAL %d.0
+
+vec3 kelvinToRGB(float kelvin) {
+    float t = clamp(kelvin, 1000.0, 40000.0) / 100.0;
+    vec3 result;
+    if (t <= 66.0) {
+        result.r = 255.0;
+    } else {
+        float r = t - 60.0;
+        result.r = 329.698727446 * pow(r, -0.1332047592);
+    }
+    if (t <= 66.0) {
+        result.g = 99.4708025861 * log(max(t, 1.0)) - 161.1195681661;
+    } else {
+        float g = t - 60.0;
+        result.g = 288.1221695283 * pow(g, -0.0755148492);
+    }
+    if (t >= 66.0) {
+        result.b = 255.0;
+    } else if (t <= 19.0) {
+        result.b = 0.0;
+    } else {
+        float b = t - 10.0;
+        result.b = 138.5177312231 * log(b) - 305.0447927307;
+    }
+    return clamp(result / 255.0, 0.0, 1.0);
+}
+
+// Saturation, then temperature, then gamma. The order is the whole point:
+//
+// 1. saturation FIRST, on the raw texture colour, against its own luma -- so it
+//    desaturates the picture and nothing else;
+// 2. temperature AFTER it, as one per-channel multiply
+//    (kelvinToRGB(temp) / kelvinToRGB(6500)). Because the mix already happened,
+//    the cast is a plain factor on the result, which is what keeps the warmth
+//    visible even at saturation 0. The old order tinted first and then mixed
+//    toward a NEUTRAL grey, so the saturation slider ate the temperature: at
+//    1850 K (k = 1, 0.508, 0) a sat-30 screen kept barely a third of its
+//    warmth, and at sat 0 the cast was gone while the mode still said master;
+// 3. gamma last, a per-channel pow, so it is the only stage that moves
+//    brightness and nothing after it can move the tint.
+//
+// Saturation and temperature are therefore independent: one is a function of the
+// source pixel, the other a constant vector. Output is bit-identical to the old
+// shader whenever sat == 100 or the Kelvin is 6500 (the divisor is then exactly
+// 1,1,1), so the reorder is invisible until the knobs disagree.
+void main() {
+    vec4 rgba = texture(tex, v_texcoord);
+    vec3 color = rgba.rgb;
+
+    // 1. Apply saturation first on the raw texture color
+    float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    color = mix(vec3(luma), color, SATURATION_VAL / 100.0);
+
+    // 2. Apply color temperature AFTER saturation
+    // (This keeps your warmth/tint visible even if saturation is 0)
+    color *= kelvinToRGB(TEMP_VAL) / kelvinToRGB(6500.0);
+
+    // 3. Apply gamma correction at the very end
+    color = pow(max(color, 0.0), vec3((20.0 - GAMMA_VAL) / 20.0));
+
+    fragColor = vec4(color, rgba.a);
+}]]
+
+-- ------------------------------------------------------------------ apply --
+
+local LUA_TEMPLATE = [[hl.config({
+    decoration = {
+        screen_shader = "%s"
+    }
+})]]
+
+-- aim hyprland at the baked shader; reloads only on a real change (force = the
+-- target file's CONTENT moved, so a reload is needed even when shader.lua
+-- already names it)
+function _shader_point(path, force)
+    local lua = _shader_lua_path()
+    local want = string.format(LUA_TEMPLATE, path)
+    if not force and ff(lua) == want then return false end
+    tf(lua, want)
+    run_bg("hyprctl reload")
+    return true
+end
+
+-- bake the three ids into master.glsl and nothing else -- no aiming, no reload.
+-- Split out of _shader_master_push because a ramp frame wants the bake and then
+-- its own cheap hand-off, and a `hyprctl reload` per frame would reparse the
+-- whole config once per frame.
+--
+-- The bake is atomic. master.glsl is rewritten on every ramp frame while
+-- hyprland may be reading it, and io.open("w") truncates before it writes: a
+-- reader arriving mid-write gets half a shader, and a half shader is a failed
+-- compile -- which leaves the screen with no filter at all until something else
+-- re-aims. Same-directory temp plus rename means a reader sees the old file or
+-- the new one and never anything between. The temp name carries the pid because
+-- two bakers can briefly overlap (a re-target fences the old ramp a frame late).
+function _shader_master_bake(sat, gam, temp)
+    local path = _shader_master_path()
+    local glsl = string.format(GLSL_TEMPLATE, sat, gam, temp)
+    if ff(path) == glsl then return false end
+    local tmp = path .. ".bake." .. getpid()
+    if not tf(tmp, glsl) then return false end
+    if not mv(tmp, path) then
+        rm(tmp)
+        return false
+    end
+    return true
+end
+
+-- bake the three ids into master.glsl, then aim at it
+function _shader_master_push(sat, gam, temp)
+    local moved = _shader_master_bake(sat, gam, temp)
+    return _shader_point(_shader_master_path(), moved)
+end
+
+-- hand the screen back to hyprland's own pipeline
+function _shader_drop()
+    local lua = _shader_lua_path()
+    local cur = ff(lua)
+    if cur == nil or cur == "" then return false end
+    tf(lua, "")
+    run_bg("hyprctl reload")
+    return true
+end
+
+-- ------------------------------------------------- smooth transition ($sst) --
+-- $states/sst is the switch: 1 eases a change of saturation or of the Kelvin
+-- over SST_STEPS frames instead of snapping to it. (The seeder writes 1, so this
+-- is the default; sst 0, a hand edit, or no file at all is the plain one-shot
+-- bake -- the safe answer for a switch nothing forces to exist.)
+--
+-- Why the ramp is stepped from here and not done on the GPU: hyprland only feeds
+-- a screen shader a per-frame `time` when debug:damage_tracking is 0, and 0
+-- means "redraw everything, always" (OpenGL.cpp warns about exactly this). A
+-- colour grade runs for the whole session, so it cannot have that. Instead each
+-- frame is a real bake of master.glsl plus the cheap hand-off below -- a handful
+-- of frames, not sixty.
+--
+-- Three files under $states2, all plain tf/ff and deliberately NOT flagf: their
+-- length changes with their value, and flagf_set truncates, so a shorter value
+-- written by one process would cut the file out from under another process's
+-- mapping (a running ramp child, say).
+--
+--   shd_satu / shd_temp   what master.glsl is showing RIGHT NOW, in EFFECTIVE
+--                         values -- the 0 the Kelvin parks at never reaches a
+--                         bake, temp_eff has already turned it into 6500.
+--                         Absent reads as the neutral pair, which is also what a
+--                         dropped shader shows, so a fresh boot and a
+--                         just-switched-off look both start a ramp from
+--                         "nothing applied" rather than from a stale value.
+--   shd_gen               bumped by every apply, and checked before every ramp
+--                         frame: a newer apply means this ramp is dead, so two
+--                         ramps can never write the same shader and a second
+--                         change takes over from the frame the first reached.
+--                         Fixed width for the same no-truncation reason.
+function sst_on()
+    return _id(ff(states .. "/sst"), 1, 0) == 1
+end
+
+-- Flip it. Deliberately does NOT re-apply the look: the switch answers "how
+-- does the NEXT change get there", so toggling it with a shift already applied
+-- must not move a single pixel of the current one -- a card switch that visibly
+-- re-graded the screen as it flipped would read as the switch having an effect
+-- on the picture, and the next fader nudge is where the answer belongs.
+function sst_toggle_func()
+    local on = not sst_on()
+    tf(states .. "/sst", on and "1" or "0")
+    run_bg(string.format("notify-send -a Screen 'Screen look' 'Smooth transition %s'",
+        on and "on" or "off"))
+    return on
+end
+
+-- where the screen is, as opposed to where the knobs are asking for
+function _display_get()
+    return _id(ff(states2 .. "/shd_satu"), SAT_MAX, SAT_NEUTRAL),
+           _id(ff(states2 .. "/shd_temp"), TEMP_MAX, TEMP_NEUTRAL)
+end
+
+function _display_set(sat, temp)
+    tf(states2 .. "/shd_satu", tostring(sat))
+    tf(states2 .. "/shd_temp", tostring(temp))
+end
+
+-- Called by every apply BEFORE it touches a knob, so a ramp already in flight is
+-- fenced off before it can write a frame of its own. 15 digits, fixed width, and
+-- still under 2^53 so the increment is exact.
+function _gen_bump()
+    local g = (tonumber(ff(states2 .. "/shd_gen")) or 0) + 1
+    g = string.format("%015d", g % 1000000000000000)
+    tf(states2 .. "/shd_gen", g)
+    return g
+end
+
+-- saturation is baked as a straight multiplier (SATURATION_VAL/100), so a linear
+-- mix of the id is a linear mix of the effect: the eased number IS the eased
+-- picture. The Kelvin is not linear -- kelvinToRGB() is a curve, and a straight
+-- ramp in Kelvin spends most of its frames where the cast cannot be seen (nothing
+-- changes at all above ~6500 K, and blue barely moves down to 4000). So the ramp
+-- runs on 1/K, the mired axis (mireds are that times 1e6, and the constant does
+-- not matter): mixing the reciprocals linearly and inverting makes a constant
+-- step in the frame a constant step in perceived warmth, keeps the path inside
+-- [a, b] whatever the endpoints, and still lands exactly on b at k = 1.
+local function _lerp_temp(a, b, k)
+    if a == b or a <= 0 or b <= 0 then return a + (b - a) * k end
+    return 1 / ((1 - k) / a + k / b)
+end
+
+-- the cheap hand-off: re-aim hyprland at the file it is already aimed at, which
+-- is what makes it re-read and recompile master.glsl on the next frame. This is
+-- the same hl.config() call shader.lua makes, and a dynamic parse schedules
+-- REFRESH_SCREEN_SHADER (which forces the full frames a recompile needs).
+-- `hyprctl keyword` cannot do it -- the lua parser refuses it outright
+-- ("keyword can't work with non-legacy parsers") -- and a `hyprctl reload` per
+-- frame would reparse the entire config ten times per ramp.
+--
+-- `out()` and not `run()`: this needs a real shell for the quoting (and utils'
+-- shell fallback in exec_cmd is broken anyway -- it hands /bin/sh a three-slot
+-- argv with no terminator, so every `run()` that needs a shell exits 127).
+-- hyprctl answers "ok" on success and its error on stderr, which out() drops, so
+-- "anything came back" is the success test.
+function _shader_recompile()
+    local lua = string.format('hl.config({ decoration = { screen_shader = "%s" } })',
+        _shader_master_path())
+    return out("hyprctl eval " .. shq(lua)) ~= ""
+end
+
+-- shader.lua is what outlives a ramp: it is what the next `hyprctl reload` (a
+-- theme change, a hotplug) re-applies, so a ramp starting from a dropped shader
+-- has to put the path back or that reload would pull the shader away half way
+-- through. No reload here -- _shader_recompile is what hyprland reads.
+function _anim_aim()
+    local want = string.format(LUA_TEMPLATE, _shader_master_path())
+    if ff(_shader_lua_path()) ~= want then tf(_shader_lua_path(), want) end
+end
+
+-- ONE frame of a ramp, then the next. Runs in a forked child (bg_fn), so it
+-- inherits the state paths and has nothing to clean up on the way out.
+--
+-- smootherstep (k^3(6k^2-15k+10)), not smoothstep: a ramp exists to have no
+-- visible seam at either end, and that is about the SECOND derivative as much
+-- as the first -- cubic ease leaves a step in how fast the ease is changing at
+-- the ends, which the eye reads as a small twitch on the first and last frames.
+-- The quintic zeroes the first two derivatives at both ends, so the motion
+-- starts and stops as if it had always been there. It also peaks lower (1.875
+-- vs 1.5 times the average rate), which is what keeps 30 whole-id steps from
+-- being visible as steps.
+--
+-- A change landing mid-ramp does NOT queue behind it: shader_restore_func bumps
+-- shd_gen and forks a new child, which reads shd_satu/shd_temp -- the frame the
+-- old one had reached -- and eases on from exactly there. So a dragged fader
+-- tracks continuously instead of jumping, at the cost of a small lag on a fast
+-- drag.
+function _anim_step(gen, from_sat, from_temp, to_sat, to_temp)
+    _anim_aim()
+    for i = 1, SST_STEPS - 1 do
+        if ff(states2 .. "/shd_gen") ~= gen then return end
+        -- gamma is not part of the ramp, so it is re-read every frame: a gamma
+        -- change made while this ramp runs is the newest value, and the landing
+        -- bake must not roll it back
+        local k = i / SST_STEPS
+        k = k * k * k * (k * (k * 6 - 15) + 10)
+        local sat = math.floor(from_sat + (to_sat - from_sat) * k + 0.5)
+        local temp = math.floor(_lerp_temp(from_temp, to_temp, k) + 0.5)
+        -- both ids are whole numbers and the ease crawls at the ends, so the
+        -- first frames of a long ramp round back to where they started. Baking
+        -- reports that (it diffs), and re-aiming an unchanged file would buy
+        -- nothing but a forced full redraw -- the one thing that can make a
+        -- smooth ramp stutter is a frame spent redrawing a picture that did not
+        -- change. So a no-op frame sleeps and moves on.
+        if _shader_master_bake(sat, gamma_get_func(), temp) then
+            _display_set(sat, temp)
+            if not _shader_recompile() then
+                -- no cheap hand-off (a hyprland that will not take it, say): stop
+                -- easing and land on the target the expensive way rather than ramp
+                -- to the end of a chain of frames nothing ever read
+                _shader_master_push(sat, gamma_get_func(), temp)
+                return
+            end
+        end
+        sleep(SST_INTERVAL)
+    end
+    -- land on the target exactly: the frames above are whole ids, so the eased
+    -- path can finish a shade off it
+    if ff(states2 .. "/shd_gen") ~= gen then return end
+    _shader_master_bake(to_sat, gamma_get_func(), to_temp)
+    _display_set(to_sat, to_temp)
+    _shader_recompile()
+end
+
+-- OFF, as a whole: every knob to its own off value, the memories dropped, the
+-- shader handed back. With no switch file there is no other way to say "off" --
+-- a knob left at 40 is a knob still asking for a shift.
+--
+-- The memories are reset to their own off values rather than emptied, because an
+-- empty file reads as 0 and 0 is not off for saturation -- it is grayscale, so
+-- emptying last_satu would leave a "remembered" full-greyscreen behind.
+--
+-- The apply itself is shader_restore_func's, not a private one: reset is just
+-- "every knob to its off value" and that is exactly the state the rule already
+-- knows how to drop -- and it drops a ramp in flight on the way, which a
+-- hand-rolled drop here would not.
+function shader_reset_func()
+    tf(states .. "/satu_" .. s, SAT_NEUTRAL)
+    tf(states .. "/ctemp_v", 0)
+    tf(states .. "/gamma_v", 0)
+    tf(states2 .. "/last_satu", SAT_NEUTRAL)
+    tf(states2 .. "/last_ctemp", 0)
+    local changed = shader_restore_func()
+    if changed then
+        run_bg("notify-send -a Screen 'Screen look' 'Off / Reset'")
+    end
+    return changed
+end
+
+-- THE RULE, in one place: every knob at its own off value drops the shader, any
+-- one of them asking for a shift bakes and aims (`shader_active` is where the
+-- per-dial off values live). Every writer below ends here, so a card click, a
+-- fader drag, a keybinding and a `scr_main` verb from the terminal all land on
+-- the same answer.
+--
+-- HOW it gets on screen is the only thing $sst decides: sat or Kelvin moving
+-- under a smooth transition eases there frame by frame (forked, so nothing waits
+-- on it -- the flags below are written before the fork, not after), everything
+-- else is the one-shot bake.
+--
+-- BOTH done flags are written here, on every path, and that is deliberate:
+--   · shader_done — this half of scr_main's own contract
+--   · scr_done    — the slot hyprsunset used to signal from, back when scr_main
+--                   had two halves. theme_body zeroes it on every non-quick run
+--                   and theme_body_run blocks on all seven *_done flags before
+--                   it releases theme_lock, so with no daemon left to write it
+--                   the whole theme pipeline waited forever and every
+--                   theme_main verb froze. scr_main is now the only owner of
+--                   the screen look, so it answers for both names. The write
+--                   goes first so the edge lands even when nothing changed.
+function shader_restore_func()
+    flagf_set(states2 .. "/shader_done", "1")
+    flagf_set(states2 .. "/scr_done", "1")
+    -- fences a ramp in flight before a single knob moves under it
+    local gen = _gen_bump()
+    if not shader_active() then
+        -- every knob is at its own off value here, so these ARE the neutral pair.
+        -- Say so: with the shader gone the screen is showing nothing applied, and
+        -- a stale mid-ramp value left in shd_* would make the next "on" think it
+        -- was already there and snap.
+        _display_set(shader_sat_get(), temp_eff())
+        return _shader_drop()
+    end
+    local sat, gam, temp = shader_sat_get(), gamma_get_func(), temp_eff()
+    local d_sat, d_temp = _display_get()
+    if sst_on() and (d_sat ~= sat or d_temp ~= temp) then
+        disown(bg_fn(_anim_step, gen, d_sat, d_temp, sat, temp))
+    else
+        _display_set(sat, temp)
+        if not _shader_master_push(sat, gam, temp) then return false end
+    end
+    run_bg(string.format("notify-send -a Screen 'Screen look' 'sat %d · gamma %d · %dK'",
+        sat, gam, temp))
+    return true
+end
+
+-- "on" with no switch to flip: seed the saturation knob if nothing at all is
+-- asking for a shift yet, then let the rule decide. A knob already off the
+-- notch is left exactly as it is -- turning the screen look "on" must not
+-- stomp a Kelvin the user is halfway through choosing.
+function shader_on_func()
+    if not shader_active() then
+        tf(states .. "/satu_" .. s, sat_last_get())
+    end
+    return shader_restore_func()
+end
+
+-- the Saturation tile: the satu_$s knob is the switch now, so this is that one
+-- knob's toggle -- off parks it at the 100 neutral notch (remembering what it
+-- was, grayscale included), on puts back the remembered value or the seed.
+function shader_toggle_func()
+    if _sat_off(shader_sat_get()) == false then
+        return shader_set_func(SAT_NEUTRAL)
+    end
+    return shader_set_func(sat_last_get())
+end
+
+-- the Kelvin knob. 0 is the off notch the tile parks at, and 6500 K is the other
+-- off value -- both bake as no shift, so parking at either leaves the bake honest
+-- and only 0 actually frees the shader when nothing else is asking.
+function shader_temp_func(k)
+    k = math.floor(tonumber(k) or 0)
+    if k < TEMP_MIN and k ~= 0 then k = TEMP_MIN end
+    if k > TEMP_MAX then k = TEMP_MAX end
+    tf(states .. "/ctemp_v", tostring(k))
+    _last_set("last_ctemp", k, _temp_off)
+    return shader_restore_func()
+end
+
+-- the Blue Light tile: warm Kelvin -> off (0, remembered), off -> the
+-- remembered Kelvin or the seed. `temp_on` is already false at 6500 K as well as
+-- at 0, so a neutral dial toggles ON here too -- that is the notch IS the state.
+function temp_toggle_func()
+    if temp_on() then
+        return shader_temp_func(0)
+    end
+    return shader_temp_func(temp_last_get())
+end
+
+-- accepts a bare id (0..200); a path or "N.glsl" is reduced to its id, only
+-- the id is ever stored
+function shader_set_func(n_str)
+    n_str = tostring(n_str):gsub("\r", ""):match("^%s*(.-)%s*$")
+    n_str = n_str:gsub("%.glsl$", ""):match("[^/]+$")
+    if n_str == "" or not n_str:match("^%d+$") then
+        err("scr_main set: need integer 0.." .. SAT_MAX .. ", got: " .. tostring(n_str))
+        return false
+    end
+    local n = tonumber(n_str)
+    if n > SAT_MAX then
+        err("scr_main set: " .. n_str .. " out of range 0.." .. SAT_MAX)
+        return false
+    end
+    tf(states .. "/satu_" .. s, n)
+    _last_set("last_satu", n, _sat_off)
+    return shader_restore_func()
+end
+
+-- ------------------------------------------------------------------ gamma --
+-- No memory and no imply step: gamma is only ever dialled, so a level of 0 is
+-- its own off and a level above it is its own on.
+
+function gamma_set_func(level)
+    level = tonumber(level) or 0
+    if level > GAMMA_MAX then level = GAMMA_MAX end
+    if level < 0 then level = 0 end
+    tf(states .. "/gamma_v", level)
+    return shader_restore_func()
+end
+
+function gamma_up_func()
+    gamma_set_func(gamma_get_func() + 1)
+end
+
+function gamma_down_func()
+    gamma_set_func(gamma_get_func() - 1)
+end
+
+-- seed the level to 1 when it is normal, so there is something to see. There is
+-- no gamma mode to select any more -- gamma is a dial of the one shader -- so
+-- this is just "give the screen something to shift".
+function shader_gamma_func()
+    local level = gamma_get_func()
+    if level <= 0 then level = 1 end
+    tf(states .. "/gamma_v", level)
+    return shader_restore_func()
+end
+
+-- -------------------------------------------------------------------- cli --
+
+function scr_cmd(cmd, val)
+    if cmd == "toggle" then
+        shader_toggle_func()
+    elseif cmd == "on" or cmd == "master" or cmd == "m" or cmd == "terminal" then
+        shader_on_func()
+    elseif cmd == "off" or cmd == "reset" then
+        shader_reset_func()
+    elseif cmd == "restore" then
+        shader_restore_func()
+    elseif cmd == "set" or cmd == "val" or cmd == "select" then
+        shader_set_func(val)
+    elseif cmd == "gamma" then
+        shader_gamma_func()
+    elseif cmd == "temp" or cmd == "temp-set" or cmd == "kelvin" then
+        shader_temp_func(val)
+    elseif cmd == "temp-toggle" or cmd == "kelvin-toggle" then
+        temp_toggle_func()
+    elseif cmd == "gamma-up" or cmd == "up" then
+        gamma_up_func()
+    elseif cmd == "gamma-down" or cmd == "down" then
+        gamma_down_func()
+    elseif cmd == "gamma-set" then
+        gamma_set_func(val)
+    elseif cmd == "gamma-reset" or cmd == "gamma-off" then
+        gamma_set_func(0)
+    elseif cmd == "status" then
+        -- one call answers for the whole screen look, and the field count is
+        -- fixed so dash_body's parse never shifts:
+        --   "<on> <sat> <temp_on> <kelvin>"
+        -- on 0|1 = shader_active() (any knob off its own off value), sat 0..200
+        -- (100 = neutral, 0 = grayscale), temp_on 0|1 (is a Kelvin actually
+        -- asking for warmth -- false at 0 AND at 6500), kelvin 0..6500
+        --
+        -- The ids are echoed RAW, off values included. A parked knob is off, and
+        -- the seeds only ever exist on the way IN (a toggle writing), so nothing
+        -- here can put a value on screen that the state files do not hold --
+        -- the tile, the fader and the file are always the same number.
+        local m = shader_active() and "1" or "0"
+        local sat = shader_sat_get()
+        -- one plain number, always: the state file may still hold the quoted
+        -- seed (`"0"` from master_seeder) and a raw echo would reach dash_body
+        -- as a non-numeric field, so the Kelvin fader would never see an id
+        local kv = _id(ff(states .. "/ctemp_v"), TEMP_MAX, 0)
+        print(m .. " " .. sat .. " " .. (temp_on() and "1" or "0") .. " " .. kv)
+    elseif cmd == "sst" then
+        -- the smooth transition is a switch, not a knob, so it gets no field on
+        -- the status line: the four above are what the faders and the tile are
+        -- made of, and this one changes nothing ON SCREEN (it changes how the
+        -- NEXT change gets there). dash_status reads the file itself.
+        print(sst_on() and "1" or "0")
+    elseif cmd == "sst-toggle" or cmd == "sst-flip" then
+        sst_toggle_func()
+    else
+        err("usage: scr_main {toggle|on|off|reset|restore}          screen-look toggle")
+        err("       scr_main {set N|gamma|gamma-set N|gamma-up|gamma-down|gamma-reset}")
+        err("       scr_main {temp K|temp-toggle|sst|sst-toggle|status}")
+        os.exit(2)
+    end
+end

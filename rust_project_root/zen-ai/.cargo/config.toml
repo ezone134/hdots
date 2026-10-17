@@ -1,0 +1,8 @@
+# libclang lives at /usr/lib64 (no unversioned symlink) — bindgen needs the
+# path, not a package. Baked so `cargo build` just works at this checkout.
+[target.x86_64-unknown-linux-gnu]
+rustflags = []
+
+[build]
+# Keep C++ build parallel; llama.cpp cpp-crypto and friends use it.
+jobs = 8

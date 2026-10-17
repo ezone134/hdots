@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+-- ptc — thin wrapper: all shared logic lives in ../utils
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+boot_main("ptc")

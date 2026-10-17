@@ -1,0 +1,123 @@
+-- helper master_body
+-- One table-driven dispatcher in front of the existing *_main CLIs. It owns
+-- nothing itself: every section maps 1:1 onto a helper that already exists,
+-- and the args are forwarded verbatim (unpack), so each section keeps its own
+-- verb names and usage errors. Adding a setting means adding one row here.
+
+local SECTIONS = {
+    -- look ------------------------------------------------------------------
+    theme    = "theme_main",      -- status|dark|light|toggle|restore|crestore|srestore|frestore|gtk_reload
+    scheme   = "scheme_main",     -- apply <id>|fetch <id>|accent <key> [hex]
+    toggles  = "toggles_main",    -- toggle_acc|start_icon_tone|alpha|acc_scrim
+    accent   = "pick_accent_main",-- [hex]  (no arg = eyedropper)
+    alpha    = "alpha_main",      -- acc_alpha|border_alpha|bg_alpha|scrim_alpha <hex>
+    custom   = "custom_color_main",
+    wallpaper= "set_wall",        -- <path|name>
+
+    -- compositor --------------------------------------------------------------
+    general  = "general_main",    -- reset (else re-applies gaps/rounding/border/layout)
+    blur     = "blur_main",       -- toggle|on|off|restore|reset
+    opacity  = "opacity_main",    -- toggle|on|off|restore|reset
+    shadow   = "shadow_main",     -- toggle|on|off|restore|reset
+    scr      = "scr_main",        -- toggle|on|off|set N|gamma*|temp K|sst*|status
+    hypr     = "general_main",    -- alias
+
+    -- screens -----------------------------------------------------------------
+    monitors = "mn_main",         -- get WHAT|set WHAT VALUE|restore
+    idle     = "hi_main",         -- set NAME VALUE|restore|list
+    ws       = "ws_main",         -- cur|next|prev|goto N|N
+
+    -- session / hardware -------------------------------------------------------
+    power    = "power_main",      -- status|battery|ac|state|session lock|logout|...
+    pp       = "pp_main",         -- get|set PROFILE|cycle
+    bri      = "brightness_main", -- get|set N|up|down|lazy|gamma|save|restore
+    audio    = "audio_main",      -- vol get|set|up|down|mute, mic ..., audio ...
+    net      = "network_main",    -- net|wifi|bt ...
+    caffeine = "caffeine_main",   -- status|on|off|toggle
+
+    -- misc ---------------------------------------------------------------------
+    media    = "media_main",      -- status|play|pause|next|prev|stop
+    shot     = "shot_main",       -- full|region
+    caps     = "caps_lock_trigger",
+    state    = "state_switcher",  -- transition normal <-> split channel
+    status   = "status_main",     -- everything at once
+    dash     = "dash_status",     -- one telemetry line for zen-shell
+    restart  = "shell_restart",   -- pkill zen-shell && hyprctl reload
+    sync     = "sync_back_call",  -- states -> dots (rsync), logout path
+    reseed   = "restore_defaults_call",
+}
+
+-- verbs worth discovering without opening each body file
+local VERBS = {
+    theme    = "status|dark|light|toggle|restore|srestore|frestore|gtk_reload",
+    scheme   = "apply ID|fetch ID|accent KEY [hex]",
+    toggles  = "toggle_acc FLAG 0|1 | start_icon_tone N | alpha FLAG HEX | acc_scrim 0|1",
+    alpha    = "acc_alpha|border_alpha|bg_alpha|scrim_alpha HEX",
+    wallpaper= "PATH | NAME",
+    general  = "reset",
+    blur     = "toggle|on|off|restore|reset",
+    opacity  = "toggle|on|off|restore|reset",
+    shadow   = "toggle|on|off|restore|reset",
+    scr      = "toggle|on|off|set N|gamma-up|gamma-down|gamma-set N|temp K|temp-toggle|sst-toggle|status",
+    monitors = "get WHAT|set WHAT VALUE|restore",
+    idle     = "set NAME VALUE|restore",
+    ws       = "cur|next|prev|goto N|N",
+    power    = "status|battery|ac|state | session lock|logout|suspend|hibernate|reboot|shutdown",
+    pp       = "get|set PROFILE|cycle",
+    bri      = "get|set PCT|up [STEP]|down [STEP]|lazy up|down|gamma up|down|save|restore",
+    audio    = "vol get|set N|up|down|mute | mic ... | audio ...",
+    net      = "net status|... | wifi ... | bt ...",
+    caffeine = "status|on|off|toggle",
+    media    = "status|play|pause|toggle|next|prev|stop",
+    shot     = "full|region",
+    state    = "(debounced switch)",
+    status   = "(all)",
+    dash     = "(telemetry line)",
+    restart  = "(reload zen-shell)",
+    sync     = "(rsync states back)",
+    reseed   = "(re-seed defaults)",
+}
+
+local function list_sections()
+    local keys = {}
+    for k in pairs(SECTIONS) do keys[#keys + 1] = k end
+    table.sort(keys)
+    print("master — one entry point for every shell setting CLI\n")
+    print("usage: master <section> [args...]   args forwarded verbatim to the section CLI")
+    print("       master list | help\n")
+    print("sections:")
+    for _, k in ipairs(keys) do
+        print(string.format("  %-9s %s", k, VERBS[k] or ""))
+    end
+end
+
+function master_cmd(...)
+    local a = { ... }
+    local sec, rest = a[1], { select(2, ...) }
+
+    -- unfiled nouns first: no section name, straight to the CLI
+    if sec == nil or sec == "list" or sec == "help" or sec == "--help" then
+        list_sections()
+        return
+    end
+
+    local cli = SECTIONS[sec]
+    if cli == nil then
+        err("master: no such section '" .. tostring(sec) .. "' (master list for sections)")
+        os.exit(2)
+    end
+
+    -- spawn the real CLI (PATH-resolved, so bin/ must stay on PATH) with the
+    -- remaining args quoted; out()/run() spawn the binary directly.
+    local cmd = cli
+    for _, v in ipairs(rest) do
+        cmd = cmd .. " " .. shq(tostring(v))
+    end
+    if rest[1] == nil then
+        -- a bare section is its status/get/list wherever the CLI answers
+        -- silently: run it and show whatever it prints.
+        run(cmd)
+        return
+    end
+    run(cmd)
+end

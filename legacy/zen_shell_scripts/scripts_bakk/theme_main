@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# theme_main — theme CLI: dark/light/toggle/restore/reapply + list/apply <id>
+# (the theme-grid driver, formerly scripts/qs-themes). The heavy lifting is in
+# the theme body ($hypr_sources/helpers/theme_main_body, incl. the apply/switch pipeline).
+. "$hypr_sources/helpers/theme_main_body"
+theme_cmd "$@"

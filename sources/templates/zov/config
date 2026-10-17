@@ -1,0 +1,53 @@
+# zov — niri-like workspace overview for Hyprland
+# expanded from $states2 by rconfig_gen
+
+[theme]
+backdrop        = $bg8
+row_bg          = $bg2
+row_bg_active   = $bg3
+row_border      = $border8
+row_border_active = $acc8
+label           = $fg3
+label_active    = $fg
+tile_bg         = $bg
+tile_bg_active  = $acc_ec8
+tile_border     = $border
+tile_border_active = $acc
+title           = $fg
+class           = $fg2
+selection       = $acc
+
+[layout]
+font            = $rofi_font
+font_size       = $rofi_font_size
+gap             = 8
+tile_radius     = 8
+
+# every key input zov handles while the overview is visible
+# (hypr.rs KeyAction::resolve)
+[keys]
+# close the overlay, input returns to the focused window
+Escape          = hide
+# scroll the tape so this workspace row is in view
+1               = scroll_to_ws
+2               = scroll_to_ws
+3               = scroll_to_ws
+4               = scroll_to_ws
+5               = scroll_to_ws
+6               = scroll_to_ws
+7               = scroll_to_ws
+8               = scroll_to_ws
+9               = scroll_to_ws
+# move selection within the current row; clamped, never crosses rows, no wrap
+Left            = move_sel_left
+Right           = move_sel_right
+# move selection between workspace rows; keeps column, clamped, never cycles
+Up              = move_row_up
+Down            = move_row_down
+# focus selected window and close (overlay hides first, focus after 120 ms)
+Return          = activate
+KP_Enter        = activate
+space           = activate
+# jump: move highlight one card and activate it immediately, no Enter
+Super+Left      = activate
+Super+Right     = activate

@@ -1,0 +1,38 @@
+{
+  "language_models": {
+    "ollama": {
+      "context_window": 4096
+    }
+  },
+  "cli_default_open_behavior": "existing_window",
+  "theme": "Gruvbox Dark Soft",
+  "agent": {
+    "default_profile": "write",
+    "sandbox_permissions": {
+      "network_hosts": [
+        "quickshell.outfoxxed.me",
+        "quickshell.org",
+        "raw.githubusercontent.com",
+        "www.youtube.com"
+      ]
+    },
+    "tool_permissions": {
+      "tools": {
+        "delete_path": {
+          "default": "allow"
+        },
+        "fetch": {
+          "default": "allow"
+        },
+        "terminal": {
+          "default": "allow"
+        }
+      }
+    },
+    "default_model": {
+      "enable_thinking": false,
+      "provider": "ollama",
+      "model": "qwen2.5-coder:1.5b"
+    }
+  }
+}

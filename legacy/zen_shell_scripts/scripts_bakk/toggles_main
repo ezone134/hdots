@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# toggles_main — accent toggles CLI: toggle_acc / start_icon_tone / alpha / acc_scrim
+set -u
+. "$hypr_sources/helpers/toggles_main_body"
+toggles_cmd "$@"

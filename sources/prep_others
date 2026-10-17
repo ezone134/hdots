@@ -1,0 +1,31 @@
+# -*- mode: sh -*-
+
+chmod_1777_array=(
+   	/home
+   	/tmp/home_tmp
+)
+
+chmod_777_array=(
+	$c_user
+	$c_ur/$base
+	/acc/common/c-user
+	/acc/data/p-user
+	$c_user/.cache/thumbnails
+	$media_dir
+	$garbage
+	/tmp/prep.log
+)
+chown_array=(
+	/tmp/uh-$u
+	$u_user/.config
+	$p_ur
+	$p_user
+	$boss_bin
+	$garbage_user
+)
+boss_a=( # link all these to boss bins
+	/opt/bin
+	$home_dir/.local/kitty.app/bin
+	$home_dir/standy-bins
+	$home_dir/.local/share/soar/bin
+)

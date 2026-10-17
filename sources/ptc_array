@@ -1,0 +1,13 @@
+-- array target_point
+-- ported from bash sources/target_point
+-- put multiple folders on the right side and all those folders will be
+-- targeted from the left side / symlinks pointing to all those folders
+
+local home = os.getenv("HOME")
+
+ptc_array = {
+    {dots .. "/.icons", home .. "/.icons"},
+    {dots .. "/.themes", home .. "/.themes"},
+    {dots .. "/.fonts", home .. "/.fonts"},
+    {rconf .. "/dl", home .. "/.local/share/applications"},
+}

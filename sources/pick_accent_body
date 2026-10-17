@@ -1,0 +1,21 @@
+#!/usr/bin/env luajit
+-- helper pick_accent_body
+
+function pick_accent_cmd(hex)
+    ch = flagf_get(states2 .. "/s")
+    if ch == "" then ch = "n" end
+
+    if hex == "" then
+        -- hyprpicker prints the picked color to stdout; Esc → no output + exit != 0.
+        hex = out("hyprpicker -a -l -q")
+        hex = hex:gsub("%s+", "")
+        if hex == "" then exit_0() end
+    end
+
+    if not hex:match("^#") then hex = "#" .. hex end
+
+    tf(states .. "/custom_acc_" .. ch, hex)
+    tf(states .. "/acc_source_" .. ch, "c")
+    flagf_set(states2 .. "/acc_changed", "1")
+    run("theme_main restore")
+end

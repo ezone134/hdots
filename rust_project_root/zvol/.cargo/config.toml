@@ -1,0 +1,2 @@
+[build]
+rustflags = ["-C", "link-args=-L/tmp/zvol-lib -Wl,-rpath,/tmp/zvol-lib -Wl,--allow-shlib-undefined -Wl,--no-as-needed"]

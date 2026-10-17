@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# I have over heating issue so I normally disable it
+
+# just uncomment below line
+
+# systemctl suspend

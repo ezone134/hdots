@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<!-- saved from url=(0083)https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/ -->
+<html lang="en" data-darkreader-mode="dynamic" data-darkreader-scheme="dark" data-darkreader-proxy-injected="true"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--user-agent" media="screen">@layer {
+html {
+    background-color: var(--darkreader-background-ffffff, #181a1b) !important;
+}
+html {
+    color-scheme: dark !important;
+}
+iframe {
+    color-scheme: dark !important;
+}
+html, body {
+    background-color: var(--darkreader-background-ffffff, #181a1b);
+}
+html, body {
+    border-color: var(--darkreader-border-4c4c4c, #736b5e);
+    color: var(--darkreader-text-000000, #e8e6e3);
+}
+a {
+    color: var(--darkreader-text-0040ff, #3391ff);
+}
+table {
+    border-color: var(--darkreader-border-808080, #545b5e);
+}
+mark {
+    color: var(--darkreader-text-000000, #e8e6e3);
+}
+::placeholder {
+    color: var(--darkreader-text-a9a9a9, #b2aba1);
+}
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    background-color: var(--darkreader-background-faffbd, #404400) !important;
+    color: var(--darkreader-text-000000, #e8e6e3) !important;
+}
+::selection {
+    background-color: var(--darkreader-background-0060d4, #004daa) !important;
+    color: var(--darkreader-text-ffffff, #e8e6e3) !important;
+}
+::-moz-selection {
+    background-color: var(--darkreader-background-0060d4, #004daa) !important;
+    color: var(--darkreader-text-ffffff, #e8e6e3) !important;
+}
+}</style><style class="darkreader darkreader--text" media="screen"></style><style class="darkreader darkreader--invert" media="screen">c-wiz div > svg > circle, .jfk-bubble.gtx-bubble, .captcheck_answer_label > input + img, span#closed_text > img[src^="https://www.gstatic.com/images/branding/googlelogo"], span[data-href^="https://www.hcaptcha.com/"] > #icon, img.Wirisformula, a[data-testid="headerMediumLogo"]>svg, .d2l-navigation-link-image-container, .d2l-iframe-loading-container, div.mc-ip-hide[style*="background: rgb(255, 255, 255) !important"], [style*="color: rgb(0, 0, 1) !important;"] {
+    filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+}</style><style class="darkreader darkreader--inline" media="screen">[data-darkreader-inline-bgcolor] {
+  background-color: var(--darkreader-inline-bgcolor) !important;
+}
+[data-darkreader-inline-bgimage] {
+  background-image: var(--darkreader-inline-bgimage) !important;
+}
+[data-darkreader-inline-border] {
+  border-color: var(--darkreader-inline-border) !important;
+}
+[data-darkreader-inline-border-bottom] {
+  border-bottom-color: var(--darkreader-inline-border-bottom) !important;
+}
+[data-darkreader-inline-border-left] {
+  border-left-color: var(--darkreader-inline-border-left) !important;
+}
+[data-darkreader-inline-border-right] {
+  border-right-color: var(--darkreader-inline-border-right) !important;
+}
+[data-darkreader-inline-border-top] {
+  border-top-color: var(--darkreader-inline-border-top) !important;
+}
+[data-darkreader-inline-boxshadow] {
+  box-shadow: var(--darkreader-inline-boxshadow) !important;
+}
+[data-darkreader-inline-color] {
+  color: var(--darkreader-inline-color) !important;
+}
+[data-darkreader-inline-fill] {
+  fill: var(--darkreader-inline-fill) !important;
+}
+[data-darkreader-inline-stroke] {
+  stroke: var(--darkreader-inline-stroke) !important;
+}
+[data-darkreader-inline-outline] {
+  outline-color: var(--darkreader-inline-outline) !important;
+}
+[data-darkreader-inline-stopcolor] {
+  stop-color: var(--darkreader-inline-stopcolor) !important;
+}
+[data-darkreader-inline-bg] {
+  background: var(--darkreader-inline-bg) !important;
+}
+[data-darkreader-inline-border-short] {
+  border: var(--darkreader-inline-border-short) !important;
+}
+[data-darkreader-inline-border-bottom-short] {
+  border-bottom: var(--darkreader-inline-border-bottom-short) !important;
+}
+[data-darkreader-inline-border-left-short] {
+  border-left: var(--darkreader-inline-border-left-short) !important;
+}
+[data-darkreader-inline-border-right-short] {
+  border-right: var(--darkreader-inline-border-right-short) !important;
+}
+[data-darkreader-inline-border-top-short] {
+  border-top: var(--darkreader-inline-border-top-short) !important;
+}
+[data-darkreader-inline-invert] {
+    filter: invert(100%) hue-rotate(180deg);
+}</style><style class="darkreader darkreader--variables" media="screen">:root {
+   --darkreader-neutral-background: var(--darkreader-background-ffffff, #181a1b);
+   --darkreader-neutral-text: var(--darkreader-text-000000, #e8e6e3);
+   --darkreader-selection-background: var(--darkreader-background-0060d4, #004daa);
+   --darkreader-selection-text: var(--darkreader-text-ffffff, #e8e6e3);
+}</style><style class="darkreader darkreader--root-vars" media="screen"></style>
+
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Drastically Improve your UI Designs With This Technique</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="./Drastically Improve your UI Designs With This Technique_files/css2" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./Drastically Improve your UI Designs With This Technique_files/styles.css"><style class="darkreader darkreader--sync" media="screen"></style>
+
+    <script src="./Drastically Improve your UI Designs With This Technique_files/script.js" data-site="LIWRLOCV" defer=""></script>
+
+    <meta name="description" content="The 'What happens if...' technique is a powerful and simple method that takes the headache and guesswork out of laying out our UI designs.">
+    <link rel="icon" href="https://designerup.co/blog/content/images/size/w256h256/2018/11/avatar.png" type="image/png">
+    <link rel="canonical" href="https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <link rel="amphtml" href="https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/amp/">
+    
+    <meta property="og:site_name" content="DesignerUp">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Drastically Improve your UI Designs With This Technique">
+    <meta property="og:description" content="The 'What happens if...' technique is a powerful and simple method that takes the headache and guesswork out of laying out our UI designs.">
+    <meta property="og:url" content="https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/">
+    <meta property="og:image" content="https://designerup.co/blog/content/images/2022/04/Blog_Cover-1.jpg">
+    <meta property="article:published_time" content="2022-04-13T02:35:00.000Z">
+    <meta property="article:modified_time" content="2022-04-13T19:22:46.000Z">
+    <meta property="article:tag" content="UI/UX Design">
+    
+    <meta property="article:publisher" content="https://www.facebook.com/designerupco">
+    <meta property="article:author" content="https://www.facebook.com/designerupco">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Drastically Improve Your UI Designs With This Technique">
+    <meta name="twitter:description" content="The 'What happens if...' technique is a powerful and simple method that takes the headache and guesswork out of laying out our UI designs.">
+    <meta name="twitter:url" content="https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/">
+    <meta name="twitter:image" content="https://designerup.co/blog/content/images/2022/04/Blog_Cover-1.jpg">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="DesignerUp">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="UI/UX Design">
+    <meta name="twitter:site" content="@designerupco">
+    <meta name="twitter:creator" content="@designerupco">
+    <meta property="og:image:width" content="2000">
+    <meta property="og:image:height" content="1033">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "DesignerUp",
+        "url": "https://designerup.co/blog/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://designerup.co/blog/content/images/2018/11/Logo.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "DesignerUp",
+        "image": {
+            "@type": "ImageObject",
+            "url": "//www.gravatar.com/avatar/c8d4ebb674d61f351ebea9d76958502f?s=250&d=mm&r=x",
+            "width": 250,
+            "height": 250
+        },
+        "url": "https://designerup.co/blog/author/designerup/",
+        "sameAs": [
+            "https://designerup.co",
+            "https://www.facebook.com/designerupco",
+            "https://twitter.com/designerupco"
+        ]
+    },
+    "headline": "Drastically Improve your UI Designs With This Technique",
+    "url": "https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/",
+    "datePublished": "2022-04-13T02:35:00.000Z",
+    "dateModified": "2022-04-13T19:22:46.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://designerup.co/blog/content/images/2022/04/Blog_Cover-1.jpg",
+        "width": 2000,
+        "height": 1033
+    },
+    "keywords": "UI/UX Design",
+    "description": "The &#x27;What happens if...&#x27; technique is a powerful and simple method that takes the headache and guesswork out of laying out our UI designs, ensuring there are no gaps in our component flows and working better with our developers. ",
+    "mainEntityOfPage": "https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 5.55">
+    <link rel="alternate" type="application/rss+xml" title="DesignerUp" href="https://designerup.co/blog/rss/">
+    <script defer="" src="./Drastically Improve your UI Designs With This Technique_files/portal.min.js" data-i18n="false" data-ghost="https://designerup.co/blog/" data-key="16398cbd6c2c0c2661dc153ee9" data-api="https://designerup.co/blog/ghost/api/content/" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style><style class="darkreader darkreader--sync" media="screen"></style><script async="" src="./Drastically Improve your UI Designs With This Technique_files/saved_resource"></script>
+    <script defer="" src="./Drastically Improve your UI Designs With This Technique_files/sodo-search.min.js" data-key="16398cbd6c2c0c2661dc153ee9" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.1/umd/main.css" data-sodo-search="https://designerup.co/blog/" crossorigin="anonymous"></script>
+    
+    <link href="https://designerup.co/blog/webmentions/receive/" rel="webmention">
+    <script defer="" src="./Drastically Improve your UI Designs With This Technique_files/cards.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="./Drastically Improve your UI Designs With This Technique_files/cards.min.css"><style class="darkreader darkreader--sync" media="screen"></style>
+    <script defer="" src="./Drastically Improve your UI Designs With This Technique_files/member-attribution.min.js"></script>
+    <style type="text/css">
+    a {
+    	color: #5A4BAD;    
+    }
+    .subscribe-form {
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
+    }
+    .subscribe-form button,
+    .subscribe-overlay button {
+    	background: #5A4BAD;   
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
+    }
+    .site-footer-nav a:last-child {
+     	display: none;   
+    }
+    .download-form {
+    	padding: 2.5vw 7vw 2vw; 
+        width: 100%;
+        margin-top: 0;
+    }
+    .download-form h3 {
+    	margin-top: 0;   
+    }
+    .post-full-content hr {
+margin: 2vw 0;
+}
+    .kg-card.kg-callout-card {
+        font-size: 19px !important;
+        margin-bottom: 35px;
+          width: 100%;
+    }
+    .kg-bookmark-author {
+    }
+</style><style class="darkreader darkreader--sync" media="screen"></style>
+<script>
+  // Custom configuration for GuidePost theme
+  var themeConfig = {
+    // The API key for your Ghost blog
+    // ghostSearchKey: '3db5ad5ac5a97b8d0a3e4f1403'
+    ghostSearchKey: 'd297dd216fe565228808194780'
+  };
+</script><meta name="darkreader" content="de1d9bbfa52e4e128bca7f25ecbfa867"><style class="darkreader darkreader--override" media="screen">c-wiz div {
+    --action-items-action-item-background-color: var(--darkreader-neutral-background) !important;
+}
+.jfk-bubble.gtx-bubble {
+    background-color: white !important;
+}
+.vimvixen-hint {
+    background-color: var(--darkreader-background-ffd76e, #684b00) !important;
+    border-color: var(--darkreader-background-c59d00, #9e7e00) !important;
+    color: var(--darkreader-text-302505, #d7d4cf) !important;
+}
+#vimvixen-console-frame {
+    color-scheme: light !important;
+}
+::placeholder {
+    opacity: 0.5 !important;
+}
+#edge-translate-panel-body,
+.MuiTypography-body1,
+.nfe-quote-text {
+    color: var(--darkreader-neutral-text) !important;
+}
+gr-main-header {
+    background-color: var(--darkreader-background-add8e6, #1b4958) !important;
+}
+.tou-z65h9k,
+.tou-mignzq,
+.tou-1b6i2ox,
+.tou-lnqlqk {
+    background-color: var(--darkreader-neutral-background) !important;
+}
+.tou-75mvi {
+    background-color: var(--darkreader-background-cfecf5, #0f3a47) !important;
+}
+.tou-ta9e87,
+.tou-1w3fhi0,
+.tou-1b8t2us,
+.tou-py7lfi,
+.tou-1lpmd9d,
+.tou-1frrtv8,
+.tou-17ezmgn {
+    background-color: var(--darkreader-background-f5f5f5, #1e2021) !important;
+}
+.tou-uknfeu {
+    background-color: var(--darkreader-background-faedda, #432c09) !important;
+}
+.tou-6i3zyv {
+    background-color: var(--darkreader-background-85c3d8, #245d70) !important;
+}
+div.mermaid-viewer-control-panel .btn {
+    background-color: var(--darkreader-neutral-background);
+    fill: var(--darkreader-neutral-text);
+}
+svg g rect.er {
+    fill: var(--darkreader-neutral-background) !important;
+}
+svg g rect.er.entityBox {
+    fill: var(--darkreader-neutral-background) !important;
+}
+svg g rect.er.attributeBoxOdd {
+    fill: var(--darkreader-neutral-background) !important;
+}
+svg g rect.er.attributeBoxEven {
+    fill: var(--darkreader-selection-background);
+    fill-opacity: 0.8 !important;
+}
+svg rect.er.relationshipLabelBox {
+    fill: var(--darkreader-neutral-background) !important;
+}
+svg g g.nodes rect,
+svg g g.nodes polygon {
+    fill: var(--darkreader-neutral-background) !important;
+}
+svg g rect.task {
+    fill: var(--darkreader-selection-background) !important;
+}
+svg line.messageLine0,
+svg line.messageLine1 {
+    stroke: var(--darkreader-neutral-text) !important;
+}
+div.mermaid .actor {
+    fill: var(--darkreader-neutral-background) !important;
+}
+mitid-authenticators-code-app > .code-app-container {
+    background-color: white !important;
+    padding-top: 1rem;
+}
+iframe#unpaywall[src$="unpaywall.html"] {
+    color-scheme: light !important;
+}
+select {
+    --darkreader-bg--form-control-background-color: rgba(22, 22, 22, 0) !important;
+}
+body#tumblr {
+    --darkreader-bg--secondary-accent: 31, 32, 34 !important;
+    --darkreader-bg--white: 23, 23, 23 !important;
+    --darkreader-text--black: 228, 224, 218 !important;
+}
+:host {
+    --d2l-border-color: var(--darkreader-bg--d2l-color-gypsum) !important;
+    --d2l-button-icon-background-color-hover: var(--darkreader-bg--d2l-color-gypsum) !important;
+    --d2l-color-ferrite: var(--darkreader-neutral-text) !important;
+    --d2l-color-sylvite: var(--darkreader-bg--d2l-color-sylvite) !important;
+    --d2l-dropdown-background-color: var(--darkreader-neutral-background) !important;
+    --d2l-dropdown-border-color: var(--darkreader-border--d2l-color-mica) !important;
+    --d2l-input-backgroud-color: var(--darkreader-neutral-background) !important;
+    --d2l-menu-border-color: var(--darkreader-bg--d2l-color-gypsum) !important;
+    --d2l-tooltip-background-color: var(--darkreader-neutral-background) !important;
+    --d2l-tooltip-border-color: var(--darkreader-bg--d2l-color-gypsum) !important;
+}
+:host([_floating]) .d2l-floating-buttons-container {
+    background-color: var(--darkreader-neutral-background) !important;
+    border-top-color: var(--darkreader-border--d2l-color-mica) !important;
+    opacity: 0.88 !important;
+}
+d2l-card {
+    background: var(--darkreader-neutral-background) !important;
+    border-color: var(--darkreader-border--d2l-color-gypsum) !important;
+}
+d2l-dropdown-content > div,
+d2l-menu-item {
+    background-color: var(--darkreader-neutral-background) !important;
+    border-radius: 10px !important;
+}
+d2l-empty-state-simple {
+    border-color: var(--darkreader-bg--d2l-color-gypsum) !important;
+}
+.d2l-button-filter > ul > li > a.vui-button {
+    border-color: var(--darkreader-border--d2l-color-mica) !important;
+}
+.d2l-label-text:has(.d2l-button-subtle-content):hover,
+.d2l-label-text:has(.d2l-button-subtle-content):focus,
+.d2l-label-text:has(.d2l-button-subtle-content):active {
+    background-color: var(--darkreader-bg--d2l-color-gypsum) !important;
+}
+.d2l-navigation-centerer {
+    color: inherit !important;
+}
+.d2l-tabs-layout {
+    border-color: var(--darkreader-border--d2l-color-gypsum) !important;
+}
+.d2l-input,
+.d2l-calendar-date,
+.d2l-htmleditor-container {
+    background-color: var(--darkreader-neutral-background) !important;
+}
+.d2l-collapsible-panel {
+    border: 1px solid var(--darkreader-border--d2l-color-mica) !important;
+    border-radius: 0.4rem !important;
+}
+.d2l-collapsible-panel-divider {
+    border-bottom: 1px solid var(--darkreader-border--d2l-color-mica) !important;
+}
+.d2l-w2d-flex {
+    border-bottom: 2px solid var(--darkreader-border--d2l-color-mica) !important;
+}
+.d2l-collapsible-panel scrolled,
+.d2l-collapsible-panel-header,
+.d2l-w2d-collection-fixed {
+    background-color: var(--darkreader-neutral-background) !important;
+}
+.d2l-loading-spinner-bg {
+    fill: var(--darkreader-bg--d2l-color-gypsum) !important;
+}
+.d2l-loading-spinner-bg-stroke {
+    stroke: var(--darkreader-border--d2l-color-mica) !important;
+}
+.d2l-loading-spinner-wrapper svg path,
+.d2l-loading-spinner-wrapper svg circle {
+    fill: var(--darkreader-neutral-background) !important;
+}
+.d2l-twopanelselector-side.d2l-twopanelselector-side-sep {
+    background: var(--darkreader-bg--d2l-color-mica) !important;
+}
+.d2l-le-TreeAccordionItem-anchor::before {
+    background: var(--darkreader-bg--d2l-color-corundum) !important;
+}
+table[class|="moz-header"] {
+    background: none;
+}
+*[style*="color: rgba(0,0,0,"]:not([style*="color: rgba(0,0,0,0)"]),
+*[style*="color: rgba(0, 0, 0,"]:not([style*="color: rgba(0, 0, 0, 0)"]),
+*[style*="color:#000"]:not(.cell-input > span),
+*[style*="color:black"]:not(.cell-input > span),
+*[style*="color:#282828"]:not(.cell-input > span),
+*[style*="color:#444"]:not(.cell-input > span),
+*[style*="color: #222222"]:not(.cell-input > span) {
+    color: var(--darkreader-neutral-text) !important;
+}
+*[style*="background:#fff"],
+*[style*="background-color:#fff"],
+*[style*="background: #fff"],
+*[style*="background: rgb(255, 255, 255)"] {
+    background: var(--darkreader-neutral-background) !important;
+}
+*[bgcolor="#F5F5F5"],
+*[style*="background-color: #F5F5F5"] {
+    background: var(--darkreader-background-f5f5f5, #1e2021) !important;
+}
+*[style*="background: #e6e6e6"] {
+    background: var(--darkreader-background-e6e6e6, #26292b) !important;
+}
+body[style*="background: rgb(255, 255, 255) !important"] *:not(a),
+.body[style*="background-color: rgb(254, 254, 254) !important"] *:not(a) {
+    background-color: var(--darkreader-neutral-background) !important;
+}
+div[style*="www.gstatic.com/android/"] {
+    background: none !important;
+}
+*[style*="background:#f9f9f9"] {
+    background: var(--darkreader-background-f9f9f9, #1b1e1f) !important;
+}
+body.mediawiki.skin-vector #mw-page-base {
+    background-image: none !important;
+}
+.overflow-hidden .spinning-bg,
+.overflow-hidden .solid-bg {
+    background: transparent !important;
+}
+*[style*="color: rgb(0,0,0) !imoprtant"][style*="--darkreader-inline-color"],
+*[style*="color: rgb(0, 0, 0) !important"][style*="--darkreader-inline-color"] {
+    -webkit-text-fill-color: var(--darkreader-inline-color) !important;
+}
+embed[type="application/pdf"][src="about:blank"] { filter: invert(100%) contrast(90%); }</style>
+<!--<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2034709804921715" crossorigin="anonymous"></script>-->
+
+<script>
+if ((new URLSearchParams(window.location.search)).get('ref') === 'ghost-explore') {
+//    window.location = 'https://designerup.co/blog/';
+}
+</script>
+<!--
+<script>
+  (function(d, id) {
+    if (d.getElementById(id)) return;
+    var sc, node = d.getElementsByTagName('script')[0];
+    sc = d.createElement('script'); sc.id = id;
+    sc.src = 'https://sdk.getsitekit.com/static/js/app.js#apiKey=c040015231fea98231101b0aa2eafafc';
+    node.parentNode.insertBefore(sc, node);
+  }(document, 'sitekit-sdk'));
+</script>
+<script src="//m.servedby-buysellads.com/monetization.js" type="text/javascript"></script>
+--><style>:root {--ghost-accent-color: #15171A;}</style><style class="darkreader darkreader--sync" media="screen"></style>
+<style>.gh-portal-account-header{display:flex;flex-direction:column;align-items:center;margin:0 0 32px}.gh-portal-account-header .gh-portal-avatar{margin:6px 0 8px!important}.gh-portal-account-data{margin-bottom:40px}footer.gh-portal-account-footer{display:flex}.gh-portal-account-footer.paid{margin-top:12px}.gh-portal-account-footermenu{display:flex;align-items:center;list-style:none;padding:0;margin:0}.gh-portal-account-footerright{display:flex;flex-grow:1;align-items:center;justify-content:flex-end}.gh-portal-account-footermenu li{margin-right:16px}.gh-portal-account-footermenu li:last-of-type{margin-right:0}.gh-portal-freeaccount-newsletter{display:flex;align-items:center;justify-content:space-between;margin-top:24px}.gh-portal-freeaccount-newsletter .label{display:flex;flex-direction:column;flex-grow:1}.gh-portal-free-ctatext{margin-top:-12px}.gh-portal-cancelcontinue-container{margin:24px 0 32px}.gh-portal-list-detail .gh-portal-email-notice{display:flex;align-items:center;gap:5px;margin-top:6px;color:var(--red);font-weight:500;font-size:1.25rem;letter-spacing:.2px}.gh-portal-email-notice-icon{width:20px;height:20px}.gh-portal-billing-button-loader{width:32px;height:32px;margin-right:-3px;opacity:.6}.gh-portal-product-icon{width:52px;margin-right:12px;border-radius:2px}.gh-portal-account-discountcontainer{position:relative;display:flex;align-items:center}.gh-portal-account-old-price{text-decoration:line-through;color:var(--grey9)!important}.gh-portal-account-tagicon{width:16px;height:16px;color:var(--brandcolor);margin-right:5px;z-index:999}@media (max-width: 390px){.gh-portal-account-footer{padding:0!important}}@media (max-width: 340px){.gh-portal-account-footer{padding:0!important;flex-wrap:wrap;gap:12px}.gh-portal-account-footer .gh-portal-account-footerright{justify-content:flex-start}}.gh-email-suppressed-page-title{margin-bottom:14px}.gh-email-suppressed-page-icon{display:block;width:38px;height:38px;margin:0 auto 18px}.gh-email-suppressed-page-text{padding:0 14px;text-align:center;color:var(--grey6)}.gh-email-faq-footer-text{color:var(--grey8)}.gh-portal-list-detail.email-newsletter .gh-email-faq-page-button{display:block;margin-top:3px}.accountEmail .gh-email-faq-page-button{margin-left:4px}.emailReceivingFAQ .gh-portal-btn-back,.emailReceivingFAQ .gh-portal-btn-back:hover{left:calc(6vmin - 14px)}.emailReceivingFAQ .gh-portal-closeicon-container{right:calc(6vmin - 20px)}@media (max-width: 480px){.emailReceivingFAQ .gh-portal-btn-back,.emailReceivingFAQ .gh-portal-btn-back:hover{left:16px}.emailReceivingFAQ .gh-portal-closeicon-container{right:24px}}.gh-email-faq-page-button{color:var(--brandcolor);cursor:pointer;background:none;transition:color linear .1s;font-size:1.45rem}</style><style class="darkreader darkreader--sync" media="screen"></style><style>.App{text-align:center}.App-logo{height:40vmin;pointer-events:none}@media (prefers-reduced-motion: no-preference){.App-logo{animation:App-logo-spin infinite 20s linear}}.App-header{background-color:#282c34;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:calc(10px + 2vmin);color:#fff}.App-link{color:#61dafb}@keyframes App-logo-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style><style class="darkreader darkreader--sync" media="screen"></style><style id="fit-vids-style">.fluid-width-video-wrapper{width:100%;position:relative;padding:0;}.fluid-width-video-wrapper iframe,.fluid-width-video-wrapper object,.fluid-width-video-wrapper embed {position:absolute;top:0;left:0;width:100%;height:100%;}</style><style class="darkreader darkreader--sync" media="screen"></style></head>
+<body class="post-template tag-ui-ux-design">
+  <div class="site-container">
+    <header class="site-header">
+  <div class="site-container container">
+    <a href="https://designerup.co/" class="logo">
+      <svg width="170px" height="35px" viewBox="0 0 170 35" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" data-darkreader-inline-invert="">
+          <g id="Assets" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+              <g id="brand" transform="translate(-23.000000, -19.000000)" fill="#5A4BAD">
+                  <g id="logo" transform="translate(23.000000, 19.000000)">
+                      <path d="M35.0565043,3.76128807 C36.0570586,3.76128807 36.8712945,2.98774362 36.8712945,2.03719197 C36.8712945,1.08664032 36.0570586,0.313095869 35.0565043,0.313095869 C34.2688854,0.313095869 33.6034624,0.795268078 33.3530213,1.46249327 L20.5381833,1.46249327 L20.5381833,0.887794569 C20.5381833,0.569986188 20.2671746,0.313095869 19.9332533,0.313095869 L17.5135331,0.313095869 C17.1796117,0.313095869 16.9086031,0.569986188 16.9086031,0.887794569 L16.9086031,1.46249327 L4.09376503,1.46249327 C3.84332399,0.795268078 3.17790094,0.313095869 2.39028203,0.313095869 C1.38972774,0.313095869 0.5754919,1.08664032 0.5754919,2.03719197 C0.5754919,2.98774362 1.38972774,3.76128807 2.39028203,3.76128807 C3.17790094,3.76128807 3.84332399,3.27911586 4.09376503,2.61189067 L12.4768856,2.61189067 C6.77541991,4.78425176 2.56752653,9.83527863 1.89060981,15.8299608 L1.18042194,15.8299608 C0.846500559,15.8299608 0.5754919,16.0868511 0.5754919,16.4046595 L0.5754919,18.7034543 C0.5754919,19.0212627 0.846500559,19.278153 1.18042194,19.278153 L3.60014211,19.278153 C3.9340635,19.278153 4.20507216,19.0212627 4.20507216,18.7034543 L4.20507216,16.4046595 C4.20507216,16.0868511 3.9340635,15.8299608 3.60014211,15.8299608 L3.12103752,15.8299608 C3.95523605,8.99966672 9.71900949,3.52336281 16.9086031,2.731428 L16.9086031,3.18658937 C16.9086031,3.50439775 17.1796117,3.76128807 17.5135331,3.76128807 L19.9332533,3.76128807 C20.2671746,3.76128807 20.5381833,3.50439775 20.5381833,3.18658937 L20.5381833,2.731428 C27.7277769,3.52336281 33.4915503,8.99966672 34.3257488,15.8299608 L33.8466442,15.8299608 C33.5127229,15.8299608 33.2417142,16.0868511 33.2417142,16.4046595 L33.2417142,18.7034543 C33.2417142,19.0212627 33.5127229,19.278153 33.8466442,19.278153 L36.2663644,19.278153 C36.6002858,19.278153 36.8712945,19.0212627 36.8712945,18.7034543 L36.8712945,16.4046595 C36.8712945,16.0868511 36.6002858,15.8299608 36.2663644,15.8299608 L35.5561765,15.8299608 C34.8786549,9.83527863 30.6707615,4.78425176 24.9699008,2.61189067 L33.3530213,2.61189067 C33.6034624,3.27911586 34.2688854,3.76128807 35.0565043,3.76128807 Z M35.0565043,1.46249327 C35.3898208,1.46249327 35.6614344,1.71995829 35.6614344,2.03719197 C35.6614344,2.35442565 35.3898208,2.61189067 35.0565043,2.61189067 C34.7231879,2.61189067 34.4515743,2.35442565 34.4515743,2.03719197 C34.4515743,1.71995829 34.7231879,1.46249327 35.0565043,1.46249327 Z M2.39028203,2.61189067 C2.05696557,2.61189067 1.78535199,2.35442565 1.78535199,2.03719197 C1.78535199,1.71995829 2.05696557,1.46249327 2.39028203,1.46249327 C2.72359848,1.46249327 2.99521207,1.71995829 2.99521207,2.03719197 C2.99521207,2.35442565 2.72359848,2.61189067 2.39028203,2.61189067 Z M2.99521207,18.1287556 L1.78535199,18.1287556 L1.78535199,16.9793582 L2.99521207,16.9793582 L2.99521207,18.1287556 Z M19.3283232,2.61189067 L18.1184631,2.61189067 L18.1184631,1.46249327 L19.3283232,1.46249327 L19.3283232,2.61189067 Z M34.4515743,16.9793582 L35.6614344,16.9793582 L35.6614344,18.1287556 L34.4515743,18.1287556 L34.4515743,16.9793582 Z" id="Shape" fill-rule="nonzero"></path>
+                      <path d="M25.2203418,11.4202976 L19.1710414,5.09861195 C18.9417729,4.85953729 18.5050134,4.85953729 18.2763499,5.09861195 L12.2270495,11.4202976 C12.0292373,11.6271892 12.0165338,11.9392506 12.1968029,12.1599349 L16.2613279,17.1247569 L15.7108416,19.739636 C15.6951134,19.8143469 15.6951134,19.8907818 15.7108416,19.9654926 L16.173613,22.1642899 C15.2341567,22.2286561 14.4888829,22.9671439 14.4888829,23.8757426 C14.4888829,24.3188353 14.6709668,24.7194003 14.9607283,25.02514 C14.6703619,25.3308797 14.4888829,25.7314447 14.4888829,26.1745374 C14.4888829,26.6176301 14.6709668,27.0181951 14.9607283,27.3239348 C14.6703619,27.6296745 14.4888829,28.0302395 14.4888829,28.4733322 C14.4888829,28.9164249 14.6709668,29.3169899 14.9607283,29.6227296 C14.6703619,29.9284693 14.4888829,30.3290343 14.4888829,30.772127 C14.4888829,31.7226786 15.3031187,32.4962231 16.303673,32.4962231 L16.303673,34.7950179 L17.5135331,34.7950179 L17.5135331,32.4962231 L21.1431134,32.4962231 C22.1436676,32.4962231 22.9579035,31.7226786 22.9579035,30.772127 C22.9579035,30.3290343 22.7758195,29.9284693 22.486058,29.6227296 C22.7764245,29.3169899 22.9579035,28.9164249 22.9579035,28.4733322 C22.9579035,28.0302395 22.7758195,27.6296745 22.486058,27.3239348 C22.7764245,27.0181951 22.9579035,26.6176301 22.9579035,26.1745374 C22.9579035,25.7314447 22.7758195,25.3308797 22.486058,25.02514 C22.7764245,24.7194003 22.9579035,24.3188353 22.9579035,23.8757426 C22.9579035,23.6734486 22.9143485,23.4814993 22.8465964,23.3010439 L23.5628335,23.3010439 C23.8967549,23.3010439 24.1677636,23.0441536 24.1677636,22.7263452 L24.1677636,20.4275504 C24.1677636,19.3586108 24.9402592,18.4569085 25.9825537,18.2017423 L25.9825537,34.7950179 L27.1924138,34.7950179 L27.1924138,17.5540569 C27.1924138,17.2362485 26.9214051,16.9793582 26.5874837,16.9793582 C24.5857702,16.9793582 22.9579035,18.5258724 22.9579035,20.4275504 L22.9579035,22.1516465 L21.276198,22.1516465 L21.7365497,19.9654926 C21.7522779,19.8907818 21.7522779,19.8143469 21.7365497,19.739636 L21.1860634,17.1247569 L25.2505883,12.1599349 C25.4308575,11.9392506 25.418154,11.6277639 25.2203418,11.4202976 Z M18.7233932,11.8070699 C19.0567096,11.8070699 19.3283232,12.0645349 19.3283232,12.3817686 C19.3283232,12.6990023 19.0567096,12.9564673 18.7233932,12.9564673 C18.3900767,12.9564673 18.1184631,12.6990023 18.1184631,12.3817686 C18.1184631,12.0645349 18.3900767,11.8070699 18.7233932,11.8070699 Z M21.1431134,31.3468257 L16.303673,31.3468257 C15.9703566,31.3468257 15.698743,31.0893607 15.698743,30.772127 C15.698743,30.4548933 15.9703566,30.1974283 16.303673,30.1974283 L21.1431134,30.1974283 C21.4764298,30.1974283 21.7480434,30.4548933 21.7480434,30.772127 C21.7480434,31.0893607 21.4764298,31.3468257 21.1431134,31.3468257 Z M21.1431134,29.0480309 L16.303673,29.0480309 C15.9703566,29.0480309 15.698743,28.7905659 15.698743,28.4733322 C15.698743,28.1560985 15.9703566,27.8986335 16.303673,27.8986335 L21.1431134,27.8986335 C21.4764298,27.8986335 21.7480434,28.1560985 21.7480434,28.4733322 C21.7480434,28.7905659 21.4764298,29.0480309 21.1431134,29.0480309 Z M21.1431134,26.7492361 L16.303673,26.7492361 C15.9703566,26.7492361 15.698743,26.4917711 15.698743,26.1745374 C15.698743,25.8573037 15.9703566,25.5998387 16.303673,25.5998387 L21.1431134,25.5998387 C21.4764298,25.5998387 21.7480434,25.8573037 21.7480434,26.1745374 C21.7480434,26.4917711 21.4764298,26.7492361 21.1431134,26.7492361 Z M21.7480434,23.8757426 C21.7480434,24.1929763 21.4764298,24.4504413 21.1431134,24.4504413 L16.303673,24.4504413 C15.9703566,24.4504413 15.698743,24.1929763 15.698743,23.8757426 C15.698743,23.5585089 15.9703566,23.3010439 16.303673,23.3010439 L21.1431134,23.3010439 C21.4764298,23.3010439 21.7480434,23.5585089 21.7480434,23.8757426 Z M16.9207017,19.8528517 L17.4046457,17.5540569 L20.0421407,17.5540569 L20.5260847,19.8528517 L20.0421407,22.1516465 L17.4046457,22.1516465 L16.9207017,19.8528517 Z M20.2417676,16.4046595 L17.2050188,16.4046595 L13.4641314,11.8358048 L18.1184631,6.97155501 L18.1184631,10.763417 C17.4161394,11.0013423 16.9086031,11.6335109 16.9086031,12.3817686 C16.9086031,13.3323202 17.7228389,14.1058647 18.7233932,14.1058647 C19.7239475,14.1058647 20.5381833,13.3323202 20.5381833,12.3817686 C20.5381833,11.6335109 20.030647,11.0013423 19.3283232,10.763417 L19.3283232,6.97155501 L23.982655,11.8358048 L20.2417676,16.4046595 Z" id="Shape" fill-rule="nonzero"></path>
+                      <path d="M62.7498341,18.0994935 C62.7498341,23.7155216 60.5311896,26.5234935 56.0938341,26.5234935 L50.7378341,26.5234935 L50.7378341,10.3774935 L56.1978341,10.3774935 C58.5725126,10.3774935 60.2581624,11.0404868 61.2548341,12.3664935 C62.2515057,13.6925001 62.7498341,15.603481 62.7498341,18.0994935 Z M56.0158341,22.7794935 C56.9345053,22.7794935 57.5281661,22.4544967 57.7968341,21.8044935 C58.0655021,21.1544902 58.1998341,20.0625011 58.1998341,18.5284935 C58.1998341,16.9944858 58.0568355,15.90683 57.7708341,15.2654935 C57.4848326,14.6241569 56.8738387,14.3034935 55.9378341,14.3034935 L55.1578341,14.3034935 L55.1578341,22.7794935 L56.0158341,22.7794935 Z M73.1498341,26.5234935 L64.4138341,26.5234935 L64.4138341,10.3774935 L73.4098341,10.3774935 L73.1498341,14.3554935 L68.8598341,14.3554935 L68.8598341,16.7734935 L72.5778341,16.7734935 L72.5778341,20.2054935 L68.8598341,20.2054935 L68.8598341,22.8834935 L73.4098341,22.8834935 L73.1498341,26.5234935 Z M74.1898341,15.2394935 C74.1898341,13.6968191 74.6404962,12.4574982 75.5418341,11.5214935 C76.4431719,10.5854888 77.6781596,10.1174935 79.2468341,10.1174935 C80.8155086,10.1174935 82.4231592,10.2734919 84.0698341,10.5854935 L83.5498341,14.7454935 C81.8338255,14.3468248 80.6551706,14.1474935 80.0138341,14.1474935 C79.1991633,14.1474935 78.7918341,14.4768235 78.7918341,15.1354935 C78.7918341,15.3954948 78.9868321,15.6468256 79.3768341,15.8894935 C79.766836,16.1321614 80.2391646,16.3878255 80.7938341,16.6564935 C81.3485035,16.9251615 81.9031646,17.2458249 82.4578341,17.6184935 C83.0125035,17.991162 83.4848321,18.5241567 83.8748341,19.2174935 C84.264836,19.9108303 84.4598341,20.7081556 84.4598341,21.6094935 C84.4598341,23.2561684 84.0178385,24.5301556 83.1338341,25.4314935 C82.2498296,26.3328313 80.9975088,26.7834935 79.3768341,26.7834935 C77.7561593,26.7834935 76.1745084,26.5321627 74.6318341,26.0294935 L74.9178341,22.1554935 C76.77251,22.6928295 78.0638304,22.9614935 78.7918341,22.9614935 C79.5198377,22.9614935 79.8838341,22.64083 79.8838341,21.9994935 C79.8838341,21.6701585 79.688836,21.3668282 79.2988341,21.0894935 C78.9088321,20.8121588 78.4365035,20.5348282 77.8818341,20.2574935 C77.3271646,19.9801588 76.7681702,19.6594953 76.2048341,19.2954935 C75.6414979,18.9314917 75.164836,18.4028303 74.7748341,17.7094935 C74.3848321,17.0161567 74.1898341,16.1928316 74.1898341,15.2394935 Z M90.6998341,26.5234935 L86.2798341,26.5234935 L86.2798341,10.3774935 L90.6998341,10.3774935 L90.6998341,26.5234935 Z M102.971834,15.1874935 C101.307826,14.6848243 100.090171,14.4334935 99.3188341,14.4334935 C98.5474969,14.4334935 98.0188355,14.7714901 97.7328341,15.4474935 C97.4468326,16.1234969 97.3038341,17.1938195 97.3038341,18.6584935 C97.3038341,20.1231675 97.4381661,21.1891568 97.7068341,21.8564935 C97.9755021,22.5238301 98.5258299,22.8574935 99.3578341,22.8574935 C99.6005019,22.8574935 100.068497,22.7881608 100.761834,22.6494935 L100.761834,20.6734935 L99.5918341,20.6734935 L99.5918341,17.6054935 L104.557834,17.6054935 L104.557834,26.5234935 L101.489834,26.5234935 L101.073834,25.6914935 L100.969834,25.6914935 C100.675166,25.9341614 100.441168,26.1161595 100.267834,26.2374935 C99.7824983,26.6014953 99.0978385,26.7834935 98.2138341,26.7834935 C94.5911493,26.7834935 92.7798341,24.0448542 92.7798341,18.5674935 C92.7798341,15.8288131 93.256496,13.735834 94.2098341,12.2884935 C95.1631722,10.8411529 96.7664895,10.1174935 99.0198341,10.1174935 C100.82251,10.1174935 102.373828,10.394824 103.673834,10.9494935 L102.971834,15.1874935 Z M118.519834,26.5234935 L114.255834,26.5234935 L110.901834,19.0094935 L110.693834,19.0094935 L110.693834,26.5234935 L106.741834,26.5234935 L106.741834,10.3774935 L111.135834,10.3774935 L114.333834,18.1254935 L114.541834,18.1254935 L114.541834,10.3774935 L118.519834,10.3774935 L118.519834,26.5234935 Z M129.543834,26.5234935 L120.807834,26.5234935 L120.807834,10.3774935 L129.803834,10.3774935 L129.543834,14.3554935 L125.253834,14.3554935 L125.253834,16.7734935 L128.971834,16.7734935 L128.971834,20.2054935 L125.253834,20.2054935 L125.253834,22.8834935 L129.803834,22.8834935 L129.543834,26.5234935 Z M142.361834,15.4994935 C142.361834,16.470165 142.214502,17.2761569 141.919834,17.9174935 C141.625166,18.55883 141.165837,19.1394909 140.541834,19.6594935 L142.699834,26.5234935 L137.889834,26.5234935 L136.277834,20.6994935 L135.679834,20.6994935 L135.679834,26.5234935 L131.311834,26.5234935 L131.311834,10.3774935 L137.343834,10.3774935 C139.077176,10.3774935 140.34683,10.7848227 141.152834,11.5994935 C141.958838,12.4141642 142.361834,13.7141512 142.361834,15.4994935 Z M136.355834,17.9694935 C136.806503,17.9694935 137.127166,17.8394948 137.317834,17.5794935 C137.508502,17.3194922 137.603834,16.8471636 137.603834,16.1624935 C137.603834,15.4778234 137.508502,15.0011615 137.317834,14.7324935 C137.127166,14.4638255 136.81517,14.3294935 136.381834,14.3294935 L135.679834,14.3294935 L135.679834,17.9694935 L136.355834,17.9694935 Z M151.513834,15.4566615 C153.836739,15.4557145 154.998192,15.4272716 154.998192,15.3713328 C154.998192,15.0686229 153.836739,13.7584916 151.513834,11.4409389 L151.513834,10.3774935 L155.985834,10.3774935 L155.985834,21.4534935 C155.985834,23.3081694 155.478839,24.6601559 154.464834,25.5094935 C153.450829,26.3588311 151.960177,26.7834935 149.992834,26.7834935 C148.025491,26.7834935 146.560839,26.3631643 145.598834,25.5224935 C144.636829,24.6818226 144.155834,23.342836 144.155834,21.5054935 L144.155834,10.3774935 L148.705834,10.3774935 L148.705834,11.5917316 C146.375145,14.0087982 145.209801,15.2963955 145.209801,15.4545237 L148.705834,15.4545237 L148.705834,21.2194935 C148.705834,21.7568295 148.8185,22.1554922 149.043834,22.4154935 C149.269169,22.6754948 149.637498,22.8054935 150.148834,22.8054935 C150.66017,22.8054935 151.0155,22.6798281 151.214834,22.4284935 C151.414168,22.1771589 151.513834,21.7654963 151.513834,21.1934935 L151.513834,15.4566615 Z M163.837834,21.2454935 L162.641834,21.2454935 L162.641834,26.5234935 L158.273834,26.5234935 L158.273834,10.3774935 L163.551834,10.3774935 C165.40651,10.3774935 166.784496,10.8021559 167.685834,11.6514935 C168.587172,12.5008311 169.037834,13.8961504 169.037834,15.8374935 C169.037834,17.7788365 168.613172,19.1654893 167.763834,19.9974935 C166.914496,20.8294976 165.605843,21.2454935 163.837834,21.2454935 Z M164.331834,17.7354935 C164.487835,17.4408253 164.565834,16.912164 164.565834,16.1494935 C164.565834,15.386823 164.479168,14.849495 164.305834,14.5374935 C164.1325,14.2254919 163.785837,14.0694935 163.265834,14.0694935 L162.641834,14.0694935 L162.641834,18.1774935 L163.369834,18.1774935 C163.85517,18.1774935 164.175833,18.0301616 164.331834,17.7354935 Z" id="DESIGNERUP"></path>
+                  </g>
+              </g>
+          </g>
+      </svg>
+    </a>
+
+    <div class="mobile-nav-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <nav class="mobile-nav">
+      <div class="inner">
+        <a href="https://designerup.co/product-design-ui-ux-course" class="nav-link">Product Design (UX/UI) Course</a>
+        <a href="https://designerup.co/ui-design-crash-course" class="nav-link">UI Design Crash Course</a>
+        <hr>
+        <a href="https://designerup.co/community" class="nav-link">Community</a>
+        <hr>
+        <h6>Resources</h6>
+        <a href="https://designerup.co/webinars" class="nav-link">Webinars</a>
+        <a href="https://youtube.com/designerup" class="nav-link">YouTube Channel</a>
+        <a href="https://anchor.fm/designerup" class="nav-link">Podcasts</a>
+        <a href="https://designerup.co/newsletter" class="nav-link">Newsletter</a>
+        <hr>
+        <a href="https://designerup.co/blog" class="nav-link">Blog</a>
+        <hr>
+        <a href="https://courses.designerup.co/sign_in" class="btn btn-small btn-outline">Student Login</a>
+        <div class="dots dot-green"></div>
+        <div class="dots dot-blue"></div>
+        <div class="dots dot-yellow"></div>
+      </div>
+    </nav>
+
+    <nav class="main-nav">
+      <ul>
+        <li>
+          <a href="https://designerup.co/product-design-ui-ux-course">
+            Course
+          </a>
+        </li>
+              <li class="nav-dropdown">
+                <a href="javascript:;">
+                  Resources
+                  <i class="icon arrow-down"></i>
+                </a>
+                <ul class="sub-nav">
+                  <li>
+                    <a href="https://designerup.co/free-lessons">
+                      <span>
+                        <h5>
+                          <i class="icon-lessons">
+                            <svg width="15" height="11" viewBox="0 0 15 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13.7355 2.8154C13.6673 2.54284 13.5284 2.29312 13.3327 2.09144C13.1371 1.88977 12.8917 1.74329 12.6214 1.6668C11.6336 1.4256 7.68241 1.4256 7.68241 1.4256C7.68241 1.4256 3.73124 1.4256 2.74345 1.68978C2.4731 1.76626 2.22772 1.91274 2.03209 2.11441C1.83647 2.31609 1.69753 2.56582 1.62931 2.83837C1.44853 3.84084 1.3601 4.85778 1.36514 5.87641C1.35869 6.90271 1.44713 7.9274 1.62931 8.93742C1.70452 9.20151 1.84657 9.44174 2.04174 9.63489C2.23691 9.82805 2.4786 9.9676 2.74345 10.0401C3.73124 10.3042 7.68241 10.3042 7.68241 10.3042C7.68241 10.3042 11.6336 10.3042 12.6214 10.0401C12.8917 9.96358 13.1371 9.81711 13.3327 9.61543C13.5284 9.41376 13.6673 9.16403 13.7355 8.89147C13.9149 7.89655 14.0033 6.88737 13.9997 5.87641C14.0061 4.85011 13.9177 3.82542 13.7355 2.8154V2.8154Z" stroke="#6F59E6" stroke-width="1.08276" stroke-linecap="round" stroke-linejoin="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            <path d="M6.3902 7.75435L9.69241 5.8764L6.3902 3.99844V7.75435Z" stroke="#6F59E6" stroke-width="1.08276" stroke-linecap="round" stroke-linejoin="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            </svg>
+                          </i>
+                          Free Lessons
+                        </h5>
+                        <p>Browse our collection of free UX/UI design crash courses and video lesson library</p>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://designerup.co/perks">
+                      <span>
+                        <h5>
+                          <i class="icon-webinars">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5049 21.0029C15.5719 21.0029 14.0049 19.4359 14.0049 17.5029C14.0049 15.5699 15.5719 14.0029 17.5049 14.0029C19.4379 14.0029 21.0049 15.5699 21.0049 17.5029C21.0049 19.4359 19.4379 21.0029 17.5049 21.0029ZM17.5049 19.0029C18.3333 19.0029 19.0049 18.3314 19.0049 17.5029C19.0049 16.6745 18.3333 16.0029 17.5049 16.0029C16.6765 16.0029 16.0049 16.6745 16.0049 17.5029C16.0049 18.3314 16.6765 19.0029 17.5049 19.0029ZM6.50488 10.0029C4.57189 10.0029 3.00488 8.43593 3.00488 6.50293C3.00488 4.56993 4.57189 3.00293 6.50488 3.00293C8.43788 3.00293 10.0049 4.56993 10.0049 6.50293C10.0049 8.43593 8.43788 10.0029 6.50488 10.0029ZM6.50488 8.00293C7.33331 8.00293 8.00488 7.33136 8.00488 6.50293C8.00488 5.6745 7.33331 5.00293 6.50488 5.00293C5.67646 5.00293 5.00488 5.6745 5.00488 6.50293C5.00488 7.33136 5.67646 8.00293 6.50488 8.00293ZM19.076 3.51765L20.4902 4.93186L4.93382 20.4882L3.5196 19.074L19.076 3.51765Z"></path></svg>
+                          </i>
+                          Designer Discounts
+                        </h5>
+                        <p>Get exclusive discounts to awesome design apps and services</p>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://designerup.co/free-lessons">
+                      <span>
+                        <h5>
+                          <i class="icon-notion">
+                            <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_305_58)">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.28775 0.26374C2.33507 0.414555 0.674825 0.546519 0.599359 0.555945C0.382395 0.603075 0.184297 0.744465 0.089965 0.94241L0.00506592 1.11208L0.0144991 5.20295L0.0239324 9.29383L0.146564 9.54833C0.22203 9.68972 0.693692 10.3495 1.21252 11.0188C2.24074 12.3573 2.31621 12.4233 2.70297 12.4704C2.81617 12.4798 3.67459 12.4421 4.58961 12.3856C5.51407 12.329 7.00452 12.2347 7.89124 12.1876C11.6928 11.952 11.4947 11.9708 11.7211 11.7823C11.9947 11.5561 11.9664 11.9331 11.9853 6.95619C11.9947 2.74277 11.9853 2.45999 11.9192 2.33746C11.8532 2.18664 11.7211 2.09238 9.98542 0.876428C8.82513 0.0563682 8.74023 0.0186642 8.22141 0.00923827C8.00444 -0.000187716 6.231 0.12235 4.28775 0.26374ZM8.6742 0.801021C8.844 0.876428 10.042 1.70591 10.2118 1.86616C10.259 1.91329 10.2779 1.96042 10.2496 1.97927C10.2024 2.0264 2.77843 2.46942 2.56147 2.43172C2.46714 2.42229 2.32564 2.36573 2.24074 2.30918C1.90114 2.07353 1.06159 1.38543 1.06159 1.3383C1.06159 1.20634 1.03329 1.20634 4.33492 0.961262C4.96694 0.923558 6.01403 0.848151 6.64606 0.791595C8.01388 0.687909 8.41951 0.687909 8.6742 0.801021ZM11.0325 2.93129C11.0891 2.98785 11.1363 3.09153 11.1551 3.19522C11.1646 3.28948 11.174 5.04271 11.1646 7.07872C11.1551 10.5663 11.1457 10.7926 11.0797 10.8868C11.0419 10.9528 10.9665 11.0188 10.9004 11.0376C10.7401 11.1036 2.9671 11.5466 2.80673 11.4995C2.73127 11.4807 2.6275 11.4147 2.58034 11.3581L2.486 11.2639L2.47657 7.49347C2.46714 4.84477 2.47657 3.67595 2.50487 3.57226C2.52374 3.49685 2.58977 3.40259 2.63694 3.36489C2.70297 3.31776 3.1652 3.28005 4.74998 3.18579C5.8631 3.12924 7.58938 3.02555 8.57044 2.95957C10.9287 2.81818 10.9193 2.81818 11.0325 2.93129Z" fill="#6F59E6" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.94788 4.22285C8.52338 4.25112 8.14605 4.28883 8.10832 4.31711C7.97626 4.38309 7.90079 4.4962 7.88192 4.61874C7.87249 4.74127 7.91022 4.76013 8.33472 4.81668L8.51395 4.83553V6.50393C8.51395 7.49366 8.50452 8.14405 8.47622 8.1252C8.45735 8.10635 7.91022 7.25801 7.2499 6.25886C6.58957 5.24085 6.04244 4.41137 6.03301 4.41137C6.02358 4.40194 5.59908 4.42079 5.08025 4.4585C4.44823 4.4962 4.0992 4.54333 4.03317 4.58103C3.91997 4.63759 3.7879 4.84496 3.7879 4.97692C3.7879 5.06176 3.93883 5.10889 4.25013 5.10889H4.41993V9.89729L4.14637 9.98212C3.94827 10.0387 3.8728 10.0764 3.83507 10.1612C3.77847 10.2932 3.77847 10.4063 3.8445 10.4063C3.86337 10.4063 4.30673 10.3874 4.81612 10.3497C5.81605 10.2932 5.92925 10.2649 6.03301 10.0575C6.07074 10.001 6.09904 9.93499 6.09904 9.90671C6.09904 9.89729 5.95755 9.85016 5.79718 9.81245C5.62738 9.77475 5.45758 9.72762 5.41985 9.72762C5.35382 9.70877 5.35382 9.58623 5.35382 7.9084V6.10804L6.54241 7.96496C7.78759 9.91614 7.93852 10.1424 8.13662 10.2366C8.37245 10.3592 8.97618 10.2743 9.27804 10.0764L9.37237 10.0198L9.38181 7.3617L9.39124 4.69414L9.59877 4.65644C9.84403 4.60931 9.95723 4.4962 9.95723 4.29825C9.95723 4.17572 9.9478 4.16629 9.8346 4.17572C9.76857 4.17572 9.36294 4.20399 8.94788 4.22285Z" fill="#6F59E6" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            </g>
+                            <defs>
+                            <clippath id="clip0_305_58">
+                            <rect width="12" height="12.48" fill="white" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-ffffff, #e8e6e3);"></rect>
+                            </clippath>
+                            </defs>
+                            </svg>
+                          </i>
+                          Notion Templates
+                        </h5>
+                        <p>Download our Notion templates for UX/UI and Product Designers</p>
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://anchor.fm/designerup" target="_blank">
+                      <span>
+                        <h5>
+                          <i class="icon-podcast">
+                            <svg width="13" height="12" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_305_88)">
+                            <path d="M6.5 0.492432C6.06902 0.492432 5.6557 0.648072 5.35095 0.925115C5.0462 1.20216 4.875 1.57791 4.875 1.9697V5.9091C4.875 6.3009 5.0462 6.67665 5.35095 6.95369C5.6557 7.23073 6.06902 7.38637 6.5 7.38637C6.93098 7.38637 7.3443 7.23073 7.64905 6.95369C7.9538 6.67665 8.125 6.3009 8.125 5.9091V1.9697C8.125 1.57791 7.9538 1.20216 7.64905 0.925115C7.3443 0.648072 6.93098 0.492432 6.5 0.492432V0.492432Z" stroke="#6F59E6" stroke-width="0.904977" stroke-linecap="round" stroke-linejoin="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            <path d="M10.2916 4.92426V5.9091C10.2916 6.8233 9.89217 7.70005 9.18109 8.34648C8.47002 8.99291 7.50559 9.35607 6.49998 9.35607C5.49437 9.35607 4.52994 8.99291 3.81887 8.34648C3.10779 7.70005 2.70831 6.8233 2.70831 5.9091V4.92426" stroke="#6F59E6" stroke-width="0.904977" stroke-linecap="round" stroke-linejoin="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            <path d="M6.5 9.35608V11.3258" stroke="#6F59E6" stroke-width="0.904977" stroke-linecap="round" stroke-linejoin="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            <path d="M4.33337 11.3258H8.66671" stroke="#6F59E6" stroke-width="0.904977" stroke-linecap="round" stroke-linejoin="round" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: var(--darkreader-text-6f59e6, #745ee7);"></path>
+                            </g>
+                            <defs>
+                            <clippath id="clip0_305_88">
+                            <rect width="13" height="11.8182" fill="white" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-ffffff, #e8e6e3);"></rect>
+                            </clippath>
+                            </defs>
+                            </svg>
+                          </i>
+                          Podcasts
+                        </h5>
+                        <p>Listen to the latest episodes of our DesignerUp Podcast about mindful design</p>
+                      </span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+        <li><a href="https://designerup.co/community">Community</a></li>
+        <li><a href="https://designerup.co/blog/">Blog</a></li>
+      </ul>
+
+      <a href="https://courses.designerup.co/sign_in" class="btn btn-small btn-outline">Student Login</a>
+    </nav>
+  </div>
+
+  <div class="site-container">
+    <div class="divider"></div>
+
+    <div class="sub-header">
+      <div class="browse">
+        I want to learn about
+        <a href="javascript:;" class="topics-toggle">
+            everything
+          <!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="14px" height="7px" viewBox="0 0 14 7" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Path</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.699999988" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: none;">
+        <g id="Blog" transform="translate(-368.000000, -125.000000)" fill="#000000" fill-rule="nonzero" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-000000, #e8e6e3);">
+            <g id="arrow-down" transform="translate(368.000000, 125.000000)">
+                <path d="M7,6.66666667 L6.99999999,6.66666667 C6.78581899,6.66708513 6.57825265,6.59249101 6.41333332,6.45583333 L0.913333319,1.8725 L0.913333359,1.87250003 C0.523512609,1.5484932 0.470159859,0.969820783 0.794166692,0.580000033 C1.11817353,0.190179283 1.69684594,0.136826533 2.08666669,0.460833366 C2.08666669,0.460833366 2.08666671,0.460833379 2.08666671,0.460833379 L7.00000004,4.56750005 L11.9133334,0.607500045 L11.9133334,0.607500002 C12.3063304,0.288355169 12.8836343,0.348223585 13.2027809,0.741220585 C13.2038018,0.74247772 13.2048194,0.743737569 13.2058336,0.745000094 L13.2058336,0.745000084 C13.5425509,1.12304992 13.5090449,1.70248592 13.1309947,2.03919592 C13.1137263,2.05457639 13.0958821,2.06929788 13.0775003,2.08332883 L7.57750027,6.51082883 L7.57750024,6.51082886 C7.4078399,6.62588519 7.20450949,6.68075227 7.00000024,6.66666219 L7,6.66666667 Z" id="Path"></path>
+            </g>
+        </g>
+    </g>
+</svg>
+        </a>
+
+        <ul class="topics">
+          <li><a href="https://designerup.co/blog">everything</a></li>
+          <li><a href="https://designerup.co/blog/tag/mindful-design">mindful design</a></li>
+          <li><a href="https://designerup.co/blog/tag/student-success">student success</a></li>
+          <li><a href="https://designerup.co/blog/tag/product-design">product design</a></li>
+          <li><a href="https://designerup.co/blog/tag/ui-ux-design">ui/ux design</a></li>
+          <li><a href="https://designerup.co/blog/tag/podcast">podcasts</a></li>
+          <li><a href="https://designerup.co/blog/tag/watch-me-work-wednesday">watch me work</a></li>
+          <li><a href="https://designerup.co/blog/tag/design-careers">design careers</a></li>
+          <li><a href="https://designerup.co/blog/tag/design-inspiration">design inspiration</a></li>
+        </ul>
+      </div>
+
+      <div class="search">
+        <a href="javascript:;" class="toggle-search"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Shape</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.5" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: none;">
+        <g id="Blog" transform="translate(-1187.000000, -121.000000)" fill="#000000" fill-rule="nonzero" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-000000, #e8e6e3);">
+            <g id="Search" transform="translate(1187.000000, 121.000000)">
+                <path d="M11.0769231,6.76923077 C11.0769231,5.58333654 10.655449,4.56891346 9.8125,3.72596154 C8.96955096,2.8830125 7.955125,2.46153846 6.76923077,2.46153846 C5.58333654,2.46153846 4.56891346,2.8830125 3.72596154,3.72596154 C2.8830125,4.56891058 2.46153846,5.58333654 2.46153846,6.76923077 C2.46153846,7.955125 2.8830125,8.96954808 3.72596154,9.8125 C4.56891058,10.655449 5.58333654,11.0769231 6.76923077,11.0769231 C7.955125,11.0769231 8.96954808,10.655449 9.8125,9.8125 C10.655449,8.96955096 11.0769231,7.955125 11.0769231,6.76923077 Z M16,14.7692308 C16,15.1025644 15.8782048,15.391026 15.6346154,15.6346154 C15.391026,15.8782048 15.1025644,16 14.7692308,16 C14.4230769,16 14.1346154,15.8782048 13.9038462,15.6346154 L10.6057692,12.3461538 C9.45833654,13.141026 8.17949038,13.5384615 6.76923077,13.5384615 C5.85256442,13.5384615 4.97596154,13.3605769 4.13942308,13.0048077 C3.30288462,12.6490385 2.58173077,12.1682692 1.97596154,11.5625 C1.37019231,10.9567308 0.889423077,10.2355769 0.533653846,9.39903846 C0.177884615,8.5625 0,7.68589423 0,6.76923077 C0,5.85256442 0.177884615,4.97596154 0.533653846,4.13942308 C0.889423077,3.30288462 1.37019231,2.58173077 1.97596154,1.97596154 C2.58173077,1.37019231 3.30288462,0.889423077 4.13942308,0.533653846 C4.97596154,0.177884615 5.85256731,0 6.76923077,0 C7.68589712,0 8.5625,0.177884615 9.39903846,0.533653846 C10.2355769,0.889423077 10.9567308,1.37019231 11.5625,1.97596154 C12.1682692,2.58173077 12.6490385,3.30288462 13.0048077,4.13942308 C13.3605769,4.97596154 13.5384615,5.85256731 13.5384615,6.76923077 C13.5384615,8.17949038 13.141026,9.45833654 12.3461538,10.6057692 L15.6442308,13.9038462 C15.8814106,14.141026 16,14.4294875 16,14.7692308 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>
+</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="search-container">
+  <div class="search-shade"></div>
+  <div class="search-overlay">
+    <a href="javascript:;" class="search-close"><!--?xml version="1.0" encoding="UTF-8"?--><svg version="1.1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g fill="#000" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-background-000000, #000000);"><rect width="24" height="24" opacity="0" transform="matrix(-1 1.22465e-16 -1.22465e-16 -1 24 24)"></rect><path d="M13.41 12l4.3-4.29 6.9121e-08-6.91211e-08c.392122-.392122.392122-1.02788-1.38242e-07-1.42 -.392122-.392122-1.02788-.392122-1.42 1.38242e-07l-4.29 4.3 -4.29-4.3 6.9121e-08 6.91211e-08c-.392122-.392122-1.02788-.392122-1.42-1.38242e-07 -.392122.392122-.392122 1.02788-1.38242e-07 1.42 0 0 0 1.77636e-15 0 1.77636e-15l4.3 4.29 -4.3 4.29 2.29995e-08-2.28117e-08c-.392122.38892-.394718 1.02208-.00579837 1.4142 .00192484.00194069.00385763.00387348.00579832.00579832l-3.12092e-08-3.14662e-08c.38892.392122 1.02208.394718 1.4142.00579839 .00194069-.00192484.00387348-.00385763.00579832-.00579832l4.29-4.3 4.29 4.3 -3.12092e-08-3.14662e-08c.38892.392122 1.02208.394718 1.4142.00579839 .00194069-.00192484.00387348-.00385763.00579832-.00579832l4.18882e-08-4.15461e-08c.392122-.38892.394718-1.02208.00579824-1.4142 -.00192484-.00194069-.00385763-.00387348-.00579832-.00579832Z"></path></g></svg>
+</a>
+    <div class="search-field">
+      <div class="icon">
+        <!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Shape</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.5" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: none;">
+        <g id="Blog" transform="translate(-1187.000000, -121.000000)" fill="#000000" fill-rule="nonzero" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-text-000000, #e8e6e3);">
+            <g id="Search" transform="translate(1187.000000, 121.000000)">
+                <path d="M11.0769231,6.76923077 C11.0769231,5.58333654 10.655449,4.56891346 9.8125,3.72596154 C8.96955096,2.8830125 7.955125,2.46153846 6.76923077,2.46153846 C5.58333654,2.46153846 4.56891346,2.8830125 3.72596154,3.72596154 C2.8830125,4.56891058 2.46153846,5.58333654 2.46153846,6.76923077 C2.46153846,7.955125 2.8830125,8.96954808 3.72596154,9.8125 C4.56891058,10.655449 5.58333654,11.0769231 6.76923077,11.0769231 C7.955125,11.0769231 8.96954808,10.655449 9.8125,9.8125 C10.655449,8.96955096 11.0769231,7.955125 11.0769231,6.76923077 Z M16,14.7692308 C16,15.1025644 15.8782048,15.391026 15.6346154,15.6346154 C15.391026,15.8782048 15.1025644,16 14.7692308,16 C14.4230769,16 14.1346154,15.8782048 13.9038462,15.6346154 L10.6057692,12.3461538 C9.45833654,13.141026 8.17949038,13.5384615 6.76923077,13.5384615 C5.85256442,13.5384615 4.97596154,13.3605769 4.13942308,13.0048077 C3.30288462,12.6490385 2.58173077,12.1682692 1.97596154,11.5625 C1.37019231,10.9567308 0.889423077,10.2355769 0.533653846,9.39903846 C0.177884615,8.5625 0,7.68589423 0,6.76923077 C0,5.85256442 0.177884615,4.97596154 0.533653846,4.13942308 C0.889423077,3.30288462 1.37019231,2.58173077 1.97596154,1.97596154 C2.58173077,1.37019231 3.30288462,0.889423077 4.13942308,0.533653846 C4.97596154,0.177884615 5.85256731,0 6.76923077,0 C7.68589712,0 8.5625,0.177884615 9.39903846,0.533653846 C10.2355769,0.889423077 10.9567308,1.37019231 11.5625,1.97596154 C12.1682692,2.58173077 12.6490385,3.30288462 13.0048077,4.13942308 C13.3605769,4.97596154 13.5384615,5.85256731 13.5384615,6.76923077 C13.5384615,8.17949038 13.141026,9.45833654 12.3461538,10.6057692 L15.6442308,13.9038462 C15.8814106,14.141026 16,14.4294875 16,14.7692308 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>
+        <img src="./Drastically Improve your UI Designs With This Technique_files/loader.gif" class="loader">
+      </div>
+
+      <input type="text" id="search-bar" placeholder="Search the blog...">
+    </div>
+
+    <section class="channel-block search-results">
+      <div id="search-results" class="post-list three-column">
+
+      </div>
+    </section>
+  </div>
+</section>
+
+    
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+        <article class="post-full post tag-ui-ux-design ">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                  <a href="https://designerup.co/blog">Blog</a>
+                  <span class="date-divider">/</span>
+                    <time class="post-full-meta-date" datetime="2022-04-13">13 April 2022</time>
+                        <span class="date-divider">/</span> <a href="https://designerup.co/blog/tag/ui-ux-design/">UI/UX Design</a>
+                </section>
+                <h1 class="post-full-title">Drastically Improve Your UI Designs With This Technique</h1>
+            </header>
+
+            <figure class="post-full-image" style="background-image: url(https://designerup.co/blog/content/images/2022/04/Blog_Cover-1.jpg)">
+            </figure>
+
+            <section class="post-full-content ">
+
+                <div class="post-content">
+                    <div class="post-banner">
+                        <div id="bsa-CEAIP5QN"></div>
+                    </div>
+                    <style>
+                        .post-banner {
+                            margin-bottom: 30px;
+                            width: 100%;
+                            overflow-y: scroll;
+                        }
+                        .post-banner #_imageonly_CEAIP5QN {
+                            margin: 0 auto !important;
+                            width: 100% !important;
+                            height: auto !important;
+                        }
+                        .post-banner #_imageonly_CEAIP5QN a._imageonly_ {
+                            width: 100% !important;
+                            height: auto !important;
+                        }
+                        .post-banner img {
+                            margin: 0 auto !important;
+                        }
+                    </style><style class="darkreader darkreader--sync" media="screen"></style>
+                    <p>One of the more arbitrary steps in the process of designing user interfaces is deciding what to put where and making sure that we've laid out all of our UI elements in the most optimal and logical way possible to create the best user experiences for those using our products. </p><div class="carbon"><script async="" type="text/javascript" src="./Drastically Improve your UI Designs With This Technique_files/carbon.js" id="_carbonads_js"></script></div><p>The 'What happens if...' technique is a powerful and simple method of working that takes the headache and guesswork out of deciding how and where to place our content. It also helps to ensure that we're not leaving any important considerations out and that our designs can be reproduced accurately and easily by our developers. </p><figure class="kg-card kg-embed-card"><div class="fluid-width-video-wrapper" style="padding-top: 56.5%;"><iframe src="./Drastically Improve your UI Designs With This Technique_files/IbXugAtEf2s.html" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" name="fitvid0"></iframe></div></figure><h2 id="solving-the-content-layout-struggle">Solving the content layout struggle</h2><p>If you've ever stared blankly at your artboards and Figma frames wondering whether you should put your text on the left and the image on the right or where you should place the category tags on a post, than you know that struggle of deciding on UI layouts and element placement. </p><p><br>Over the years working in startups and enterprise companies as a product (UX/UI) designer, I've used this process for both small and very large projects to keep me on track and making sure that there are no gaps in my design states, logic or UI interactions. </p><p>This technique will also help us to create designs that can be reproduced accurately by our developers once they head off to production, which will make your developers absolutely love you! I also recommend working with your developers to help you determine the 'What happens if' questions that you should consider.<br></p><p>In this example, I'm going to go walk through how I design a blog post in Figma using this 'What happens if...' technique, along with a content UI checklist. </p><h2 id="the-technique">The Technique</h2><p>Designing user interfaces is about determining the visual appearance of the different states of feedback from the user and the system and the best layout of each component and how they should all flow together. So <strong>conditionals</strong> are really at the core of what we're designing.</p><p>The 'What happens if' technique is based on conditional logic. It's what engineers use to determine interactions based on context, actions and various use cases that might occur when a user interacts with our design, product or application. &nbsp;</p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Conditional.png" class="kg-image" alt="" width="2000" height="1099" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Conditional.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Conditional.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Conditional.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Conditional.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Conditional Logic</figcaption></figure><p><em>💡If you're interested in learning more about the <a href="https://designerup.co/blog/transitioning-from-graphic-design-to-ui-ux/">UI design and how it's different from Graphic </a>or <a href="https://youtu.be/tW5enkXTxvk?ref=designerup.co">Web design</a> here are some lessons on that. </em><br></p><p>I like to start out by creating a simple content UI checklist right inside of Figma (or the design software of your choice).</p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Figma_1.png" class="kg-image" alt="UI checklist for Blog Post Card" width="2000" height="1052" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Figma_1.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Figma_1.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Figma_1.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Figma_1.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>UI checklist for Blog Post Card</figcaption></figure><p>Here is the UI checklist example. On the left side, I've listed the main content/design elements that need to be added to my blog post card. On the right, I've added checkboxes to make sure that I've considered the empy/alternative states that might be needed. You can create more elaborate UI checklists and you can also do this in a companion checklist or notetaking app like Notion, Evernote, Trello or even on a piece of paper. We've also created some very extensive <a href="https://designerup.co/shop?ref=designerup.co#checklists">free UI and UX checklists for Notion</a><strong> </strong>that you can copy for free here! <br><br><em>💡Here are some more recommendations for product design and </em><a href="https://designerup.co/blog/the-best-collections-of-real-ux-design-patterns/"><em>UX/UI Checklists and Design Patterns</em></a><em>! &nbsp;</em></p><p>This UI design checklist includes common elements like:</p><!--kg-card-begin: markdown--><ul>
+<li>Author</li>
+<li>Author avatar</li>
+<li>Date</li>
+<li>Tags</li>
+<li>Title</li>
+<li>Body (Excerpt)</li>
+<li>Read time</li>
+</ul>
+<!--kg-card-end: markdown--><p>The thing to keep in mind throughout this process is that in the context of designing dymanic user interfaces (as opposed to static websites), whenever a user adds or excludes information or content from our user interface, our designs need to adapt accordingly. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Adapt.png" class="kg-image" alt="User Interface design must adapt to interactions" width="2000" height="1106" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Adapt.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Adapt.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Adapt.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Adapt.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>User Interface design must adapt to interactions</figcaption></figure><p>Next to my UI checklist in Figma, I've created a simple Blog Post Card</p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Blog-Post.png" class="kg-image" alt="Figma UI checklist for Blog Post Cart" width="2000" height="1296" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Blog-Post.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Blog-Post.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Blog-Post.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Blog-Post.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Figma UI checklist for Blog Post Cart</figcaption></figure><p>This author added their avatar, date, featured image title and excerpt. But they are missing some optional elements. This is where the 'What happens if' technique comes in to help us determine if we have accounted for all of the possible additions and exclusions that the author can control. </p><h2 id="what-happens-if-there-are-tags-added-to-the-post">What happens if there are tags added to the post?</h2><p>This author didn't add a tag to their post but if we want to make sure we're designing all the states and not leaving any design gaps, we have to decide where a tag could potentially be added without interrupting the entire user interface design or user experience of the post. So our first question might be <em>'What happens if there are tag(s) added to the post?</em></p><p>So, let's create a little category tag. If I add it in between the author and the title of the post there isn't much room. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Tag-placement.png" class="kg-image" alt="Figma Category Tag added to blog post card" width="2000" height="1188" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Tag-placement.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Tag-placement.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Tag-placement.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Tag-placement.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Figma Category Tag added to blog post card</figcaption></figure><p>Adding it above the author's name is also too tight and means we would need to push all of the content down within the blog card. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Tag-2.png" class="kg-image" alt="Figma - moving category tag on blog post card" width="2000" height="1304" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Tag-2.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Tag-2.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Tag-2.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Tag-2.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Figma - moving category tag on blog post card</figcaption></figure><p>We could add it over to the right side of the author's name and date but then, <em>'What happens if the author's name is very long?</em> This will leave less room for tags. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Tag-3.png" class="kg-image" alt="Figma - moving category tag on blog post card right" width="2000" height="1274" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Tag-3.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Tag-3.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Tag-3.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Tag-3.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Figma - moving category tag on blog post card right</figcaption></figure><p><em>"What happens if there are multiple tags?"</em>. This is also a state that we need to consider and design for. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Tag-4.png" class="kg-image" alt="Figma - moving category tag on blog post card right" width="2000" height="1281" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Tag-4.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Tag-4.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Tag-4.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Tag-4.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Figma - moving category tag on blog post card bottom</figcaption></figure><p>We could move the tag(s) to the bottom of the post, but a single tag placed here looks a lot like a read more button, which could confuse our users. Design all the possible components.<br></p><h2 id="design-all-of-the-possible-components">Design all of the possible components</h2><p>So now that we see how the addition or exclusion of one small element can have a ripple effect on our overall User Interface design, one method of working that can help us adjust things appropriately is to create all of the possible components that could be added and then create versions of the max and min states of the blog post card for each of these states. </p><h2 id="what-happens-if-the-title-is-very-long">What happens if the title is very long?</h2><p>Let's say that it the we have a very long blog post title. We have to decide whether we should allow the title to wrap to a second line, a third or to truncate it and at what point.</p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Title.png" class="kg-image" alt="Blog post title wrapping to two-lines" width="2000" height="1218" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Title.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Title.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Title.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Title.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Blog post title wrapping to two-lines</figcaption></figure><p>You might think, well what about just making everything longer and increasing the height of the card? And we certainly could do that just but then let's say for example, this blog post card will exist inside of a grid of other blog posts, which is quite common for blog post cards. If one of the posts has a longer title that pushes the entire card length down, then when these cards stack next to each other, they won't be the same height. That would work for a Masonry style layout, but what you might want is just an even grid. So we have to figure out how to accommodate different lengths of text without changing the overall height of the card. Let's go back to our first example and see how we can move these elements around in order to accommodate all of the possible permutations and conditions that this postcard might exist in.</p><p></p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Excerpt.png" class="kg-image" alt="Figma - Blog post title truncation" width="2000" height="1339" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Excerpt.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Excerpt.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Excerpt.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Excerpt.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Blog post title truncation</figcaption></figure><p>First, I think I would prefer to have the blog title wrap for two lines before it truncates. So that means if it goes to three lines, there will be ... the end, but if it's one or two lines it will simply show the entire title. The other issue now is that a two-line title means that we need to reduce the length of the body excerpt test if we want to keep all the blog cards the same height. </p><p>So I'll repeat this process with the remaining elements, testing various things, moving them around and then asking what if conditional questions to help us decide the best layout for our components. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Layout.png" class="kg-image" alt="Figma - Blog post elements" width="2000" height="1307" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Layout.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Layout.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Layout.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Layout.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Blog post elements</figcaption></figure><h2 id="what-happens-if-there-are-blank-states">What happens if there are blank states?</h2><p>The last thing to consider is 'What happens if the user doesn't upload some information?', 'What are the blank states?</p><p>One option is to make each of the fields required in the back-end so that the user is forced to upload all of the content. However, for the best user experience, it's always best to make the designs do the work on behalf of our user. For that, we need to make sure that our designs behave and look consistent even with the exclusion of some information. </p><figure class="kg-card kg-image-card kg-card-hascaption"><img loading="lazy" src="./Drastically Improve your UI Designs With This Technique_files/Screen-Shot-2022-04-11-at-4.31.21-PM.png" class="kg-image" alt="Figma - All possible states of the blog post card" width="2000" height="1097" srcset="https://designerup.co/blog/content/images/size/w600/2022/04/Screen-Shot-2022-04-11-at-4.31.21-PM.png 600w, https://designerup.co/blog/content/images/size/w1000/2022/04/Screen-Shot-2022-04-11-at-4.31.21-PM.png 1000w, https://designerup.co/blog/content/images/size/w1600/2022/04/Screen-Shot-2022-04-11-at-4.31.21-PM.png 1600w, https://designerup.co/blog/content/images/size/w2400/2022/04/Screen-Shot-2022-04-11-at-4.31.21-PM.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>All possible states of the blog post card</figcaption></figure><p>Here in this final example you can see this layout best answers all of my conditional questions. &nbsp;It works with or without a featured image, with none, one or multiple tags. with a longer author name etc. </p><p>You can see how thinking and working this way can save you from making arbitrary design decisions or leaving our important things that you might cause you to have to redesign entire components to accommodate them later. <br><br>This is also a great way to start thinking in terms of component design and design systems </p><p>💡<em>If you want to learn more about <a href="https://designerup.co/blog/10-best-design-systems-and-how-to-learn-and-steal-from-them/">component design and design systems</a> here is a lesson on that. </em></p><p>In summary, thinking in terms of conditionals and using the 'What happens if' technique along with a UI design checklist can help us:</p><!--kg-card-begin: markdown--><ul>
+<li>Ensure our designs adjust to user input</li>
+<li>Prevents gaps in our flows and use cases</li>
+<li>Adheres to best practices and design patterns.</li>
+<li>Helps our developers know how things should look and behave</li>
+<li>Helps us account for all of the components that might appear or not appear</li>
+<li>Consider all of the interactions that might take place</li>
+</ul>
+<!--kg-card-end: markdown--><p>So the next time you sit down to design a user interface follow this technique:</p><!--kg-card-begin: markdown--><ul>
+<li>Create your content checklist</li>
+<li>Think through all of the possible conditionals and empty states that your users will need</li>
+<li>Work with your developers (if you have them) to determine what is required</li>
+<li>Create all of the components on your checklist</li>
+<li>Position and move them around based on the intended user experience</li>
+</ul>
+<!--kg-card-end: markdown--><p>📚Want to learn end-to-end product design with us? Check out our <a href="https://designerup.co/product-design-ui-ux-course?ref=designerup.co">Product (UX/UI) Design Course</a>. <br><br></p>
+                </div>
+            </section>
+
+            <footer class="post-full-footer">
+
+
+                    <section class="post-full-authors">
+
+    <div class="post-full-authors-content">
+        <p>This post was a collaboration between</p>
+        <p><a href="https://designerup.co/blog/author/designerup/">DesignerUp</a>, <a href="https://designerup.co/blog/author/elizabethalli/">Elizabeth Alli</a></p>
+    </div>
+
+    <ul class="author-list">
+        <li class="author-list-item">
+
+            <div class="author-card">
+                <div class="basic-info">
+                        <img class="author-profile-image" src="./Drastically Improve your UI Designs With This Technique_files/c8d4ebb674d61f351ebea9d76958502f.png" alt="DesignerUp">
+                    <h2>DesignerUp</h2>
+                </div>
+                <div class="bio">
+                        <p>Read <a href="https://designerup.co/blog/author/designerup/">more posts</a> by this author.</p>
+                </div>
+            </div>
+
+                <a href="https://designerup.co/blog/author/designerup/" class="moving-avatar"><img class="author-profile-image" src="./Drastically Improve your UI Designs With This Technique_files/c8d4ebb674d61f351ebea9d76958502f.png" alt="DesignerUp"></a>
+
+        </li>
+        <li class="author-list-item">
+
+            <div class="author-card">
+                <div class="basic-info">
+                        <img class="author-profile-image" src="./Drastically Improve your UI Designs With This Technique_files/7304d7a81dba5f4a2058d4363bf11bb2.jpeg" alt="Elizabeth Alli">
+                    <h2>Elizabeth Alli</h2>
+                </div>
+                <div class="bio">
+                        <p>Mindful designer and mentor helping to create meaningful products and experiences. </p>
+                        <p><a href="https://designerup.co/blog/author/elizabethalli/">More posts</a> by Elizabeth Alli.</p>
+                </div>
+            </div>
+
+                <a href="https://designerup.co/blog/author/elizabethalli/" class="moving-avatar"><img class="author-profile-image" src="./Drastically Improve your UI Designs With This Technique_files/7304d7a81dba5f4a2058d4363bf11bb2.jpeg" alt="Elizabeth Alli"></a>
+
+        </li>
+
+    </ul>
+
+</section>
+
+
+            </footer>
+
+            <!-- <section class="post-full-comments">
+              <div class="fb-comments" data-href="https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/" data-width="100%" data-numposts="10"></div>
+              <div id="disqus_thread"></div>
+              <script>
+              var disqus_config = function () {
+                this.page.url = "https://designerup.co/blog/drastically-improve-your-ui-designs-with-this-technique/";
+                this.page.identifier = "ghost-62548f08bbe09f0bc45102dd"
+              };
+              (function() {
+              var d = document, s = d.createElement('script');
+              s.src = 'https://designerup.disqus.com/embed.js';
+              s.setAttribute('data-timestamp', +new Date());
+              (d.head || d.body).appendChild(s);
+              })();
+              </script>
+            </section> -->
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+                <article class="read-next-card" style="background-image: url(https://blog.designerup.co/content/images/2018/12/IMG_2943.JPG)">
+                    <header class="read-next-card-header">
+                        <small class="read-next-card-header-sitetitle">— DesignerUp —</small>
+                        <h3 class="read-next-card-header-title"><a href="https://designerup.co/blog/tag/ui-ux-design/">UI/UX Design</a></h3>
+                    </header>
+
+                    <div class="read-next-card-content">
+                        <ul>
+                            <li><a href="https://designerup.co/blog/designerup-ranked-best-product-ux-ui-design-bootcamp-2025/">🏆 DesignerUp Ranked Best Product UX/UI Design Bootcamp 2025!</a></li>
+                            <li><a href="https://designerup.co/blog/heres-how-youre-going-to-get-80-better-at-ux-ui-design-in-1-month/">Here’s how you’re going to get 80% better at UX/UI design in 1 month</a></li>
+                            <li><a href="https://designerup.co/blog/i-studied-the-ux-ui-of-over-200-onboarding-flows-heres-everything-i-learned/">I studied the UX/UI of over 200 onboarding flows  - here’s everything I learned</a></li>
+                        </ul>
+                    </div>
+                    <footer class="read-next-card-footer">
+                        <a href="https://designerup.co/blog/tag/ui-ux-design/">See all 43 posts →</a>
+                    </footer>
+                </article>
+
+                <div class="post-card-boxed">
+  <a href="https://designerup.co/blog/6-eye-opening-documentaries-for-ux-ui-and-product-designers/" class="post-image-link">
+    <div class="post-image lazyload" data-bg="https://designerup.co/blog/content/images/size/w760/2022/04/docs.jpg"></div>
+  </a>
+
+  <div class="post-content">
+    <a href="https://designerup.co/blog/tag/ui-ux-design/" class="tag">UI/UX Design</a>
+    <a href="https://designerup.co/blog/6-eye-opening-documentaries-for-ux-ui-and-product-designers/" class="post-preview">
+      <h3>6 Eye-Opening Documentaries for UX/UI and Product Designers (that you can watch on Netflix right now)</h3>
+    </a>
+
+
+    <span class="author">
+      <a href="https://designerup.co/blog/author/designerup/">DesignerUp</a>
+       •
+      <time class="post-date" datetime="2022-04-15">Apr 15, 2022</time>
+    </span>
+  </div>
+</div>
+
+                <div class="post-card-boxed">
+  <a href="https://designerup.co/blog/5-free-figma-ui-kits-to-jump-start-your-designs/" class="post-image-link">
+    <div class="post-image lazyload" data-bg="https://designerup.co/blog/content/images/size/w760/2022/02/Frame-1.jpg"></div>
+  </a>
+
+  <div class="post-content">
+    <a href="https://designerup.co/blog/tag/figma/" class="tag">Figma</a>
+    <a href="https://designerup.co/blog/5-free-figma-ui-kits-to-jump-start-your-designs/" class="post-preview">
+      <h3>5 Free Figma UI Kits to Jump Start Your Designs</h3>
+    </a>
+
+
+    <span class="author">
+      <a href="https://designerup.co/blog/author/designerup/">DesignerUp</a>
+       •
+      <time class="post-date" datetime="2022-02-24">Feb 24, 2022</time>
+    </span>
+  </div>
+</div>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header floating-active">
+  <progress id="reading-progress" class="progress" value="5301" max="14698">
+    <div class="progress-container">
+      <span class="progress-bar"></span>
+    </div>
+  </progress>
+</div>
+
+
+
+
+    <div class="site-footer">
+  <div class="site-container">
+    <div class="footer-newsletter">
+      <h4>The best design resources, in your inbox</h4>
+      <!-- <p>Tips, tricks, articles and freebies. It's all happening in the DesignerUp Newsletter. <a href="/newsletter">View the archives &rarr;</a></p> -->
+      <script src="./Drastically Improve your UI Designs With This Technique_files/ck.5.js"></script>
+      <form action="https://app.convertkit.com/forms/882240/subscriptions" class="seva-form formkit-form" method="post" data-sv-form="882240" data-uid="c756efe7bc" data-format="inline" data-version="5" data-options="{&quot;settings&quot;:{&quot;after_subscribe&quot;:{&quot;action&quot;:&quot;message&quot;,&quot;success_message&quot;:&quot;Success! Thanks for subscribing!&quot;,&quot;redirect_url&quot;:&quot;https://designerup.co/p/newsletter-success&quot;},&quot;analytics&quot;:{&quot;google&quot;:null,&quot;facebook&quot;:null,&quot;segment&quot;:null,&quot;pinterest&quot;:null},&quot;modal&quot;:{&quot;trigger&quot;:null,&quot;scroll_percentage&quot;:null,&quot;timer&quot;:null,&quot;devices&quot;:null,&quot;show_once_every&quot;:null},&quot;recaptcha&quot;:{&quot;enabled&quot;:false},&quot;return_visitor&quot;:{&quot;action&quot;:&quot;hide&quot;,&quot;custom_content&quot;:&quot;&quot;},&quot;slide_in&quot;:{&quot;display_in&quot;:null,&quot;trigger&quot;:null,&quot;scroll_percentage&quot;:null,&quot;timer&quot;:null,&quot;devices&quot;:null,&quot;show_once_every&quot;:null}},&quot;version&quot;:5}" min-width="400 500 600 700"><div data-style="clean"><ul class="formkit-alert formkit-alert-error" data-element="errors" data-group="alert"></ul><div data-element="fields" data-stacked="false" class="seva-fields formkit-fields"><div class="formkit-field"><input class="formkit-input" name="email_address" placeholder="Your email address" required="" type="email" style="border-color: rgb(227, 227, 227); border-radius: 4px; color: rgb(0, 0, 0); font-weight: 400; --darkreader-inline-border-top: var(--darkreader-border-e3e3e3, #383d3f); --darkreader-inline-border-right: var(--darkreader-border-e3e3e3, #383d3f); --darkreader-inline-border-bottom: var(--darkreader-border-e3e3e3, #383d3f); --darkreader-inline-border-left: var(--darkreader-border-e3e3e3, #383d3f); --darkreader-inline-color: var(--darkreader-text-000000, #e8e6e3);" data-darkreader-inline-border-top="" data-darkreader-inline-border-right="" data-darkreader-inline-border-bottom="" data-darkreader-inline-border-left="" data-darkreader-inline-color=""></div><button data-element="submit" class="formkit-submit formkit-submit" style="background-color: rgb(233, 186, 58); border-radius: 33px; color: rgb(255, 255, 255); font-weight: 700; --darkreader-inline-bgcolor: var(--darkreader-background-e9ba3a, #7b5e0e); --darkreader-inline-color: var(--darkreader-text-ffffff, #e8e6e3);" data-darkreader-inline-bgcolor="" data-darkreader-inline-color=""><div class="formkit-spinner"><div></div><div></div><div></div></div><span>SUBSCRIBE</span></button></div></div><style>.formkit-form[data-uid="c756efe7bc"] *{box-sizing:border-box;}.formkit-form[data-uid="c756efe7bc"]{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}.formkit-form[data-uid="c756efe7bc"] legend{border:none;font-size:inherit;margin-bottom:10px;padding:0;position:relative;display:table;}.formkit-form[data-uid="c756efe7bc"] fieldset{border:0;padding:0.01em 0 0 0;margin:0;min-width:0;}.formkit-form[data-uid="c756efe7bc"] body:not(:-moz-handler-blocked) fieldset{display:table-cell;}.formkit-form[data-uid="c756efe7bc"] h1,.formkit-form[data-uid="c756efe7bc"] h2,.formkit-form[data-uid="c756efe7bc"] h3,.formkit-form[data-uid="c756efe7bc"] h4,.formkit-form[data-uid="c756efe7bc"] h5,.formkit-form[data-uid="c756efe7bc"] h6{color:inherit;font-size:inherit;font-weight:inherit;}.formkit-form[data-uid="c756efe7bc"] p{color:inherit;font-size:inherit;font-weight:inherit;}.formkit-form[data-uid="c756efe7bc"][data-format="modal"]{display:none;}.formkit-form[data-uid="c756efe7bc"][data-format="slide in"]{display:none;}.formkit-form[data-uid="c756efe7bc"] .formkit-input,.formkit-form[data-uid="c756efe7bc"] .formkit-select,.formkit-form[data-uid="c756efe7bc"] .formkit-checkboxes{width:100%;}.formkit-form[data-uid="c756efe7bc"] .formkit-button,.formkit-form[data-uid="c756efe7bc"] .formkit-submit{border:0;border-radius:5px;color:#ffffff;cursor:pointer;display:inline-block;text-align:center;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:15px;overflow:hidden;padding:0;position:relative;vertical-align:middle;}.formkit-form[data-uid="c756efe7bc"] .formkit-button:hover,.formkit-form[data-uid="c756efe7bc"] .formkit-submit:hover,.formkit-form[data-uid="c756efe7bc"] .formkit-button:focus,.formkit-form[data-uid="c756efe7bc"] .formkit-submit:focus{outline:none;}.formkit-form[data-uid="c756efe7bc"] .formkit-button:hover > span,.formkit-form[data-uid="c756efe7bc"] .formkit-submit:hover > span,.formkit-form[data-uid="c756efe7bc"] .formkit-button:focus > span,.formkit-form[data-uid="c756efe7bc"] .formkit-submit:focus > span{background-color:rgba(0,0,0,0.1);}.formkit-form[data-uid="c756efe7bc"] .formkit-button > span,.formkit-form[data-uid="c756efe7bc"] .formkit-submit > span{display:block;-webkit-transition:all 300ms ease-in-out;transition:all 300ms ease-in-out;padding:12px 24px;}.formkit-form[data-uid="c756efe7bc"] .formkit-input{background:#ffffff;font-size:15px;padding:12px;border:1px solid #e3e3e3;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;line-height:1.4;margin:0;-webkit-transition:border-color ease-out 300ms;transition:border-color ease-out 300ms;}.formkit-form[data-uid="c756efe7bc"] .formkit-input:focus{outline:none;border-color:#1677be;-webkit-transition:border-color ease 300ms;transition:border-color ease 300ms;}.formkit-form[data-uid="c756efe7bc"] .formkit-input::-webkit-input-placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="c756efe7bc"] .formkit-input::-moz-placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="c756efe7bc"] .formkit-input:-ms-input-placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="c756efe7bc"] .formkit-input::placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="c756efe7bc"] [data-group="dropdown"]{position:relative;display:inline-block;width:100%;}.formkit-form[data-uid="c756efe7bc"] [data-group="dropdown"]::before{content:"";top:calc(50% - 2.5px);right:10px;position:absolute;pointer-events:none;border-color:#4f4f4f transparent transparent transparent;border-style:solid;border-width:6px 6px 0 6px;height:0;width:0;z-index:999;}.formkit-form[data-uid="c756efe7bc"] [data-group="dropdown"] select{height:auto;width:100%;cursor:pointer;color:#333333;line-height:1.4;margin-bottom:0;padding:0 6px;-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:15px;padding:12px;padding-right:25px;border:1px solid #e3e3e3;background:#ffffff;}.formkit-form[data-uid="c756efe7bc"] [data-group="dropdown"] select:focus{outline:none;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"]{text-align:left;margin:0;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"]{margin-bottom:10px;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] *{cursor:pointer;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"]:last-of-type{margin-bottom:0;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"]{display:none;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"] + label::after{content:none;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"]:checked + label::after{border-color:#ffffff;content:"";}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"]:checked + label::before{background:#10bf7a;border-color:#10bf7a;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] label{position:relative;display:inline-block;padding-left:28px;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] label::before,.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] label::after{position:absolute;content:"";display:inline-block;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] label::before{height:16px;width:16px;border:1px solid #e3e3e3;background:#ffffff;left:0px;top:3px;}.formkit-form[data-uid="c756efe7bc"] [data-group="checkboxes"] [data-group="checkbox"] label::after{height:4px;width:8px;border-left:2px solid #4d4d4d;border-bottom:2px solid #4d4d4d;-webkit-transform:rotate(-45deg);-ms-transform:rotate(-45deg);transform:rotate(-45deg);left:4px;top:8px;}.formkit-form[data-uid="c756efe7bc"] .formkit-alert{background:#f9fafb;border:1px solid #e3e3e3;border-radius:5px;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;list-style:none;margin:25px auto;padding:12px;text-align:center;width:100%;}.formkit-form[data-uid="c756efe7bc"] .formkit-alert:empty{display:none;}.formkit-form[data-uid="c756efe7bc"] .formkit-alert-success{background:#d3fbeb;border-color:#10bf7a;color:#0c905c;}.formkit-form[data-uid="c756efe7bc"] .formkit-alert-error{background:#fde8e2;border-color:#f2643b;color:#ea4110;}.formkit-form[data-uid="c756efe7bc"] .formkit-spinner{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;height:0px;width:0px;margin:0 auto;position:absolute;top:0;left:0;right:0;width:0px;overflow:hidden;text-align:center;-webkit-transition:all 300ms ease-in-out;transition:all 300ms ease-in-out;}.formkit-form[data-uid="c756efe7bc"] .formkit-spinner > div{margin:auto;width:12px;height:12px;background-color:#fff;opacity:0.3;border-radius:100%;display:inline-block;-webkit-animation:formkit-bouncedelay-formkit-form-data-uid-c756efe7bc- 1.4s infinite ease-in-out both;animation:formkit-bouncedelay-formkit-form-data-uid-c756efe7bc- 1.4s infinite ease-in-out both;}.formkit-form[data-uid="c756efe7bc"] .formkit-spinner > div:nth-child(1){-webkit-animation-delay:-0.32s;animation-delay:-0.32s;}.formkit-form[data-uid="c756efe7bc"] .formkit-spinner > div:nth-child(2){-webkit-animation-delay:-0.16s;animation-delay:-0.16s;}.formkit-form[data-uid="c756efe7bc"] .formkit-submit[data-active] .formkit-spinner{opacity:1;height:100%;width:50px;}.formkit-form[data-uid="c756efe7bc"] .formkit-submit[data-active] .formkit-spinner ~ span{opacity:0;}.formkit-form[data-uid="c756efe7bc"] .formkit-powered-by[data-active="false"]{opacity:0.35;}@-webkit-keyframes formkit-bouncedelay-formkit-form-data-uid-c756efe7bc-{0%,80%,100%{-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);}40%{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1);}}@keyframes formkit-bouncedelay-formkit-form-data-uid-c756efe7bc-{0%,80%,100%{-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);}40%{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1);}} .formkit-form[data-uid="c756efe7bc"]{max-width:700px;}.formkit-form[data-uid="c756efe7bc"] [data-style="clean"]{width:100%;}.formkit-form[data-uid="c756efe7bc"] .formkit-fields{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;margin:0 auto;}.formkit-form[data-uid="c756efe7bc"] .formkit-field,.formkit-form[data-uid="c756efe7bc"] .formkit-submit{margin:0 0 15px 0;-webkit-flex:1 0 100%;-ms-flex:1 0 100%;flex:1 0 100%;}.formkit-form[data-uid="c756efe7bc"] .formkit-powered-by{color:#7d7d7d;display:block;font-size:12px;margin:0;text-align:center;}.formkit-form[data-uid="c756efe7bc"][min-width~="700"] [data-style="clean"],.formkit-form[data-uid="c756efe7bc"][min-width~="800"] [data-style="clean"]{padding:10px;}.formkit-form[data-uid="c756efe7bc"][min-width~="700"] .formkit-fields[data-stacked="false"],.formkit-form[data-uid="c756efe7bc"][min-width~="800"] .formkit-fields[data-stacked="false"]{margin-left:-5px;margin-right:-5px;}.formkit-form[data-uid="c756efe7bc"][min-width~="700"] .formkit-fields[data-stacked="false"] .formkit-field,.formkit-form[data-uid="c756efe7bc"][min-width~="800"] .formkit-fields[data-stacked="false"] .formkit-field,.formkit-form[data-uid="c756efe7bc"][min-width~="700"] .formkit-fields[data-stacked="false"] .formkit-submit,.formkit-form[data-uid="c756efe7bc"][min-width~="800"] .formkit-fields[data-stacked="false"] .formkit-submit{margin:0 5px 15px 5px;}.formkit-form[data-uid="c756efe7bc"][min-width~="700"] .formkit-fields[data-stacked="false"] .formkit-field,.formkit-form[data-uid="c756efe7bc"][min-width~="800"] .formkit-fields[data-stacked="false"] .formkit-field{-webkit-flex:100 1 auto;-ms-flex:100 1 auto;flex:100 1 auto;}.formkit-form[data-uid="c756efe7bc"][min-width~="700"] .formkit-fields[data-stacked="false"] .formkit-submit,.formkit-form[data-uid="c756efe7bc"][min-width~="800"] .formkit-fields[data-stacked="false"] .formkit-submit{-webkit-flex:1 1 auto;-ms-flex:1 1 auto;flex:1 1 auto;} </style><style class="darkreader darkreader--sync" media="screen"></style></form>
+      <p>We'll only send the occasional email and promise not to spam.</p>
+    </div>
+
+    <nav class="footer-nav">
+      <a href="https://designerup.co/" class="logo">
+        <svg width="170px" height="35px" viewBox="0 0 170 35" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="Assets" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="brand" transform="translate(-23.000000, -80.000000)" fill="#FFFFFF">
+                    <g id="logo-light" transform="translate(23.000000, 80.000000)">
+                        <path d="M35.0565043,3.76128807 C36.0570586,3.76128807 36.8712945,2.98774362 36.8712945,2.03719197 C36.8712945,1.08664032 36.0570586,0.313095869 35.0565043,0.313095869 C34.2688854,0.313095869 33.6034624,0.795268078 33.3530213,1.46249327 L20.5381833,1.46249327 L20.5381833,0.887794569 C20.5381833,0.569986188 20.2671746,0.313095869 19.9332533,0.313095869 L17.5135331,0.313095869 C17.1796117,0.313095869 16.9086031,0.569986188 16.9086031,0.887794569 L16.9086031,1.46249327 L4.09376503,1.46249327 C3.84332399,0.795268078 3.17790094,0.313095869 2.39028203,0.313095869 C1.38972774,0.313095869 0.5754919,1.08664032 0.5754919,2.03719197 C0.5754919,2.98774362 1.38972774,3.76128807 2.39028203,3.76128807 C3.17790094,3.76128807 3.84332399,3.27911586 4.09376503,2.61189067 L12.4768856,2.61189067 C6.77541991,4.78425176 2.56752653,9.83527863 1.89060981,15.8299608 L1.18042194,15.8299608 C0.846500559,15.8299608 0.5754919,16.0868511 0.5754919,16.4046595 L0.5754919,18.7034543 C0.5754919,19.0212627 0.846500559,19.278153 1.18042194,19.278153 L3.60014211,19.278153 C3.9340635,19.278153 4.20507216,19.0212627 4.20507216,18.7034543 L4.20507216,16.4046595 C4.20507216,16.0868511 3.9340635,15.8299608 3.60014211,15.8299608 L3.12103752,15.8299608 C3.95523605,8.99966672 9.71900949,3.52336281 16.9086031,2.731428 L16.9086031,3.18658937 C16.9086031,3.50439775 17.1796117,3.76128807 17.5135331,3.76128807 L19.9332533,3.76128807 C20.2671746,3.76128807 20.5381833,3.50439775 20.5381833,3.18658937 L20.5381833,2.731428 C27.7277769,3.52336281 33.4915503,8.99966672 34.3257488,15.8299608 L33.8466442,15.8299608 C33.5127229,15.8299608 33.2417142,16.0868511 33.2417142,16.4046595 L33.2417142,18.7034543 C33.2417142,19.0212627 33.5127229,19.278153 33.8466442,19.278153 L36.2663644,19.278153 C36.6002858,19.278153 36.8712945,19.0212627 36.8712945,18.7034543 L36.8712945,16.4046595 C36.8712945,16.0868511 36.6002858,15.8299608 36.2663644,15.8299608 L35.5561765,15.8299608 C34.8786549,9.83527863 30.6707615,4.78425176 24.9699008,2.61189067 L33.3530213,2.61189067 C33.6034624,3.27911586 34.2688854,3.76128807 35.0565043,3.76128807 Z M35.0565043,1.46249327 C35.3898208,1.46249327 35.6614344,1.71995829 35.6614344,2.03719197 C35.6614344,2.35442565 35.3898208,2.61189067 35.0565043,2.61189067 C34.7231879,2.61189067 34.4515743,2.35442565 34.4515743,2.03719197 C34.4515743,1.71995829 34.7231879,1.46249327 35.0565043,1.46249327 Z M2.39028203,2.61189067 C2.05696557,2.61189067 1.78535199,2.35442565 1.78535199,2.03719197 C1.78535199,1.71995829 2.05696557,1.46249327 2.39028203,1.46249327 C2.72359848,1.46249327 2.99521207,1.71995829 2.99521207,2.03719197 C2.99521207,2.35442565 2.72359848,2.61189067 2.39028203,2.61189067 Z M2.99521207,18.1287556 L1.78535199,18.1287556 L1.78535199,16.9793582 L2.99521207,16.9793582 L2.99521207,18.1287556 Z M19.3283232,2.61189067 L18.1184631,2.61189067 L18.1184631,1.46249327 L19.3283232,1.46249327 L19.3283232,2.61189067 Z M34.4515743,16.9793582 L35.6614344,16.9793582 L35.6614344,18.1287556 L34.4515743,18.1287556 L34.4515743,16.9793582 Z" id="Shape" fill-rule="nonzero"></path>
+                        <path d="M25.2203418,11.4202976 L19.1710414,5.09861195 C18.9417729,4.85953729 18.5050134,4.85953729 18.2763499,5.09861195 L12.2270495,11.4202976 C12.0292373,11.6271892 12.0165338,11.9392506 12.1968029,12.1599349 L16.2613279,17.1247569 L15.7108416,19.739636 C15.6951134,19.8143469 15.6951134,19.8907818 15.7108416,19.9654926 L16.173613,22.1642899 C15.2341567,22.2286561 14.4888829,22.9671439 14.4888829,23.8757426 C14.4888829,24.3188353 14.6709668,24.7194003 14.9607283,25.02514 C14.6703619,25.3308797 14.4888829,25.7314447 14.4888829,26.1745374 C14.4888829,26.6176301 14.6709668,27.0181951 14.9607283,27.3239348 C14.6703619,27.6296745 14.4888829,28.0302395 14.4888829,28.4733322 C14.4888829,28.9164249 14.6709668,29.3169899 14.9607283,29.6227296 C14.6703619,29.9284693 14.4888829,30.3290343 14.4888829,30.772127 C14.4888829,31.7226786 15.3031187,32.4962231 16.303673,32.4962231 L16.303673,34.7950179 L17.5135331,34.7950179 L17.5135331,32.4962231 L21.1431134,32.4962231 C22.1436676,32.4962231 22.9579035,31.7226786 22.9579035,30.772127 C22.9579035,30.3290343 22.7758195,29.9284693 22.486058,29.6227296 C22.7764245,29.3169899 22.9579035,28.9164249 22.9579035,28.4733322 C22.9579035,28.0302395 22.7758195,27.6296745 22.486058,27.3239348 C22.7764245,27.0181951 22.9579035,26.6176301 22.9579035,26.1745374 C22.9579035,25.7314447 22.7758195,25.3308797 22.486058,25.02514 C22.7764245,24.7194003 22.9579035,24.3188353 22.9579035,23.8757426 C22.9579035,23.6734486 22.9143485,23.4814993 22.8465964,23.3010439 L23.5628335,23.3010439 C23.8967549,23.3010439 24.1677636,23.0441536 24.1677636,22.7263452 L24.1677636,20.4275504 C24.1677636,19.3586108 24.9402592,18.4569085 25.9825537,18.2017423 L25.9825537,34.7950179 L27.1924138,34.7950179 L27.1924138,17.5540569 C27.1924138,17.2362485 26.9214051,16.9793582 26.5874837,16.9793582 C24.5857702,16.9793582 22.9579035,18.5258724 22.9579035,20.4275504 L22.9579035,22.1516465 L21.276198,22.1516465 L21.7365497,19.9654926 C21.7522779,19.8907818 21.7522779,19.8143469 21.7365497,19.739636 L21.1860634,17.1247569 L25.2505883,12.1599349 C25.4308575,11.9392506 25.418154,11.6277639 25.2203418,11.4202976 Z M18.7233932,11.8070699 C19.0567096,11.8070699 19.3283232,12.0645349 19.3283232,12.3817686 C19.3283232,12.6990023 19.0567096,12.9564673 18.7233932,12.9564673 C18.3900767,12.9564673 18.1184631,12.6990023 18.1184631,12.3817686 C18.1184631,12.0645349 18.3900767,11.8070699 18.7233932,11.8070699 Z M21.1431134,31.3468257 L16.303673,31.3468257 C15.9703566,31.3468257 15.698743,31.0893607 15.698743,30.772127 C15.698743,30.4548933 15.9703566,30.1974283 16.303673,30.1974283 L21.1431134,30.1974283 C21.4764298,30.1974283 21.7480434,30.4548933 21.7480434,30.772127 C21.7480434,31.0893607 21.4764298,31.3468257 21.1431134,31.3468257 Z M21.1431134,29.0480309 L16.303673,29.0480309 C15.9703566,29.0480309 15.698743,28.7905659 15.698743,28.4733322 C15.698743,28.1560985 15.9703566,27.8986335 16.303673,27.8986335 L21.1431134,27.8986335 C21.4764298,27.8986335 21.7480434,28.1560985 21.7480434,28.4733322 C21.7480434,28.7905659 21.4764298,29.0480309 21.1431134,29.0480309 Z M21.1431134,26.7492361 L16.303673,26.7492361 C15.9703566,26.7492361 15.698743,26.4917711 15.698743,26.1745374 C15.698743,25.8573037 15.9703566,25.5998387 16.303673,25.5998387 L21.1431134,25.5998387 C21.4764298,25.5998387 21.7480434,25.8573037 21.7480434,26.1745374 C21.7480434,26.4917711 21.4764298,26.7492361 21.1431134,26.7492361 Z M21.7480434,23.8757426 C21.7480434,24.1929763 21.4764298,24.4504413 21.1431134,24.4504413 L16.303673,24.4504413 C15.9703566,24.4504413 15.698743,24.1929763 15.698743,23.8757426 C15.698743,23.5585089 15.9703566,23.3010439 16.303673,23.3010439 L21.1431134,23.3010439 C21.4764298,23.3010439 21.7480434,23.5585089 21.7480434,23.8757426 Z M16.9207017,19.8528517 L17.4046457,17.5540569 L20.0421407,17.5540569 L20.5260847,19.8528517 L20.0421407,22.1516465 L17.4046457,22.1516465 L16.9207017,19.8528517 Z M20.2417676,16.4046595 L17.2050188,16.4046595 L13.4641314,11.8358048 L18.1184631,6.97155501 L18.1184631,10.763417 C17.4161394,11.0013423 16.9086031,11.6335109 16.9086031,12.3817686 C16.9086031,13.3323202 17.7228389,14.1058647 18.7233932,14.1058647 C19.7239475,14.1058647 20.5381833,13.3323202 20.5381833,12.3817686 C20.5381833,11.6335109 20.030647,11.0013423 19.3283232,10.763417 L19.3283232,6.97155501 L23.982655,11.8358048 L20.2417676,16.4046595 Z" id="Shape" fill-rule="nonzero"></path>
+                        <path d="M62.7498341,18.0994935 C62.7498341,23.7155216 60.5311896,26.5234935 56.0938341,26.5234935 L50.7378341,26.5234935 L50.7378341,10.3774935 L56.1978341,10.3774935 C58.5725126,10.3774935 60.2581624,11.0404868 61.2548341,12.3664935 C62.2515057,13.6925001 62.7498341,15.603481 62.7498341,18.0994935 Z M56.0158341,22.7794935 C56.9345053,22.7794935 57.5281661,22.4544967 57.7968341,21.8044935 C58.0655021,21.1544902 58.1998341,20.0625011 58.1998341,18.5284935 C58.1998341,16.9944858 58.0568355,15.90683 57.7708341,15.2654935 C57.4848326,14.6241569 56.8738387,14.3034935 55.9378341,14.3034935 L55.1578341,14.3034935 L55.1578341,22.7794935 L56.0158341,22.7794935 Z M73.1498341,26.5234935 L64.4138341,26.5234935 L64.4138341,10.3774935 L73.4098341,10.3774935 L73.1498341,14.3554935 L68.8598341,14.3554935 L68.8598341,16.7734935 L72.5778341,16.7734935 L72.5778341,20.2054935 L68.8598341,20.2054935 L68.8598341,22.8834935 L73.4098341,22.8834935 L73.1498341,26.5234935 Z M74.1898341,15.2394935 C74.1898341,13.6968191 74.6404962,12.4574982 75.5418341,11.5214935 C76.4431719,10.5854888 77.6781596,10.1174935 79.2468341,10.1174935 C80.8155086,10.1174935 82.4231592,10.2734919 84.0698341,10.5854935 L83.5498341,14.7454935 C81.8338255,14.3468248 80.6551706,14.1474935 80.0138341,14.1474935 C79.1991633,14.1474935 78.7918341,14.4768235 78.7918341,15.1354935 C78.7918341,15.3954948 78.9868321,15.6468256 79.3768341,15.8894935 C79.766836,16.1321614 80.2391646,16.3878255 80.7938341,16.6564935 C81.3485035,16.9251615 81.9031646,17.2458249 82.4578341,17.6184935 C83.0125035,17.991162 83.4848321,18.5241567 83.8748341,19.2174935 C84.264836,19.9108303 84.4598341,20.7081556 84.4598341,21.6094935 C84.4598341,23.2561684 84.0178385,24.5301556 83.1338341,25.4314935 C82.2498296,26.3328313 80.9975088,26.7834935 79.3768341,26.7834935 C77.7561593,26.7834935 76.1745084,26.5321627 74.6318341,26.0294935 L74.9178341,22.1554935 C76.77251,22.6928295 78.0638304,22.9614935 78.7918341,22.9614935 C79.5198377,22.9614935 79.8838341,22.64083 79.8838341,21.9994935 C79.8838341,21.6701585 79.688836,21.3668282 79.2988341,21.0894935 C78.9088321,20.8121588 78.4365035,20.5348282 77.8818341,20.2574935 C77.3271646,19.9801588 76.7681702,19.6594953 76.2048341,19.2954935 C75.6414979,18.9314917 75.164836,18.4028303 74.7748341,17.7094935 C74.3848321,17.0161567 74.1898341,16.1928316 74.1898341,15.2394935 Z M90.6998341,26.5234935 L86.2798341,26.5234935 L86.2798341,10.3774935 L90.6998341,10.3774935 L90.6998341,26.5234935 Z M102.971834,15.1874935 C101.307826,14.6848243 100.090171,14.4334935 99.3188341,14.4334935 C98.5474969,14.4334935 98.0188355,14.7714901 97.7328341,15.4474935 C97.4468326,16.1234969 97.3038341,17.1938195 97.3038341,18.6584935 C97.3038341,20.1231675 97.4381661,21.1891568 97.7068341,21.8564935 C97.9755021,22.5238301 98.5258299,22.8574935 99.3578341,22.8574935 C99.6005019,22.8574935 100.068497,22.7881608 100.761834,22.6494935 L100.761834,20.6734935 L99.5918341,20.6734935 L99.5918341,17.6054935 L104.557834,17.6054935 L104.557834,26.5234935 L101.489834,26.5234935 L101.073834,25.6914935 L100.969834,25.6914935 C100.675166,25.9341614 100.441168,26.1161595 100.267834,26.2374935 C99.7824983,26.6014953 99.0978385,26.7834935 98.2138341,26.7834935 C94.5911493,26.7834935 92.7798341,24.0448542 92.7798341,18.5674935 C92.7798341,15.8288131 93.256496,13.735834 94.2098341,12.2884935 C95.1631722,10.8411529 96.7664895,10.1174935 99.0198341,10.1174935 C100.82251,10.1174935 102.373828,10.394824 103.673834,10.9494935 L102.971834,15.1874935 Z M118.519834,26.5234935 L114.255834,26.5234935 L110.901834,19.0094935 L110.693834,19.0094935 L110.693834,26.5234935 L106.741834,26.5234935 L106.741834,10.3774935 L111.135834,10.3774935 L114.333834,18.1254935 L114.541834,18.1254935 L114.541834,10.3774935 L118.519834,10.3774935 L118.519834,26.5234935 Z M129.543834,26.5234935 L120.807834,26.5234935 L120.807834,10.3774935 L129.803834,10.3774935 L129.543834,14.3554935 L125.253834,14.3554935 L125.253834,16.7734935 L128.971834,16.7734935 L128.971834,20.2054935 L125.253834,20.2054935 L125.253834,22.8834935 L129.803834,22.8834935 L129.543834,26.5234935 Z M142.361834,15.4994935 C142.361834,16.470165 142.214502,17.2761569 141.919834,17.9174935 C141.625166,18.55883 141.165837,19.1394909 140.541834,19.6594935 L142.699834,26.5234935 L137.889834,26.5234935 L136.277834,20.6994935 L135.679834,20.6994935 L135.679834,26.5234935 L131.311834,26.5234935 L131.311834,10.3774935 L137.343834,10.3774935 C139.077176,10.3774935 140.34683,10.7848227 141.152834,11.5994935 C141.958838,12.4141642 142.361834,13.7141512 142.361834,15.4994935 Z M136.355834,17.9694935 C136.806503,17.9694935 137.127166,17.8394948 137.317834,17.5794935 C137.508502,17.3194922 137.603834,16.8471636 137.603834,16.1624935 C137.603834,15.4778234 137.508502,15.0011615 137.317834,14.7324935 C137.127166,14.4638255 136.81517,14.3294935 136.381834,14.3294935 L135.679834,14.3294935 L135.679834,17.9694935 L136.355834,17.9694935 Z M151.513834,15.4566615 C153.836739,15.4557145 154.998192,15.4272716 154.998192,15.3713328 C154.998192,15.0686229 153.836739,13.7584916 151.513834,11.4409389 L151.513834,10.3774935 L155.985834,10.3774935 L155.985834,21.4534935 C155.985834,23.3081694 155.478839,24.6601559 154.464834,25.5094935 C153.450829,26.3588311 151.960177,26.7834935 149.992834,26.7834935 C148.025491,26.7834935 146.560839,26.3631643 145.598834,25.5224935 C144.636829,24.6818226 144.155834,23.342836 144.155834,21.5054935 L144.155834,10.3774935 L148.705834,10.3774935 L148.705834,11.5917316 C146.375145,14.0087982 145.209801,15.2963955 145.209801,15.4545237 L148.705834,15.4545237 L148.705834,21.2194935 C148.705834,21.7568295 148.8185,22.1554922 149.043834,22.4154935 C149.269169,22.6754948 149.637498,22.8054935 150.148834,22.8054935 C150.66017,22.8054935 151.0155,22.6798281 151.214834,22.4284935 C151.414168,22.1771589 151.513834,21.7654963 151.513834,21.1934935 L151.513834,15.4566615 Z M163.837834,21.2454935 L162.641834,21.2454935 L162.641834,26.5234935 L158.273834,26.5234935 L158.273834,10.3774935 L163.551834,10.3774935 C165.40651,10.3774935 166.784496,10.8021559 167.685834,11.6514935 C168.587172,12.5008311 169.037834,13.8961504 169.037834,15.8374935 C169.037834,17.7788365 168.613172,19.1654893 167.763834,19.9974935 C166.914496,20.8294976 165.605843,21.2454935 163.837834,21.2454935 Z M164.331834,17.7354935 C164.487835,17.4408253 164.565834,16.912164 164.565834,16.1494935 C164.565834,15.386823 164.479168,14.849495 164.305834,14.5374935 C164.1325,14.2254919 163.785837,14.0694935 163.265834,14.0694935 L162.641834,14.0694935 L162.641834,18.1774935 L163.369834,18.1774935 C163.85517,18.1774935 164.175833,18.0301616 164.331834,17.7354935 Z" id="DESIGNERUP"></path>
+                    </g>
+                </g>
+            </g>
+        </svg>
+      </a>
+
+      <ul>
+        <li class="title">Explore</li>
+        <li><a href="https://designerup.co/product-design-ui-ux-course">Product Design (UX/UI) Course</a></li>
+        <li><a href="https://designerup.co/ui-design-crash-course" class="nav-link">UI Design Crash Course</a></li>
+        <li><a href="https://designerup.co/community">Community</a></li>
+        <li><a href="https://designerup.co/shop">Shop</a></li>
+        <li><a href="https://designerup.co/job-resources">Job Resources</a></li>
+      </ul>
+
+      <ul>
+        <li class="title">Resources</li>
+        <li class="nav-link"><a href="https://designerup.co/blog">Blog</a></li>
+        <li class="nav-link"><a href="https://designerup.co/webinars">Webinars</a></li>
+        <li class="nav-link"><a href="https://anchor.fm/designerup">Podcast</a></li>
+        <li class="nav-link"><a href="https://designerup.co/perks">Student Perks</a></li>
+        <li class="nav-link"><a href="https://designerup.co/newsletter">Newsletter</a></li>
+      </ul>
+
+      <ul>
+        <li class="title">Company</li>
+        <li class="nav-link"><a href="https://designerup.co/design-philosophy">Design Philosophy</a></li>
+        <li class="nav-link"><a href="mailto:learn@designerup.co">Contact</a></li>
+        <li class="nav-link"><a href="https://designerup.co/terms">Terms of Use</a></li>
+        <li class="nav-link"><a href="https://designerup.co/privacy">Privacy Policy</a></li>
+        <li class="nav-link"><a href="https://designerup.co/disclaimer">School Disclaimer</a></li>
+      </ul>
+
+      <ul>
+        <li class="title">Around The Web</li>
+        <li class="nav-link"><a href="https://youtube.com/designerup" target="_blank">YouTube</a></li>
+        <li class="nav-link"><a href="https://twitter.com/designerupco" target="_blank">Twitter</a></li>
+        <li class="nav-link"><a href="https://facebook.com/designerupco" target="_blank">Facebook</a></li>
+        <li class="nav-link"><a href="https://instagram.com/designerupco" target="_blank">Instagram</a></li>
+        <li class="nav-link"><a href="https://linkedin.com/company/designerupco" target="_blank">LinkedIn</a></li>
+      </ul>
+    </nav>
+
+    <div class="copyright">
+      <p>© Copyright 2025 DesignerUp. All Rights Reserved.</p>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <script src="./Drastically Improve your UI Designs With This Technique_files/scripts.js"></script>
+  <script src="./Drastically Improve your UI Designs With This Technique_files/ck.5.js"></script>
+
+  <script>
+// Adds delay to author card dropups to disappear. This gives enough
+// time for the user to interact with the author card while they move
+// the mouse from the avatar to the card. Also makes space for the
+// interacted avatar.
+$(document).ready(function () {
+
+    var hoverTimeout;
+
+    $('.author-list-item').hover(function(){
+        var $this = $(this);
+
+        clearTimeout(hoverTimeout);
+
+        $('.author-card').removeClass('hovered');
+        $(this).children('.author-card').addClass('hovered');
+
+    }, function() {
+        var $this = $(this);
+
+        hoverTimeout = setTimeout(function() {
+            $this.children('.author-card').removeClass('hovered');
+        }, 800);
+    });
+
+});
+</script>
+
+<script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+  <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5d0e91b24620c0a9"></script>
+<script>
+  (function(){
+    if(typeof _bsa !== 'undefined' && _bsa) {
+      _bsa.init('imageonly', 'CEAIP5QN', 'selfserve', { target: "#bsa-CEAIP5QN" });
+    }
+  })();
+</script>
+
+
+
+<div id="ghost-portal-root"></div><div id="sodo-search-root"></div><iframe name="__privateStripeMetricsController1520" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="./Drastically Improve your UI Designs With This Technique_files/m-outer-3437aaddcdf6922d623e172c2d6f9278.html" aria-hidden="true" tabindex="-1" style="border-width: medium !important; border-style: none !important; border-color: currentcolor !important; border-image: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important; --darkreader-inline-border-top: 1px; --darkreader-inline-border-right: 1px; --darkreader-inline-border-bottom: 1px; --darkreader-inline-border-left: 1px;" data-darkreader-inline-border-top="" data-darkreader-inline-border-right="" data-darkreader-inline-border-bottom="" data-darkreader-inline-border-left=""></iframe></body></html>

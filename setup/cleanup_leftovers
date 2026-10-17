@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+. "${BASH_SOURCE[0]%/*}/setup_vars"
+. "$SCRIPT_DIR/cleanup_body"
+cleanup_main

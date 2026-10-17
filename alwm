@@ -1,0 +1,84 @@
+#!/usr/bin/env luajit
+local dots = os.getenv("dots")
+dofile(dots .. "/sources/utils")
+
+-- env files are real Lua (hl.env(...) / set(...) calls). al_bin runs from .bashrc
+-- before Hyprland exists, so it reads them as TEXT: walk the lines, skip blanks
+-- and `--` comments, and for `hl.env("key", value)` / `set("key", value)` resolve
+-- `value` (a quoted literal, or a small expression using getenv()/rbase).
+--   ~/env_override         -> rbase, auto_launch   (uncommented lines only)
+--   ~/.config/hypr/env.lua -> rbase, auto_launch   (when override has none)
+local loadstr = loadstring or load
+
+local function resolve_value(v, extra)
+    local lit = v:match('^"(.*)"$') or v:match("^'(.*)'$")
+    if lit then return lit end
+    local fn = loadstr("return " .. v)
+    if not fn then return nil end
+    local env = { getenv = os.getenv }
+    for k, val in pairs(extra or {}) do env[k] = val end
+    if setfenv then setfenv(fn, env) end
+    local ok, res = pcall(fn)
+    if ok and res ~= nil then return tostring(res) end
+    return nil
+end
+
+local function read_env_file(path, wanted, extra)
+    local out = {}
+    local f = io.open(path, "r")
+    if not f then return out end
+    for line in f:lines() do
+        local t = line:match("^%s*(.-)%s*$")
+        if t ~= "" and not t:match("^%-%-") then
+            local k, v = t:match('hl%.env%s*%(%s*"([%w_]+)"%s*,%s*(.*)%)%s*$')
+            if not k then k, v = t:match('set%s*%(%s*"([%w_]+)"%s*,%s*(.*)%)%s*$') end
+            if k and wanted[k] then
+                out[k] = resolve_value(v, extra)
+            end
+        end
+    end
+    f:close()
+    return out
+end
+
+local home = os.getenv("HOME") or ""
+local user = os.getenv("USER") or "user"
+
+rbase = ""
+local auto_launch = ""
+rconf = ""
+
+local ov = read_env_file(home .. "/env_override", { rbase = true, auto_launch = true })
+if ov.rbase then rbase = ov.rbase end
+if ov.auto_launch then auto_launch = ov.auto_launch end
+
+if rbase == "" or auto_launch == "" then
+    local el = read_env_file(home .. "/.config/hypr/env.lua", { rbase = true, auto_launch = true })
+    if rbase == "" and el.rbase then rbase = el.rbase end
+    if auto_launch == "" and el.auto_launch then auto_launch = el.auto_launch end
+end
+
+if rbase == "" then rbase = "/tmp" end
+rconf = rbase .. "/" .. user .. "_rconf"
+set_env("rbase", rbase)
+set_env("rconf", rconf)
+
+local alm_path = rconf .. "/alm"
+if not is_file(alm_path) then
+    mkdir_p(rconf)
+    touch(alm_path)
+
+    local create_dummies_path = dots .. "/sources/create_dummies"
+    if is_file(create_dummies_path) then
+        dofile(create_dummies_path)
+    end
+
+    local has_dm = is_file("/etc/systemd/system/display-manager.service") or is_file("/etc/X11/default-display-manager")
+    if not has_dm then
+        if auto_launch == "" then auto_launch = "1" end
+        if auto_launch == "1" then
+            print("Auto launching Window Manager")
+            run("start-hyprland")
+        end
+    end
+end

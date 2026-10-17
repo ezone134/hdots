@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- pp_main — power profile (power-profiles-daemon) CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/pp_body")
+pp_cmd(unpack(arg))

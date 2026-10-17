@@ -1,0 +1,56 @@
+# -*- mode: sh -*-
+# fetch_color_scheme — resolve the active theme palette with minimal overhead.
+#
+# Sources theme definitions and calls resolve_theme() to populate all shell
+# variables required by downstream consumers (e.g. theme_body).
+# All values are loaded directly from static records without runtime math.
+#
+# Variables exported:
+#   Identity / Mode : theme_id, theme_mode, theme_string, sfg_mode
+#   Base colors (11): bg, fg, acc, sfg, border, fg2, fg3, bg2, bg3, acc_hc, acc_ec
+#   Extras (7)      : hover, success, warning, danger, info, sfg_d, sfg_l
+
+# Fall back to state files if color management mode is unset
+[[ -z $sm ]] && {
+    sm=$(<$states2/sm)
+    mode_var=$(<$states2/m)
+}
+
+# Determine active target mode (dark/light) based on caller context
+if [[ ${1:-} == splash_init ]]; then
+    echo "caller is splas_pop"
+    mode_var=$m_init
+else
+    echo "caller is not splas_pop"
+    mode_var=$m
+fi
+echo  "fetch_color mode is $m"
+
+# Resolve theme identifier from current scheme state or fallback profile
+theme_id=$(<$states/scheme_${sm}) || theme_id=hdots_${mode_var}
+echo "color scheme is '$theme_id'"
+
+
+. "$hypr_sources/helpers/theme_init"
+# Locate theme record:
+# - Single themes (d/l): unpacks all variables immediately.
+# - Dual themes (b): splits line across ' | ' and prepares d() / l() hooks.
+resolve_theme $theme_id
+[[ $found == 0 ]] && {
+    msg="Scheme $theme_id not found at source falling back to default_nord"
+    echo "$msg"
+    notify-send "Theme extras" "$msg" &
+    resolve_theme default_nord
+}
+# If dual theme, dispatch the active mode function ('dark' or 'light') to unpack palette
+
+[[ ${2:-} == auto_fetch ]] && { # meaning it was asked to fetch auto only center_pop calls like this not splash_init
+    mode_var=$(<$states2/m)
+}
+
+[[ $theme_mode == b ]] && {
+    echo "calling func ${mode_var}_side"
+    ${mode_var}_side # its eighter d or l calls side_d or side_l func
+}
+
+save_theme_vars # save all expanded colors

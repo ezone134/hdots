@@ -1,0 +1,14 @@
+# -*- mode: sh -*-
+{
+cp -r $hdots/states/* $states/
+} &
+
+
+{
+cp -r $hdots/states_global/* $hypr_global/states/
+} &
+
+
+{
+. $hypr_sources/helpers/sync_etc_files
+} &

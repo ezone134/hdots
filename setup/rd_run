@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+main_logic(){
+    shopt -s nullglob
+
+    rdv_files=(/run/*/states2/rdvars)
+    rdvars=${rdv_files[0]}
+
+    # already initialized and running?
+    if [[ -f "$rdvars" ]]; then
+        . "$rdvars"
+        if [[ -f "$rstates2/loop_pid" ]] && kill -0 "$(<"$rstates2/loop_pid")" 2>/dev/null; then
+            exit 0
+        fi
+    fi
+
+    # bootstrap vars
+    u=$(</tmp/u)
+    vars_files=(/home/"$u"/.config/*/vars_b)
+    [[ -f "${vars_files[0]}" ]] && . "${vars_files[0]}"
+    [[ -n $base ]] || exit 0
+
+    # wait for sources marker
+    while [[ ! -f /tmp/rd_marker/sources_path ]]; do
+        inotifywait -qq -e create,moved_to /tmp/rd_marker 2>/dev/null || sleep 3
+    done
+    sources=$(</tmp/rd_marker/sources_path)
+    export sources
+
+    dots="/home/$u/.config/$base"
+    mkdir -p "$rstates2" "$rstates" "$dots/states_r"
+    [[ $(stat -c %a "$dots/states_r") == 777 ]] || chmod 777 "$dots/states_r"
+
+    # seed default state files (if not present)
+    [[ -f "$rstates/ps" ]] || echo "0" > "$rstates/ps"
+    [[ -f "$rstates/ap" ]] || echo "powersave" > "$rstates/ap"
+    [[ -f "$rstates/bp" ]] || echo "powersave" > "$rstates/bp"
+    [[ -f "$rstates/bmf" ]] || echo "1200" > "$rstates/bmf"
+    [[ -f "$rstates/amf" ]] || echo "3500" > "$rstates/amf"
+
+    # copy user state presets
+    cp -r "$dots/states_r/"* "$rstates/" 2>/dev/null
+
+    # write rdvars
+    {
+        echo "base=$base"
+        echo "dots=$dots"
+        echo "rdmnb=$rdmnb"
+        echo "rdmnp=$rdmnp"
+        echo "rstates=$rstates"
+        echo "rstates2=$rstates2"
+        echo "sources=$sources"
+    } > "$rstates2/rdvars"
+    . "$rstates2/rdvars"
+    export sources
+
+    # link utils into run dir
+    "$sources/link_file" -s "$sources/utils" "$rdmnp/utils"
+
+    # copy rd_logic scripts into run dir
+    cp -f "$dots/rd_logic/loop" "$rdmnp/loop"
+    cp -f "$dots/rd_logic/main_body" "$rdmnp/main_body"
+    cp -f "$dots/rd_logic/performance" "$rdmnp/performance"
+    cp -f "$dots/rd_logic/powersave" "$rdmnp/powersave"
+    cp -f "$dots/rd_logic/udev_run" "$rdmnp/udev_run"
+    chmod 700 "$rdmnp/loop" "$rdmnp/main_body" "$rdmnp/udev_run"
+    chmod +x "$rdmnp/loop"
+
+    chmod -R 700 "$rdmnp"
+    chmod -R 777 "$rstates2" "$rstates"
+    chmod +x "$rdmnp"/*
+
+    rm -f /tmp/u
+
+    # start the loop
+    exec "$rdmnp/loop"
+}
+
+[[ $EUID == 0 ]] && main_logic

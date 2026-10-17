@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- shot_main — screenshot (grim/slurp) CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/shot_body")
+shot_cmd(unpack(arg))

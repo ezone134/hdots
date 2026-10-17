@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+. $hypr_global/qpid hyprlock || hyprlock

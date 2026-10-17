@@ -1,0 +1,13 @@
+# -*- mode: sh -*-
+setup_dirs_and_perms() {
+    sudo bash -c '
+        mkdir -p "$1/mconfig/hypr_$2" "$1/states_$2"
+        chown -R "$2:$2" "$1/mconfig/hypr_$2" "$1/states_$2"
+
+        mime_file="$1/mconfig/mimeapps.list_$2"
+        [[ -f "$mime_file" ]] || {
+            > "$mime_file"
+            chown "$2:$2" "$mime_file"
+        }
+    ' _ "$SCRIPT_DIR" "$USER"
+}

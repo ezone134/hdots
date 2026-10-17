@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+sleep 1
+sysrq_state=$(</proc/sys/kernel/sysrq)
+[[ $sysrq_state -eq 1 ]] || {
+    echo 1 > /proc/sys/kernel/sysrq
+}
+chmod 777 $SCRIPT_DIR/states/fire_delay
+chmod 777 $SCRIPT_DIR/fire_count
+echo 1 > $SCRIPT_DIR/unmounter_status

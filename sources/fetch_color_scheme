@@ -1,0 +1,38 @@
+-- helper: fetch_color_scheme
+-- ported from bash sources/fetch_color_scheme
+-- callers set global `fcs_caller` = "splash_init" | "center_pop" | nil (default $m)
+
+local caller = fcs_caller
+if caller == "splash_init" then
+    mode_var = m_init
+    theme_id = ff(dots .. "/states/scheme_" .. s_init .. m_init)
+    dofile(dots .. "/sources/themes")
+    dofile(dots .. "/sources/theme_is_dark")
+    dofile(dots .. "/sources/theme_init")
+else
+    if not sm then
+    sm = flagf_get(states2 .. "/sm")
+    end
+    if m then
+        mode_var = m
+    else
+        mode_var = flagf_get(states2 .. "/m")
+    end
+    theme_id = ff(states .. "/scheme_" .. sm)
+    dofile(sources .. "/themes")
+    dofile(sources .. "/theme_is_dark")
+    dofile(sources .. "/theme_init")
+end
+
+resolve(theme_id)
+if found == 0 then
+    local msg = "Scheme " .. tostring(theme_id) .. " not found at source falling back to default_nord"
+    err(msg)
+    run_bg("notify-send 'Theme extras' " .. shq(msg))
+    theme_id = "default_nord"
+    resolve(theme_id)
+end
+
+if dual == 1 then
+    _G[mode_var .. "_side"]()
+end

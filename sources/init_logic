@@ -1,0 +1,353 @@
+#!/usr/bin/env luajit
+-- helper init_logic
+
+-- chmod +x $sources/* (in bg)
+bg_fn(function()
+    chmod_x(sources)
+    chmod_x(sources .. "/bin")
+    chmod_x(sources .. "/bin2")
+end)
+
+dofile(sources .. "/setup_dirs_master")
+
+ if not is_file(rconfig .. "/mako/config") then
+     dofile(sources .. "/mako_gen")
+ end
+
+
+-- . alphas_helper &
+bg_fn(function() dofile(sources .. "/alphas_helper") end)
+
+if is_dir(dots .. "/etc_synced") then
+bg_fn(function()
+        if not is_file(states2 .. "/etc_sync_marker") then
+            dofile(sources .. "/sync_etc_files")
+        end
+end)
+end
+
+disown()
+
+-- /run/<rdmnb> is created by the root daemon bootstrap at boot (before this
+-- session), 711 and root-owned. Wait for it (event-driven) before seeding the
+-- world-writable states/ + states2/ it exposes; we cannot create it ourselves.
+if not wait_for_dir(r_daemon, 30) then
+    err("init_logic: timed out waiting for " .. tostring(r_daemon))
+end
+
+copy_dir_contents(pstates , states)
+copy_dir_contents(sources .."/pconfig" , rconfig)
+copy_dir_contents(dots .. "/states_r", rstates)
+
+dofile(sources .. "/master_seeder")
+
+bg_fn(function()
+    copy_dir_contents(dots .. "/rcache", rcache)
+end)
+
+bg_fn(function()
+    copy_dir_contents(dots .. "/pcache/accents", rcache .. "/accents")
+end)
+
+wait ()
+
+bg_fn(function()
+    rm(os.getenv("HOME") .. "/.config/google-chrome/SingletonLock")
+end)
+
+
+flagf_set(states2 .. "/fallback_colors_ready", "0")
+-- generate fallback colors block
+bg_fn(function()
+    acc = "#2e3440"
+    border = "#2e3440"
+    dofile(sources .. "/themes")
+    dofile(sources .. "/theme_init")
+    resolve("default_nord")
+    d_side()
+    tf(states2 .. "/acc_dd", acc)
+    tf(states2 .. "/acc_nd", acc)
+    tf(states2 .. "/border_dd", border)
+    tf(states2 .. "/border_nd", border)
+    tf(states2 .. "/acc_hc_d", acc_hc)
+    tf(states2 .. "/acc_ec_d", acc_ec)
+    acc = "#88c0d0"
+    border = "#88c0d0"
+    l_side()
+    tf(states2 .. "/acc_ll", acc)
+    tf(states2 .. "/acc_nl", acc)
+    tf(states2 .. "/border_ll", border)
+    tf(states2 .. "/border_nl", border)
+    tf(states2 .. "/acc_hc_l", acc_hc)
+    tf(states2 .. "/acc_ec_l", acc_ec)
+    flagf_set(states2 .. "/fallback_colors_ready", "1")
+end)
+
+bg_fn(function()
+-- caps lock path block
+-- list_dir returns bare names (`input0::capslock`); brightness is a file
+-- *inside* that dir, hence the "/brightness" suffix on the resolved path.
+caps_lock_file_path = ""
+for _, entry in ipairs(list_dir("/sys/class/leds")) do
+    if entry:match("^input%d+::capslock$") then
+        caps_lock_file_path = "/sys/class/leds/" .. entry .. "/brightness"
+        break
+    end
+end
+tf(states2 .. "/caps_lock_file_path", caps_lock_file_path)
+tf(states2 .. "/caps_state", ff(caps_lock_file_path))
+
+-- set default browser block
+if out("xdg-settings get default-web-browser") == "" then
+    run_bg("xdg-settings set default-web-browser google-chrome.desktop")
+end
+
+-- audio init block
+-- Volumes/mute are seeded once from libpulse (pulse_body) and then live in
+-- $states2; the hot path only writes to the server on change. No wpctl.
+max_vol = 500
+max_mic = 200
+tf(states .. "/max_vol", tostring(max_vol))
+tf(states .. "/max_mic", tostring(max_mic))
+
+dofile(sources .. "/pulse_body")
+local seed_ok, seed_err = pulse_seed_states()
+if not seed_ok then
+    print("audio init: pulse seed failed -- " .. tostring(seed_err))
+    -- fall back to safe defaults so the UI never reads a missing file
+    for _, f in ipairs({ "vol", "mic" }) do
+        if not is_file(states2 .. "/" .. f) then
+            tf(states2 .. "/" .. f, "0")
+            tf(states2 .. "/" .. f .. "_f", "0.00")
+        end
+        if not is_file(states2 .. "/" .. f .. "_muted") then
+            tf(states2 .. "/" .. f .. "_muted", "0")
+        end
+    end
+end
+
+    -- No audio_id here: the old PW_MASTER_ID came from `wpctl status` and was
+    -- written but never read by anything. Dropping it retires the last wpctl
+    -- call on the audio path.
+
+    -- battery found block
+    local battery_found = "0"
+    for _, entry in ipairs(list_dir("/sys/class/power_supply")) do
+        if entry:match("^BAT") then battery_found = "1" break end
+    end
+    tf(states2 .. "/battery_found", battery_found)
+
+end)
+
+
+dofile(sources .. "/expand_gen_body")
+
+-- desktop launchers / symlinks / theme-inits block
+for _, entry in ipairs(list_dir(sources .. "/dl_entries")) do
+    expand_gen(sources .. "/dl_entries/" .. entry, rconf .. "/dl/" .. entry .. ".desktop")
+end
+dofile(sources .. "/symlink_dirs")
+dofile(sources .. "/symlink_files")
+dofile(sources .. "/ptc_array")
+
+-- Link arrays in one call — same common body the boot script's link/link_file/ptc use
+link_dir_array(dirs_pairs)
+link_file_array(files_pairs)
+ptc_run_array(ptc_array)
+dofile(sources .. "/init_array")
+for _, d in ipairs(init_array) do
+    expand_gen(d[1], d[2])
+end
+
+-- gnome-keyring block
+if qpid("gnome-keyring-daemon") == "" then
+    run_bg("gnome-keyring-daemon --start --components=secrets && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP GNOME_KEYRING_CONTROL GNOME_KEYRING_SOCK")
+else
+    run_bg("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP GNOME_KEYRING_CONTROL GNOME_KEYRING_SOCK")
+end
+
+
+if not is_file(states2 .. "/distro") then
+    dofile(sources .. "/init_once")
+end
+
+
+if not is_file(states2 .. "/alpha_hex_source") then
+    dofile(sources .. "/gen_alpha_sample")
+end
+
+-- theme block
+dofile(sources .. "/theme_block_init")
+
+if not is_file(caml) then
+    -- custom acc files: wall-sourced accent needs them now, else defer to bg
+    if ff(states .. "/acc_source_" .. s) == "w" then
+        dofile(sources .. "/gen_ca_list")
+    else
+        bg_fn(function() dofile(sources .. "/gen_ca_list") end)
+    end
+end
+
+
+if not m_init or m_init == "" then
+    local gtk_theme = out("gsettings get org.gnome.desktop.interface gtk-theme")
+    if gtk_theme:find("dark") then m_init = "d" else m_init = "l" end
+    s = ff(states .. "/" .. "s")
+    if s == "n" then
+        s_init = "n"
+    else
+        s_init = m_init
+    end
+end
+
+tf(states2 .. "/m", m_init)
+tf(states2 .. "/m_dummy", m_init)
+tf(states2 .. "/s", s_init)
+tf(states2 .. "/s_dummy", s_init)
+sm = s_init .. m_init
+tf(states2 .. "/sm", sm)
+
+local auto_launch = os.getenv("auto_launch") or 1
+tf(states .. "/auto_launch", auto_launch)
+
+bg_fn(function() dofile(sources .. "/gen_theme_cards") end)
+
+-- trip the daemon: seed the flags in $rstates2 (world-writable) so the loop
+-- picks them up. Unconditional: tmpfs flags cannot pre-exist at boot, and the
+-- write is idempotent — one stat saved over a guard that was always false.
+tf(rstates2 .. "/fire_count", "1")
+tf(rstates2 .. "/flag_cpu", "1")
+tf(rstates2 .. "/flag_disk_umount", "0")
+tf(rstates2 .. "/disk_to_umount", "")
+
+tf(rconfig .. "/geany/geany-session.conf", "")
+
+if flagf_get(states2 .. "/" .. "fallback_colors_ready") == "0" then
+    local max_try = 10
+    while flagf_get(states2 .. "/" .. "fallback_colors_ready") == "0" and max_try > 0 do
+        sleep(1)
+        max_try = max_try - 1
+    end
+end
+
+flagf_set(states2 .. "/acc_changed", "0")
+if theme_panic == "yes" then
+    flagf_set(states2 .. "/full_theme_reload", "1")
+else
+    flagf_set(states2 .. "/full_theme_reload", "0")
+end
+
+flagf_set(states2 .. "/run_thunar_daemon", "0")
+if qpid("thunar") == "" then
+    run("hyprctl dispatch \"hl.dsp.exec_cmd('thunar --daemon')\"")
+    sleep(2)
+    flagf_set(states2 .. "/run_thunar_daemon", "1")
+end
+
+rm(states2 .. "/wall_lock") -- remove any stale lock file
+rm(states2 .. "/theme_lock")
+
+flagf_set(states2 .. "/" .. "st_switched", "0")
+
+if ff(states .. "/wall_n") == "0" then
+    tf(states2 .. "/wall_n", dots .. "/walls/n.jpg")
+end
+
+if ff(states .. "/wall_d") == "0" then
+    tf(states2 .. "/wall_d", dots .. "/walls/d.jpg")
+end
+
+if ff(states .. "/wall_l") == "0" then
+    tf(states2 .. "/wall_l", dots .. "/walls/l.jpg")
+end
+
+dofile(sources .. "/theme_body")
+dofile(sources .. "/theme_main_body")
+theme_cmd("irestore")
+
+if (tonumber(flagf_get(states2 .. "/" .. "all_theme_set"))) ~= 1 then
+    local max_try = 10
+    while (tonumber(flagf_get(states2 .. "/" .. "all_theme_set"))) ~= 1 and max_try > 0 do
+        sleep(0.5)
+        max_try = max_try - 1
+    end
+end
+
+-- auto-link $rconfig -> ~/.config, ONCE, after theme restore.
+-- $rconfig is a tmpfs union: pconfig copied in early, rconfig_gen/awww_final/
+-- hidle_body fill it during restore, so linking can only be correct here —
+-- once, never on later theme switches (the symlinks outlive regeneration).
+local cfg_home = os.getenv("HOME") .. "/.config/"
+
+-- only flags that actually write INTO $rconfig gate this (gen_gtk3/4_css and
+-- friends do not).  Bounded: theme_body_run already polled these for 2s, a cold
+-- boot can overrun it, and a miss only leaves a placeholder the generator
+-- fills in later through the existing link.
+local link_release = { "configs_done", "awww_done" }
+local link_deadline = os.time() + 5
+repeat
+    local link_ready = true
+    for _, lf in ipairs(link_release) do
+        if flagf_get(states2 .. "/" .. lf) ~= "1" then link_ready = false end
+    end
+    if link_ready then break end
+    sleep(0.2)
+until os.time() >= link_deadline
+
+-- $rconfig paths that land somewhere else in ~/.config
+local rconfig_overrides = {
+    ["gtk-override/gtk.css"]     = "gtk-3.0/gtk.css",
+    ["geany/geany-session.conf"] = "geany/session.conf",
+}
+
+-- skip files already reached through a dir-level symlink from symlink_dirs
+-- (hypr/luas, hypr/hyprlock, hypr/shaders, matugen): linking the file too
+-- would create a self-referential link through that dir symlink and the later
+-- tf() write would fail with ELOOP.
+local function covered_by_dir_link(rel, dst)
+    local rel_dir = dirname(rel)
+    -- dirname() yields "." (never "") for a root-level file, which would just
+    -- compare ~/.config against $rconfig itself and never match: harmless,
+    -- but skip the pointless realpath() call anyway.
+    if rel_dir == "." or rel_dir == "" then return false end
+    return is_same_file(dirname(dst), rconfig .. "/" .. rel_dir)
+end
+
+local rconfig_pairs = {}
+local function collect_rconfig(dir, rel)
+    for _, entry in ipairs(list_dir(dir)) do
+        local src = dir .. "/" .. entry
+        local r = (rel == "") and entry or (rel .. "/" .. entry)
+        if is_dir(src) then
+            collect_rconfig(src, r)
+        else
+            local dst = cfg_home .. (rconfig_overrides[r] or r)
+            if not covered_by_dir_link(r, dst) then
+                rconfig_pairs[#rconfig_pairs + 1] = { src, dst }
+            end
+        end
+    end
+end
+collect_rconfig(rconfig, "")
+if #rconfig_pairs > 0 then link_file_array(rconfig_pairs) end
+
+chmod_x(sources .. "/daemon")
+
+run_bg(sources .. "/daemon/run_inside_loop")
+run_bg(sources .. "/daemon/watch_dog")
+
+tf(rstates2 .. "/user", user)
+
+bg_fn(function() dofile(sources .. "/gen_keybinds_cache") end)
+
+chmod_r(rconf, "700")
+chmod_r(garbage or (rconf .. "/garbage"), "700")
+
+-- extra flags
+tf(states2 .. "/screen_recorder", "wf-recorder")
+
+
+tf("/tmp/rd_marker/sources_path", sources)
+
+rm(states2 .. "/dirs_setup")
+err("End of hypr-init")

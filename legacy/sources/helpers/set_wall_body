@@ -1,0 +1,57 @@
+# -*- mode: sh -*-
+
+[[ -e $lock_files/awww_init_lock ]] && {
+    notify-send -a Wallpaper "Wallpaper" "Please wait — previous instance still running..." &
+    max_try=10
+    while [[ -e $lock_files/awww_init_lock ]] && ((max_try > 0)); do
+        sleep 1
+        ((max_try--))
+    done
+}
+
+if [[ -e "$1" ]]; then
+    wall=$1
+else
+    base="${1##*/}"
+    wall=$HOME/Wallpapers/${base}
+fi
+
+[[ -e "$wall" ]] && {
+    s=$(<$states2/s) || s=n
+    [[ "$(<$states/current_wall_${s})" == "$wall" ]] || {
+        echo "$wall" > "$states/current_wall_${s}"
+        if [[ $(<$states/acc_source_${s}) == w ]]; then
+            acc_reload=1
+        else
+            acc_reload=0
+        fi
+        export do_not_relaunch_rofi="sfsdfdf"
+
+        [[ -e $lock_files/awww_init_lock ]] && {
+            notify-send -a Wallpaper "Wallpaper" "Waiting for pending processes..." &
+            max_try=10
+            while [[ -e $lock_files/awww_init_lock ]] && ((max_try > 0)); do
+                sleep 0.5
+                ((max_try--))
+            done
+        }
+        > $lock_files/awww_init_lock
+
+        s=$(<$states2/s)
+        m=$(<$states2/m)
+        acc_source=$(<$states/acc_source_${s}) || acc_source="0"
+        wall=$(<$states/current_wall_${s})
+
+        export s=$s
+        export wall=$wall
+        export m=$m
+        wall_bak=$wall
+        . $hypr_sources/helpers/awww_final &
+
+        (( acc_reload == 1 )) && {
+            . $hypr_sources/helpers/theme_body
+            regen_accent_and_theme_colors
+        }
+        rm -f $lock_files/awww_init_lock
+    }
+}

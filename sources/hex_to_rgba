@@ -1,0 +1,23 @@
+-- helper hex_to_rgba
+
+function hex_to_rgba(hex)
+    hex = hex:gsub("^#", "")
+
+    local r = tonumber(hex:sub(1, 2), 16)
+    local g = tonumber(hex:sub(3, 4), 16)
+    local b = tonumber(hex:sub(5, 6), 16)
+    local a = "1.0"
+
+    if #hex == 8 then
+        local alpha_hex = hex:sub(7, 8)
+        local alpha_dec = tonumber(alpha_hex, 16)
+        if alpha_dec == 255 then
+            a = "1.0"
+        else
+            local val = math.floor((alpha_dec * 1000) / 255)
+            a = string.format("0.%03d", val)
+        end
+    end
+
+    return string.format("rgba(%d, %d, %d, %s)", r, g, b, a)
+end

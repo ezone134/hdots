@@ -1,0 +1,83 @@
+# -*- mode: sh -*-
+# toggles_main_body — accent toggles + alpha for Settings → Appearance
+# Sourced by toggles_main. Each writes a per-channel flag under $states and
+# re-runs the theme pipeline (theme_body re-reads the flag in init_global_vars
+# and regenerates the palette). No `acc_changed` marker here — that's only
+# for source picks that need the GTK hot-reload (thunar); a plain
+# `theme_main restore` suffices for these. Only writes when the value actually
+# differs from what's stored.
+
+theme_run() {
+    set +u
+    "$@"
+}
+
+# read one per-channel field; defaults to $2 when the file is missing/empty
+acc_flag_read () { # acc_flag_read <file-base> <fallback>
+    local v
+    v=$(<"$states/$1_$ch") 2>/dev/null && [[ -n "$v" ]] || v="$2"
+    printf '%s\n' "$v"
+}
+
+# `toggle_acc <flag> <0|1>` → $states/custom_acc_<flag>_<ch>
+theme_toggle_func () {
+    local flag="$1" val="$2" ch
+    case "$flag" in
+        start_icon|app_border|hyprland|gtk|normal_app) ;;
+        *) err "toggles: toggle_acc wants start_icon|app_border|hyprland|gtk|normal_app"; return 1;;
+    esac
+    [[ "$val" == 0 || "$val" == 1 ]] || { err "toggles: toggle_acc $flag wants 0|1"; return 1; }
+    ch=$(<$states2/s) || ch=n
+    [[ "$(acc_flag_read "custom_acc_$flag" 0)" == "$val" ]] && return 0
+    echo "$val" > "$states/custom_acc_${flag}_$ch"
+    theme_run theme_main restore
+}
+
+# `start_icon_tone <0..900>` → $states/start_icon_tone_<ch>
+theme_tone_func () {
+    local val="$1" ch
+    [[ "$val" =~ ^[0-9]+$ ]] || { err "toggles: start_icon_tone wants a number 0..900"; return 1; }
+    (( val >= 0 && val <= 900 )) || { err "toggles: start_icon_tone wants a number 0..900"; return 1; }
+    ch=$(<$states2/s) || ch=n
+    [[ "$(acc_flag_read "start_icon_tone" 0)" == "$val" ]] && return 0
+    echo "$val" > "$states/start_icon_tone_$ch"
+    theme_run theme_main restore
+}
+
+# `alpha <flag> <hex>` → $states/<flag>_<ch> (lowercase 00-ff), for
+# bg_alpha / acc_alpha / scrim_alpha / border_alpha.
+theme_alpha_func () {
+    local flag="$1" val="$2" ch
+    case "$flag" in
+        bg_alpha|acc_alpha|scrim_alpha|border_alpha) ;;
+        *) err "toggles: alpha wants bg_alpha|acc_alpha|scrim_alpha|border_alpha"; return 1;;
+    esac
+    [[ "$val" =~ ^[0-9a-fA-F]{2}$ ]] || { err "toggles: alpha $flag wants a 2-digit hex byte"; return 1; }
+    ch=$(<$states2/s) || ch=n
+    val="${val,,}"
+    [[ "$(acc_flag_read "$flag" "")" == "$val" ]] && return 0
+    echo "$val" > "$states/${flag}_$ch"
+    theme_run theme_main restore
+}
+
+# `acc_scrim <0|1>` → $states/acc_scrim_<ch>
+theme_acc_scrim_func () {
+    local val="$1" ch
+    [[ "$val" == 0 || "$val" == 1 ]] || { err "toggles: acc_scrim wants 0|1"; return 1; }
+    ch=$(<$states2/s) || ch=n
+    [[ "$(acc_flag_read "acc_scrim" 0)" == "$val" ]] && return 0
+    echo "$val" > "$states/acc_scrim_$ch"
+    theme_run theme_main restore
+}
+
+
+toggles_cmd() {
+    local m="${1:-}"
+    case "$m" in
+        toggle_acc)       theme_toggle_func "${2:-}" "${3:-}";;
+        start_icon_tone)  theme_tone_func "${2:-}";;
+        alpha)            theme_alpha_func "${2:-}" "${3:-}";;
+        acc_scrim)        theme_acc_scrim_func "${2:-}";;
+        *)                err "toggles: use toggle_acc <flag> <0|1>|start_icon_tone <n>|alpha <flag> <hex>|acc_scrim <0|1>";;
+    esac
+}

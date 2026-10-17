@@ -1,0 +1,234 @@
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:71]: Lua Lsp startup, root: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:72]: ROOT:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:73]: LOGPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:74]: METAPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:75]: VERSION:	3.18.2-dev
+[00:01:49.458][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[00:01:49.458][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.927 MB
+        # 00 : 1.927 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[00:01:49.463][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {
+      localDocs = true,
+      serverStatusNotification = true
+    },
+    general = {
+      positionEncodings = { "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "refactor", "quickfix", "source" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "kind", "diagnostics", "isPreferred", "disabled", "edit", "command" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = true
+      },
+      colorProvider = {
+        dynamicRegistration = true
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          insertReplaceSupport = true,
+          insertTextModeSupport = {
+            valueSet = { 1, 2 }
+          },
+          labelDetailsSupport = true,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command", "detail", "documentation" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionList = {
+          itemDefaults = { "commitCharacters", "editRange", "insertTextMode", "insertTextFormat", "data" }
+        },
+        contextSupport = true,
+        dynamicRegistration = true,
+        insertTextMode = 2
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      },
+      documentLink = {
+        dynamicRegistration = true,
+        tooltipSupport = true
+      },
+      documentSymbol = {
+        dynamicRegistration = true,
+        hierarchicalDocumentSymbolSupport = true
+      },
+      foldingRange = {
+        dynamicRegistration = true,
+        foldingRange = {
+          collapsedText = true
+        },
+        foldingRangeKind = {
+          valueSet = { "comment", "region", "imports" }
+        },
+        lineFoldingOnly = false
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown" },
+        dynamicRegistration = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "label.tooltip", "label.location", "label.command" }
+        }
+      },
+      onTypeFormatting = {
+        dynamicRegistration = true
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = true,
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        },
+        versionSupport = true
+      },
+      rangeFormatting = {
+        dynamicRegistration = true
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true,
+        prepareSupportDefaultBehavior = 1
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = true,
+        formats = { "relative" },
+        multilineTokenSupport = true,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          }
+        },
+        serverCancelSupport = true,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary", "constant" },
+        tokenTypes = { "namespace", "class", "enum", "interface", "struct", "typeParameter", "type", "parameter", "variable", "property", "enumMember", "decorator", "function", "method", "macro", "label", "comment", "string", "keyword", "number", "regexp", "operator", "modifier", "event", "lifetime" }
+      },
+      signatureHelp = {
+        dynamicRegistration = true,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = true
+      }
+    },
+    window = {
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      codeLens = {
+        refreshSupport = true
+      },
+      configuration = true,
+      diagnostics = {
+        refreshSupport = true
+      },
+      didChangeConfiguration = {
+        dynamicRegistration = true
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true
+      },
+      executeCommand = {
+        dynamicRegistration = true
+      },
+      fileOperations = {
+        didRename = true,
+        dynamicRegistration = true,
+        willRename = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = true
+      },
+      workspaceEdit = {
+        documentChanges = true,
+        resourceOperations = { "create", "rename", "delete" },
+        snippetEditSupport = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Zed",
+    version = "1.12.1+stable.330.2a37601c02a32b22e7700835c04b89ff75ffcd5d"
+  },
+  processId = 109132,
+  rootPath = "/acc/common/hdots/sources/helpers",
+  rootUri = "file:///acc/common/hdots/sources/helpers",
+  workspaceFolders = { {
+      name = "",
+      uri = "file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua"
+    } }
+}
+[00:01:49.463][info] [#0:script/language.lua:137]: VSC language: nil
+[00:01:49.463][info] [#0:script/language.lua:138]: LS  language: en-us
+[00:01:49.463][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///acc/common/hdots/sources/helpers
+[00:01:49.463][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log/file_acc_common_hdots_sources_helpers.log

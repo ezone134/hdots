@@ -1,0 +1,3 @@
+2026-09-27 23:52:31.063 | [note] Attention! There may be sensitive information (such as API keys) in these logs. Make sure to redact any secrets before sharing with others.
+2026-09-27 23:52:32.381 | [error] MCP: preflight connection to MCP server failed: Transport creation error: Unexpected status code: 403 Forbidden
+2026-09-27 23:52:32.382 | [error] MCP: Failed to connect to server: Transport creation error: Unexpected status code: 403 Forbidden

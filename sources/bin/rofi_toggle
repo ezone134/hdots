@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+pidof rofi && pkill rofi || rofi -show drun -show-icons
+exit 0

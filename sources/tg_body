@@ -1,0 +1,87 @@
+#!/usr/bin/env luajit
+-- helper toggles_main_body
+-- ported from bash sources/toggles_main_body
+-- accent toggles + alpha for Settings → Appearance. Each writes a
+-- per-channel flag under $states and re-runs the theme pipeline (theme_body
+-- re-reads the flag in init_global_vars and regenerates the palette). No
+-- `acc_changed` marker here — that's only for source picks that need the GTK
+-- hot-reload (thunar); a plain `theme_main restore` suffices for these. Only
+-- writes when the value actually differs from what's stored.
+
+-- read one per-channel field; nil/missing states are NOT defaulted
+local function acc_flag_read(base, ch)
+    return ff(states .. "/" .. base .. "_" .. ch)
+end
+
+-- `toggle_acc <flag> <0|1>` → $states/custom_acc_<flag>_<ch>
+function theme_toggle_func(flag, val)
+    if flag ~= "start_icon" and flag ~= "app_border" and flag ~= "hyprland" and flag ~= "gtk" and flag ~= "normal_app" then
+        err("toggles: toggle_acc wants start_icon|app_border|hyprland|gtk|normal_app")
+        return
+    end
+    if val ~= "0" and val ~= "1" then
+        err("toggles: toggle_acc " .. tostring(flag) .. " wants 0|1")
+        return
+    end
+    local ch = ff(states2 .. "/s")
+    if acc_flag_read("custom_acc_" .. flag, ch) == val then return end
+    tf(states .. "/custom_acc_" .. flag .. "_" .. ch, val)
+    run("theme_main restore")
+end
+
+-- `start_icon_tone <0..900>` → $states/start_icon_tone_<ch>
+function theme_tone_func(val)
+    if not val or val:match("^[0-9]+$") == nil then
+        err("toggles: start_icon_tone wants a number 0..900")
+        return
+    end
+    local n = tonumber(val)
+    if n < 0 or n > 900 then
+        err("toggles: start_icon_tone wants a number 0..900")
+        return
+    end
+    local ch = ff(states2 .. "/s")
+    if acc_flag_read("start_icon_tone", ch) == val then return end
+    tf(states .. "/start_icon_tone_" .. ch, val)
+    run("theme_main restore")
+end
+
+-- `alpha <flag> <hex>` → $states/<flag>_<ch> (lowercase 00-ff), for
+-- bg_alpha / acc_alpha / scrim_alpha / border_alpha.
+function theme_alpha_func(flag, val)
+    if flag ~= "bg_alpha" and flag ~= "acc_alpha" and flag ~= "scrim_alpha" and flag ~= "border_alpha" then
+        err("toggles: alpha wants bg_alpha|acc_alpha|scrim_alpha|border_alpha")
+        return
+    end
+    if not val or val:match("^%x%x$") == nil then
+        err("toggles: alpha " .. tostring(flag) .. " wants a 2-digit hex byte")
+        return
+    end
+    local ch = ff(states2 .. "/s")
+    val = val:lower()
+    if acc_flag_read(flag, ch) == val then return end
+    tf(states .. "/" .. flag .. "_" .. ch, val)
+    run("theme_main restore")
+end
+
+-- `acc_scrim <0|1>` → $states/acc_scrim_<ch>
+function theme_acc_scrim_func(val)
+    if val ~= "0" and val ~= "1" then
+        err("toggles: acc_scrim wants 0|1")
+        return
+    end
+    local ch = ff(states2 .. "/s")
+    if acc_flag_read("acc_scrim", ch) == val then return end
+    tf(states .. "/acc_scrim_" .. ch, val)
+    run("theme_main restore")
+end
+
+function toggles_cmd(...)
+    local m, a, b = ...
+    if m == "toggle_acc" then theme_toggle_func(a, b)
+    elseif m == "start_icon_tone" then theme_tone_func(a)
+    elseif m == "alpha" then theme_alpha_func(a, b)
+    elseif m == "acc_scrim" then theme_acc_scrim_func(a)
+    else err("toggles: use toggle_acc <flag> <0|1>|start_icon_tone <n>|alpha <flag> <hex>|acc_scrim <0|1>")
+    end
+end

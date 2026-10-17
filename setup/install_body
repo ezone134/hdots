@@ -1,0 +1,13 @@
+# -*- mode: sh -*-
+install_main() {
+    BODY_DIR="${BASH_SOURCE[0]%/*}"
+    . $BODY_DIR/link_body
+    link_main
+    [[ $continue == 1 ]] && {
+        . "$BODY_DIR/link_udev_body"
+        link_udev_main
+        . "$BODY_DIR/setup_service_body"
+        setup_systemd_serv
+        . "$BODY_DIR/pkg_install"
+    }
+}

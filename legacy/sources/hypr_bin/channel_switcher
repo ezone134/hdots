@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+main_func_fire () {
+s=$s_dummy
+echo $s > $states2/s
+echo ${s}${m} > $states2/sm
+if [[ $s == n ]]; then
+    new_channel=normal
+else
+    new_channel=split
+fi
+export acc_change_force=yes_force_it
+export do_not_relaunch_rofi="yea do not relaunch rofi"
+echo "this is chanel switcher main ufnc restoreting theme"
+echo 0 > $states2/all_theme_set
+echo 1 > $states2/acc_changed  # when changing channel accent colors need to update so we must reapply hot reload accent, even when thunar not running
+{
+   . $hypr_sources/helpers/theme_main_body
+   theme_main_restore_func
+} &
+
+        max_try=10
+        while (( $(<$states2/all_theme_set) != 1 && max_try < 10 )); do
+            sleep 0.5 # max waits 5 sec for configs
+            ((max_try--))
+        done
+
+if [[ "$new_channel" == "split" ]]; then
+    {
+    . $hypr_sources/helpers/center_pop "SPLIT" "Switched to split UI State"
+    } &
+else
+    {
+    . $hypr_sources/helpers/center_pop "NORMAL" "Switched to normal UI State"
+    } &
+fi
+exit 0
+}
+
+tsize=""
+# debounce logic
+s_dummy=$(<$states2/s_dummy)
+m=$(<$states2/m)
+if [[ $s_dummy == n ]]; then
+s_dummy=$m
+else
+s_dummy=n
+fi
+echo $s_dummy > $states2/s_dummy
+{
+    echo $$ > $states2/channel_switch_pid
+    sleep 1
+    [[ $(echo $$) == $(<$states2/channel_switch_pid) ]] && {
+        [[ $(<$states2/s_dummy) == $(<$states2/s) ]] || {
+            echo "channel differs switching"
+            main_func_fire
+        }
+    }
+} &

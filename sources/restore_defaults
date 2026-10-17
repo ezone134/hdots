@@ -1,0 +1,4 @@
+-- restore_defaults — source master_seeder and glyphs/restore_defaults
+
+dofile(sources .. "/master_seeder")
+dofile(sources .. "/glyphs/restore_defaults")

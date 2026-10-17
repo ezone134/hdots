@@ -1,0 +1,154 @@
+# -*- mode: sh -*-
+# scheme_main_body — parse $states/themes, apply scheme
+
+theme_apply() { # apply theme <id>
+    echo "to apply theme_id is $1"
+    ch=$(<"$states2/s")
+    m=$(<"$states2/m")
+   . $hypr_sources/helpers/theme_init # source master file
+    resolve_theme "$1" # if not dual theme then this should expand all vars
+    [[ -z ${theme_mode:-} ]] && {
+        notify-send "Error scheme_main_body" &
+        exit 1
+    }
+        echo "scheme_body line 15 theme_mode is $theme_mode"
+    if [[ $theme_mode == b ]]; then
+        echo "scheme_body line 17"
+    old_theme=$(<"$states/scheme_${ch}${m}") # read current theme_id
+    [[ $old_theme == "$1" ]] && exit 0 # exit if same theme_id
+        if [[ $ch == n ]]; then
+            echo "$1" > "$states/scheme_nd"
+            echo "$1" > "$states/scheme_nl"
+        else
+            echo "$1" > "$states/scheme_dd"
+            echo "$1" > "$states/scheme_ll"
+        fi
+        echo 0 > "$states/acc_source_${ch}"
+        echo 1 > "$states2/acc_changed"
+#        theme_main restore
+        theme_main_restore_func
+
+    else
+        echo "scheme_body line 31"
+        if [[ $ch == n ]]; then
+            tmp_string=n
+        else
+            tmp_string=${theme_mode}
+        fi
+        old_theme=$(<"$states/scheme_${tmp_string}${theme_mode}")
+        echo "old theme is $old_theme and new is $1"
+        [[ $old_theme == "$1" ]] && {
+            notify-send "Theme" "'$1' is already applied try different theme" &
+            exit 0 # exit if same theme_id
+        }
+        echo "scheme_body line 39"
+        echo 0 > $states/acc_source_${tmp_string}
+        echo "$1" > "$states/scheme_${tmp_string}${theme_mode}"
+        echo "scheme_body line 39"
+        if [[ $m == "$theme_mode" ]]; then # added missing ';'
+            echo 1 > "$states2/acc_changed"
+#            theme_main restore
+            theme_main_restore_func
+        else
+            if [[ $theme_mode == d ]]; then # its either d or l not b
+#            theme_main dark
+            theme_apply_dark_func
+            else
+#            theme_main light
+            theme_apply_light_func
+            fi
+        fi
+    fi
+    echo "scheme_body line 54"
+}
+# Accent source setter. $1 = key, $2 = payload (hex / accent name / "all"):
+#   scheme_main accent theme_default               → acc_source = d
+#   scheme_main accent acc_from_wall               → acc_source = w
+#   scheme_main accent acc_from_wall all           → acc_source = w (d + n + l)
+#   scheme_main accent custom_acc <accent name>    → acc_source = c
+#   scheme_main accent define_hex [hex]            → acc_source = h
+#
+# Sets the single `$states/acc_source_${s}` flag. If the requested
+# source (and payload) already matches the current flag, it does NOTHING.
+# Only on an actual change does it echo `1 > $states2/acc_changed` AND run
+# `theme_main restore` so GTK/theme pipeline picks up the new accent.
+theme_accent_func () {
+    ch=$(<$states2/s) || ch=n
+    local key="$1" payload="$2"
+    local want="" src=""
+
+    case "$key" in
+        theme_default) src=d ;;
+        acc_from_wall) src=w ;;
+        custom_acc)    src=c ;;
+        define_hex)    src=h ;;
+        *) return 0 ;;
+    esac
+    case "$key" in
+        custom_acc) want="$payload" ;;
+        define_hex)
+            [[ -n "$payload" ]] && want="$payload"
+            [[ -z "$want" && -f "$HOME/documents/defined_hex" ]] && want=$(<$HOME/documents/defined_hex)
+            ;;
+    esac
+    [[ -z "$src" ]] && return 0
+
+    # "acc_from_wall all": touch every channel; apply only if any channel moved
+    if [[ "$key" == acc_from_wall && "$payload" == all ]]; then
+        local any=0 c cc
+        for c in d n l; do
+            cc=$(<"$states/acc_source_$c") 2>/dev/null || cc=""
+            [[ "$cc" == w ]] && continue
+            echo w > "$states/acc_source_$c"
+            any=1
+        done
+        if (( any == 1 )); then
+            echo 1 > "$states2/acc_changed"
+            theme_main_restore_func
+        fi
+        return 0
+    fi
+
+    # single channel: compare source + payload against current
+    local cur curname
+    cur=$(<"$states/acc_source_$ch") 2>/dev/null || cur=""
+    if [[ "$key" == custom_acc || "$key" == define_hex ]]; then
+        if [[ "$key" == custom_acc ]]; then
+            curname=$(<"$states/custom_acc_name_$ch") 2>/dev/null || curname=""
+        else
+            curname=$(<"$states/defined_hex_$ch") 2>/dev/null || curname=""
+        fi
+    fi
+    if [[ "$cur" == "$src" ]]; then
+        if [[ "$key" == custom_acc || "$key" == define_hex ]]; then
+            [[ "$curname" == "$want" ]] && return 0
+        else
+            return 0
+        fi
+    fi
+
+    # persist the new source flag
+    echo "$src" > "$states/acc_source_$ch"
+    case "$key" in
+        custom_acc)
+            [[ -n "$want" ]] && echo "$want" > "$states/custom_acc_name_$ch"
+            ;;
+        define_hex)
+            [[ -n "$want" ]] && echo "$want" > "$states/defined_hex_$ch"
+            ;;
+    esac
+
+    echo 1 > "$states2/acc_changed"
+    theme_main_restore_func
+}
+
+
+scheme_cmd() {
+    . $hypr_sources/helpers/theme_main_body
+    local m="${1:-list}"
+    case "$m" in
+        apply)      (( $# == 2 )) && theme_apply "$2" || { echo "scheme: use apply <id>"; return 1; };;
+        accent)     theme_accent_func "${2:-}" "${3:-}";;
+        *)          echo "scheme: use apply <id>|accent <key> [hex]";;
+    esac
+}

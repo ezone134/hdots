@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+
+SCRIPT_DIR = arg[0]:match("@?(.*)"):gsub("/[^/]*$", "")
+dofile(SCRIPT_DIR .. "/main_body")
+
+loop()

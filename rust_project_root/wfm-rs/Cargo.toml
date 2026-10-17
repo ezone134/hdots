@@ -1,0 +1,27 @@
+[package]
+name = "wfm"
+version = "0.5.0"
+edition = "2021"
+description = "Pure Wayland file manager (Rust rewrite)"
+license = "MIT"
+
+# NOTE: these were previously written as `.workspace = true`, but there is no
+# workspace root in this tree (each project is a standalone crate/package with
+# its own profile), so they never resolved. Expanded to explicit versions to
+# match the sibling crates (zen-shell).
+[dependencies]
+# Shared hex/color parser (extracted from this crate's `config.rs`).
+zen-color = { path = "../zen-color" }
+smithay-client-toolkit = "0.21.1"
+wayland-client = { version = "0.31", features = ["dlopen"] }
+wayland-protocols = "0.32"
+xkbcommon = "0.8"
+ab_glyph = "0.2"
+fontdb = "0.20"
+image = "0.25"
+resvg = "0.45"
+tiny-skia = "0.11"
+regex = "1"
+calloop = "0.14"
+dirs = "5"
+libc = "0.2"

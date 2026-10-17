@@ -1,0 +1,105 @@
+# -*- mode: sh -*-
+
+# ==============================================================================
+# ==============================================================================
+
+contrast_check_function_l () {
+    local acc_tmp="${1#"#"}"
+    local bg_tmp="${2#"#"}"
+    local anchor="$3"           # e.g., 1000
+    local target_threshold="$4" # e.g., 300
+    local var_name="$5" # e.g., 300  # we pass $acc or any other color here and it sets the value of $acc or passed value
+    local color_string="$6" # e.g., 300
+
+    # Parse Hex to Decimal
+    local r_acc=$((16#${acc_tmp:0:2}))
+    local g_acc=$((16#${acc_tmp:2:2}))
+    local b_acc=$((16#${acc_tmp:4:2}))
+    local r_bg=$((16#${bg_tmp:0:2}))
+    local g_bg=$((16#${bg_tmp:2:2}))
+    local b_bg=$((16#${bg_tmp:4:2}))
+
+    # Calculate Luma (0-255)
+    local l_acc=$(( (r_acc * 299 + g_acc * 587 + b_acc * 114) / 1000 ))
+    local l_bg=$(( (r_bg * 299 + g_bg * 587 + b_bg * 114) / 1000 ))
+
+    # Absolute difference mapped to anchor scale
+    local raw_diff=$(( l_acc > l_bg ? l_acc - l_bg : l_bg - l_acc ))
+    local s_diff=$(( (raw_diff * anchor) / 255 ))
+
+    # Exports
+    export current_contrast_on_anchor=$s_diff
+    export scaled_diff=$s_diff
+    export needs_color_boost_flag=0
+    export boost_color_by=0
+
+    echo "scaled diff is $scaled_diff"
+
+ if (( s_diff < target_threshold )); then
+         export needs_color_boost_flag=1
+         export boost_color_by=$(( target_threshold - s_diff ))
+
+         echo "[Contrast-light] ($color_string) is BELOW TARGET ($s_diff < $target_threshold). Action: +$boost_color_by, boosted color is set at \$${var_name}"
+
+         # 1. Construct the variable name (e.g., shade_850)
+         local target_shade="shade_$((anchor - boost_color_by))"
+
+         # 2. Use indirect expansion to get the actual hex value
+         printf -v "$var_name" "%s" "${!target_shade}"
+
+         echo "var_name ($var_name) value is now ${!var_name}"
+     else
+         echo "[Contrast-light] ($color_string) is ABOVE TARGET ($s_diff > $target_threshold). Action: none"
+     fi
+
+}
+
+
+
+
+contrast_check_function_d () {
+    local acc_tmp="${1#"#"}"
+    local bg_tmp="${2#"#"}"
+    local anchor="$3"           # e.g., 1000
+    local target_threshold="$4" # e.g., 300
+    local var_name="$5" # e.g., 300  # we pass $acc or any other color here and it sets the value of $acc or passed value
+    local color_string="$6" # e.g., 300
+
+    # Parse Hex to Decimal
+    local r_acc=$((16#${acc_tmp:0:2}))
+    local g_acc=$((16#${acc_tmp:2:2}))
+    local b_acc=$((16#${acc_tmp:4:2}))
+    local r_bg=$((16#${bg_tmp:0:2}))
+    local g_bg=$((16#${bg_tmp:2:2}))
+    local b_bg=$((16#${bg_tmp:4:2}))
+
+    # Calculate Luma (0-255)
+    local l_acc=$(( (r_acc * 299 + g_acc * 587 + b_acc * 114) / 1000 ))
+    local l_bg=$(( (r_bg * 299 + g_bg * 587 + b_bg * 114) / 1000 ))
+
+    # Absolute difference mapped to anchor scale
+    local raw_diff=$(( l_acc > l_bg ? l_acc - l_bg : l_bg - l_acc ))
+    local s_diff=$(( (raw_diff * anchor) / 255 ))
+
+    # Exports
+    export current_contrast_on_anchor=$s_diff
+    export scaled_diff=$s_diff
+    export needs_color_boost_flag=0
+    export boost_color_by=0
+
+    echo "scaled diff is $scaled_diff"
+
+  if (( s_diff > target_threshold )); then
+          export needs_color_boost_flag=1
+          export boost_color_by=$(( s_diff - target_threshold ))
+
+          # FIX HERE:
+          target_shade="shade_$((anchor - boost_color_by))"
+          printf -v "$var_name" "%s" "${!target_shade}"
+
+          echo "[Contrast-Dark] ($color_string) is ABOVE TARGET ($s_diff > $target_threshold). Action: -$boost_color_by, boosted color is set at ${!var_name}"
+      else
+          echo "[Contrast-Dark] ($color_string) is BELOW TARGET ($s_diff < $target_threshold). Action: none"
+      fi
+
+}

@@ -1,0 +1,27 @@
+# -*- mode: sh -*-
+# 1. Use a more reliable default assignment
+hex="${1:-#00FF00}"
+
+# 2. Validation: Ensure we actually have data
+if (( ${#hex} == 7 )); then
+    r=$((16#${hex:1:2}))
+    g=$((16#${hex:3:2}))
+    b=$((16#${hex:5:2}))
+    a="1.0"
+elif (( ${#hex} == 9 )); then
+    r=$((16#${hex:1:2}))
+    g=$((16#${hex:3:2}))
+    b=$((16#${hex:5:2}))
+    alpha_hex=${hex:7:2}
+
+    # Calculate alpha:
+    # If ff (255), return 1.0, otherwise calculate 0.xxx
+    if (( 16#$alpha_hex == 255 )); then
+        a="1.0"
+    else
+        val=$(( (16#$alpha_hex * 1000) / 255 ))
+        a=$(printf "0.%03d" $val)
+    fi
+fi
+
+echo "rgba(${r}, ${g}, ${b}, ${a})"

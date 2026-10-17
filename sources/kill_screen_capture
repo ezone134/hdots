@@ -1,0 +1,8 @@
+-- kill_screen_capture — stop active screen recorder and notify
+
+local screen_recorder = ff(states2 .. "/" .. "screen_recorder")
+if qpid(screen_recorder) ~= "" then
+    run_bg("pkill " .. shq(screen_recorder))
+    run_bg("notify-send -a Recording 'Recording' 'Recording' -a Recording")
+    run_bg("notify-send -a Recording 'Recording' 'Stopped and saved to ~/Videos/wf'")
+end

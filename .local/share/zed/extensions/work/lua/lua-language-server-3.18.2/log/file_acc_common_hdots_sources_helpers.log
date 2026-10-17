@@ -1,0 +1,376 @@
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:71]: Lua Lsp startup, root: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:72]: ROOT:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:73]: LOGPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:74]: METAPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta
+[00:01:49.432][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:75]: VERSION:	3.18.2-dev
+[00:01:49.458][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[00:01:49.458][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.927 MB
+        # 00 : 1.927 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[00:01:49.463][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {
+      localDocs = true,
+      serverStatusNotification = true
+    },
+    general = {
+      positionEncodings = { "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "refactor", "quickfix", "source" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "kind", "diagnostics", "isPreferred", "disabled", "edit", "command" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = true
+      },
+      colorProvider = {
+        dynamicRegistration = true
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          insertReplaceSupport = true,
+          insertTextModeSupport = {
+            valueSet = { 1, 2 }
+          },
+          labelDetailsSupport = true,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command", "detail", "documentation" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionList = {
+          itemDefaults = { "commitCharacters", "editRange", "insertTextMode", "insertTextFormat", "data" }
+        },
+        contextSupport = true,
+        dynamicRegistration = true,
+        insertTextMode = 2
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      },
+      documentLink = {
+        dynamicRegistration = true,
+        tooltipSupport = true
+      },
+      documentSymbol = {
+        dynamicRegistration = true,
+        hierarchicalDocumentSymbolSupport = true
+      },
+      foldingRange = {
+        dynamicRegistration = true,
+        foldingRange = {
+          collapsedText = true
+        },
+        foldingRangeKind = {
+          valueSet = { "comment", "region", "imports" }
+        },
+        lineFoldingOnly = false
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown" },
+        dynamicRegistration = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "label.tooltip", "label.location", "label.command" }
+        }
+      },
+      onTypeFormatting = {
+        dynamicRegistration = true
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = true,
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        },
+        versionSupport = true
+      },
+      rangeFormatting = {
+        dynamicRegistration = true
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true,
+        prepareSupportDefaultBehavior = 1
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = true,
+        formats = { "relative" },
+        multilineTokenSupport = true,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          }
+        },
+        serverCancelSupport = true,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary", "constant" },
+        tokenTypes = { "namespace", "class", "enum", "interface", "struct", "typeParameter", "type", "parameter", "variable", "property", "enumMember", "decorator", "function", "method", "macro", "label", "comment", "string", "keyword", "number", "regexp", "operator", "modifier", "event", "lifetime" }
+      },
+      signatureHelp = {
+        dynamicRegistration = true,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = true
+      }
+    },
+    window = {
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      codeLens = {
+        refreshSupport = true
+      },
+      configuration = true,
+      diagnostics = {
+        refreshSupport = true
+      },
+      didChangeConfiguration = {
+        dynamicRegistration = true
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true
+      },
+      executeCommand = {
+        dynamicRegistration = true
+      },
+      fileOperations = {
+        didRename = true,
+        dynamicRegistration = true,
+        willRename = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = true
+      },
+      workspaceEdit = {
+        documentChanges = true,
+        resourceOperations = { "create", "rename", "delete" },
+        snippetEditSupport = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Zed",
+    version = "1.12.1+stable.330.2a37601c02a32b22e7700835c04b89ff75ffcd5d"
+  },
+  processId = 109132,
+  rootPath = "/acc/common/hdots/sources/helpers",
+  rootUri = "file:///acc/common/hdots/sources/helpers",
+  workspaceFolders = { {
+      name = "",
+      uri = "file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua"
+    } }
+}
+[00:01:49.463][info] [#0:script/language.lua:137]: VSC language: nil
+[00:01:49.463][info] [#0:script/language.lua:138]: LS  language: en-us
+[00:01:49.463][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///acc/common/hdots/sources/helpers
+[00:01:49.463][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log/file_acc_common_hdots_sources_helpers.log
+[00:01:49.464][info] [#0:script/workspace/workspace.lua:48]: Workspace create: 	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:49.466][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:01:49.466][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:01:49.466][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:01:49.466][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:01:49.466][info] [#0:script/provider/provider.lua:66]: nil
+[00:01:49.466][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:01:49.466][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:01:49.466][info] [#0:script/provider/provider.lua:66]: nil
+[00:01:49.467][info] [#0:script/provider/completion.lua:43]: Enable completion.
+[00:01:49.676][info] [#0:script/library.lua:216]: Init builtin library at:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:49.686][info] [#0:script/library.lua:216]: Init builtin library at:	nil
+[00:01:49.794][info] [#0:script/workspace/workspace.lua:330]: Preload start:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:49.797][info] [#0:script/workspace/workspace.lua:336]: Scan files at:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:49.797][info] [#0:script/workspace/workspace.lua:330]: Preload start:	<fallback>
+[00:01:49.799][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[00:01:49.799][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[00:01:49.801][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[00:01:49.801][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[00:01:49.801][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[00:01:49.801][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[00:01:49.801][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[00:01:49.802][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[00:01:49.803][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[00:01:49.803][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[00:01:49.803][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[00:01:49.803][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[00:01:49.803][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[00:01:49.803][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[00:01:50.000][info] [#0:script/workspace/workspace.lua:385]: Found 11 files at:	<fallback>
+[00:01:50.000][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	<fallback>
+[00:01:50.000][info] [#0:script/workspace/workspace.lua:385]: Found 12 files at:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.000][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.001][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.002][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua , size = 5.662 KB
+[00:01:50.009][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[00:01:50.009][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[00:01:50.009][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua , size = 5.020 KB
+[00:01:50.013][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[00:01:50.013][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[00:01:50.013][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua , size = 0.302 KB
+[00:01:50.014][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[00:01:50.014][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[00:01:50.014][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua , size = 7.637 KB
+[00:01:50.019][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[00:01:50.019][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[00:01:50.019][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua , size = 8.595 KB
+[00:01:50.024][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[00:01:50.024][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[00:01:50.024][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua , size = 6.364 KB
+[00:01:50.030][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[00:01:50.030][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[00:01:50.030][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua , size = 2.944 KB
+[00:01:50.032][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[00:01:50.032][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[00:01:50.032][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua , size = 2.590 KB
+[00:01:50.033][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[00:01:50.033][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[00:01:50.033][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua , size = 6.389 KB
+[00:01:50.037][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[00:01:50.037][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[00:01:50.037][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua , size = 17.330 KB
+[00:01:50.045][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[00:01:50.045][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[00:01:50.045][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua , size = 2.387 KB
+[00:01:50.047][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[00:01:50.047][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[00:01:50.101][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.106] sec: <fallback>
+[00:01:50.101][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: <fallback>
+[00:01:50.101][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	<fallback>
+[00:01:50.101][info] [#0:script/workspace/workspace.lua:387]: Preload finish at:	<fallback>
+[00:01:50.102][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.108] sec: file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.102][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.103][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.103][info] [#0:script/workspace/workspace.lua:387]: Preload finish at:	file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua
+[00:01:50.109][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:01:50.133][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.025] sec.
+[00:02:15.871][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:02:15.874][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:02:15.874][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:02:15.874][info] [#0:script/provider/provider.lua:66]: nil
+[00:03:21.982][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:03:22.009][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.027] sec.
+[00:03:22.402][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:03:22.415][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.013] sec.
+[00:03:28.385][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:03:28.404][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.020] sec.
+[00:03:28.787][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:03:28.788][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:03:28.806][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.018] sec.
+[00:05:28.613][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:05:28.614][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:05:28.631][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.017] sec.
+[00:07:01.440][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:07:01.444][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:07:01.444][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:07:01.444][info] [#0:script/provider/provider.lua:66]: nil
+[00:09:53.700][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:09:53.704][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:09:53.704][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:09:53.704][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:09.347][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:09.351][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:09.351][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:09.351][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:12.589][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:12.593][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:12.593][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:12.593][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:39.188][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:39.189][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:39.189][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:39.198][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:39.198][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:39.198][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:39.198][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:39.198][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:39.198][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:39.199][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:39.199][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:39.199][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:41.783][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:10:41.797][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.014] sec.
+[00:10:42.084][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua], files count:[12]
+[00:10:42.103][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/sources/helpers/gen_hex_shades.lua] finished, takes [0.019] sec.
+[00:10:48.585][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:48.587][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:48.587][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:48.587][info] [#0:script/provider/provider.lua:66]: nil
+[00:10:51.588][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:51.590][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[00:10:51.590][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[00:10:51.590][info] [#0:script/provider/provider.lua:66]: nil
+[00:11:43.997][info] [#0:script/provider/provider.lua:176]: Server shutdown.

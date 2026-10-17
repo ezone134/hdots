@@ -1,0 +1,29 @@
+# Sample external theme — load with `theme = /path/to/sample.theme`
+# in ~/.config/wfm/config, or `wfm --theme /path/to/sample.theme`.
+# `base` picks the layer preset (dark | light); every key is optional.
+base = light
+
+# palette (same keys as the main config)
+bg        = #f4f5fb
+fg        = #3a3f58
+sel_bg    = #7aa2ff
+sel_fg    = #ffffff
+dir       = #0db9d7
+dim       = #e7e9f4
+thumb     = #b7bdd3
+status    = #858aa6
+tab_active = #b7bdd3
+tab_idle  = #ced2e2
+input_bg  = #e7e9f4
+type_dir  = #2f6ff2
+type_file = #70758f
+type_img  = #3fa34d
+type_arc  = #ff7a1a
+
+# icon colors (defaults follow the type_* colors; badges separate)
+icon_dir     = #2f6ff2
+icon_file    = #70758f
+icon_img     = #3fa34d
+icon_arc     = #ff7a1a
+icon_link    = #3a3f58
+icon_hardlink = #3a3f58

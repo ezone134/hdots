@@ -1,0 +1,71 @@
+#!/usr/bin/env luajit
+-- helper shadow_body
+
+s = flagf_get(states2 .. "/s")
+
+function restore_logic()
+    local state = ff(states .. "/shadow_enabled_" .. s)
+    local shadow_range = ff(states .. "/shadow_range_" .. s)
+    local shadow_render_power = ff(states .. "/shadow_render_power_" .. s)
+    local shadow_rgba = ff(states .. "/shadow_rgba_" .. s)
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/shadow.lua", string.format(
+        [[hl.config({
+    decoration = {
+    shadow = {
+        enabled = %s,
+        range = %s,
+        render_power = %s,
+        color = %s,
+    },
+    },
+    })]], state, shadow_range, shadow_render_power, shadow_rgba))
+    flagf_set(states2 .. "/shadow_done", "1")
+end
+
+function shadow_restore_func()
+    restore_logic()
+    run_bg("notify-send -a Shadow 'Shadow' 'Restored'")
+end
+
+function shadow_off_func()
+    s = flagf_get(states2 .. "/s")
+    tf(states .. "/shadow_enabled_" .. s, "0")
+    restore_logic()
+    run_bg("notify-send -a Shadow 'Shadow' 'Disabled'")
+end
+
+function shadow_on_func()
+    s = flagf_get(states2 .. "/s")
+    tf(states .. "/shadow_enabled_" .. s, "1")
+    restore_logic()
+    run_bg("notify-send -a Shadow 'Shadow' 'Enabled'")
+end
+
+function shadow_toggle_func()
+    s = flagf_get(states2 .. "/s")
+    local state = tonumber(ff(states .. "/shadow_enabled_" .. s))
+    if state == 1 then
+        shadow_off_func()
+    else
+        shadow_on_func()
+    end
+end
+
+function shadow_reset_func()
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/shadow.lua", "")
+    run_bg("notify-send -a Shadow 'Shadow' 'Reset'")
+end
+
+function shadow_cmd(cmd)
+    if cmd == "toggle" then
+        shadow_toggle_func()
+    elseif cmd == "on" then
+        shadow_on_func()
+    elseif cmd == "off" then
+        shadow_off_func()
+    elseif cmd == "restore" then
+        shadow_restore_func()
+    elseif cmd == "reset" then
+        shadow_reset_func()
+    end
+end

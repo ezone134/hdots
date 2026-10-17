@@ -1,0 +1,17 @@
+# -*- mode: sh -*-
+# status_body — the status subcommand (everything at once). Sources the
+# bodies it needs lazily, just like status_main does for a full report.
+#
+status() {
+    . $qs_scripts/audio_body
+    . $qs_scripts/brightness_body
+    . $qs_scripts/media_body
+    . $qs_scripts/network_body
+    . $qs_scripts/power_body
+    vol_status
+    mic_status
+    printf 'brightness: %s%%\n' "$(bri_get)"
+    net_cmd status
+    power_cmd status
+    media_status
+}

@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- master — one entry point for every shell setting CLI.
+-- usage: master <section> [args...]   (forwarded verbatim to the section CLI)
+--        master list                    sections + their verbs
+--        master help                    same as list
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/master_body")
+master_cmd(unpack(arg))

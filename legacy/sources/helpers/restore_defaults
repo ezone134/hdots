@@ -1,0 +1,3 @@
+# -*- mode: sh -*-
+. $hypr_sources/helpers/gen_flags_master
+. $hypr_sources/glyphs/restore_defaults

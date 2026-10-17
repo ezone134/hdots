@@ -1,0 +1,10 @@
+# -*- mode: sh -*-
+themes_pairs=(
+            $HOME/.fonts:$HOME/.local/share/fonts
+            $HOME/.icons:$HOME/.local/share/icons
+            $HOME/.themes:$HOME/.local/share/themes
+           $HOME/.themes/hypr-theme-dark:$rconf/hypr-theme/hypr-theme-dark
+           $HOME/.themes/hypr-theme-dark-alt:$rconf/hypr-theme/hypr-theme-dark-alt
+           $HOME/.themes/hypr-theme-light:$rconf/hypr-theme/hypr-theme-light
+           $HOME/.themes/hypr-theme-light-alt:$rconf/hypr-theme/hypr-theme-light-alt
+)

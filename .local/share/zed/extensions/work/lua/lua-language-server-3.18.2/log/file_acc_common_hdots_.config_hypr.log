@@ -1,0 +1,1131 @@
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:71]: Lua Lsp startup, root: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:72]: ROOT:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:73]: LOGPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:74]: METAPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:75]: VERSION:	3.18.2-dev
+[20:49:01.644][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[20:49:01.644][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.927 MB
+        # 00 : 1.927 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[20:49:01.645][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[20:49:01.645][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.927 MB
+        # 00 : 1.927 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[20:49:01.649][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {
+      localDocs = true,
+      serverStatusNotification = true
+    },
+    general = {
+      positionEncodings = { "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "refactor", "quickfix", "source" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "kind", "diagnostics", "isPreferred", "disabled", "edit", "command" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = true
+      },
+      colorProvider = {
+        dynamicRegistration = true
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          insertReplaceSupport = true,
+          insertTextModeSupport = {
+            valueSet = { 1, 2 }
+          },
+          labelDetailsSupport = true,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command", "detail", "documentation" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionList = {
+          itemDefaults = { "commitCharacters", "editRange", "insertTextMode", "insertTextFormat", "data" }
+        },
+        contextSupport = true,
+        dynamicRegistration = true,
+        insertTextMode = 2
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      },
+      documentLink = {
+        dynamicRegistration = true,
+        tooltipSupport = true
+      },
+      documentSymbol = {
+        dynamicRegistration = true,
+        hierarchicalDocumentSymbolSupport = true
+      },
+      foldingRange = {
+        dynamicRegistration = true,
+        foldingRange = {
+          collapsedText = true
+        },
+        foldingRangeKind = {
+          valueSet = { "comment", "region", "imports" }
+        },
+        lineFoldingOnly = false
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown" },
+        dynamicRegistration = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "label.tooltip", "label.location", "label.command" }
+        }
+      },
+      onTypeFormatting = {
+        dynamicRegistration = true
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = true,
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        },
+        versionSupport = true
+      },
+      rangeFormatting = {
+        dynamicRegistration = true
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true,
+        prepareSupportDefaultBehavior = 1
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = true,
+        formats = { "relative" },
+        multilineTokenSupport = true,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          }
+        },
+        serverCancelSupport = true,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary", "constant" },
+        tokenTypes = { "namespace", "class", "enum", "interface", "struct", "typeParameter", "type", "parameter", "variable", "property", "enumMember", "decorator", "function", "method", "macro", "label", "comment", "string", "keyword", "number", "regexp", "operator", "modifier", "event", "lifetime" }
+      },
+      signatureHelp = {
+        dynamicRegistration = true,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = true
+      }
+    },
+    window = {
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      codeLens = {
+        refreshSupport = true
+      },
+      configuration = true,
+      diagnostics = {
+        refreshSupport = true
+      },
+      didChangeConfiguration = {
+        dynamicRegistration = true
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true
+      },
+      executeCommand = {
+        dynamicRegistration = true
+      },
+      fileOperations = {
+        didRename = true,
+        dynamicRegistration = true,
+        willRename = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = true
+      },
+      workspaceEdit = {
+        documentChanges = true,
+        resourceOperations = { "create", "rename", "delete" },
+        snippetEditSupport = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Zed",
+    version = "1.12.1+stable.330.2a37601c02a32b22e7700835c04b89ff75ffcd5d"
+  },
+  processId = 11045,
+  rootPath = "/acc/common/hdots/.config/hypr",
+  rootUri = "file:///acc/common/hdots/.config/hypr",
+  workspaceFolders = { {
+      name = "",
+      uri = "file:///acc/common/hdots/.config/hypr/keybinds.lua"
+    } }
+}
+[20:49:01.649][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {
+      localDocs = true,
+      serverStatusNotification = true
+    },
+    general = {
+      positionEncodings = { "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "refactor", "quickfix", "source" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "kind", "diagnostics", "isPreferred", "disabled", "edit", "command" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = true
+      },
+      colorProvider = {
+        dynamicRegistration = true
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          insertReplaceSupport = true,
+          insertTextModeSupport = {
+            valueSet = { 1, 2 }
+          },
+          labelDetailsSupport = true,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command", "detail", "documentation" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionList = {
+          itemDefaults = { "commitCharacters", "editRange", "insertTextMode", "insertTextFormat", "data" }
+        },
+        contextSupport = true,
+        dynamicRegistration = true,
+        insertTextMode = 2
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      },
+      documentLink = {
+        dynamicRegistration = true,
+        tooltipSupport = true
+      },
+      documentSymbol = {
+        dynamicRegistration = true,
+        hierarchicalDocumentSymbolSupport = true
+      },
+      foldingRange = {
+        dynamicRegistration = true,
+        foldingRange = {
+          collapsedText = true
+        },
+        foldingRangeKind = {
+          valueSet = { "comment", "region", "imports" }
+        },
+        lineFoldingOnly = false
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown" },
+        dynamicRegistration = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "label.tooltip", "label.location", "label.command" }
+        }
+      },
+      onTypeFormatting = {
+        dynamicRegistration = true
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = true,
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        },
+        versionSupport = true
+      },
+      rangeFormatting = {
+        dynamicRegistration = true
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true,
+        prepareSupportDefaultBehavior = 1
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = true,
+        formats = { "relative" },
+        multilineTokenSupport = true,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          }
+        },
+        serverCancelSupport = true,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary", "constant" },
+        tokenTypes = { "namespace", "class", "enum", "interface", "struct", "typeParameter", "type", "parameter", "variable", "property", "enumMember", "decorator", "function", "method", "macro", "label", "comment", "string", "keyword", "number", "regexp", "operator", "modifier", "event", "lifetime" }
+      },
+      signatureHelp = {
+        dynamicRegistration = true,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = true
+      }
+    },
+    window = {
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      codeLens = {
+        refreshSupport = true
+      },
+      configuration = true,
+      diagnostics = {
+        refreshSupport = true
+      },
+      didChangeConfiguration = {
+        dynamicRegistration = true
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true
+      },
+      executeCommand = {
+        dynamicRegistration = true
+      },
+      fileOperations = {
+        didRename = true,
+        dynamicRegistration = true,
+        willRename = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = true
+      },
+      workspaceEdit = {
+        documentChanges = true,
+        resourceOperations = { "create", "rename", "delete" },
+        snippetEditSupport = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Zed",
+    version = "1.12.1+stable.330.2a37601c02a32b22e7700835c04b89ff75ffcd5d"
+  },
+  processId = 11045,
+  rootPath = "/acc/common/hdots/.config/hypr",
+  rootUri = "file:///acc/common/hdots/.config/hypr",
+  workspaceFolders = { {
+      name = "",
+      uri = "file:///acc/common/hdots/.config/hypr/overview.lua"
+    } }
+}
+[20:49:01.649][info] [#0:script/language.lua:137]: VSC language: nil
+[20:49:01.649][info] [#0:script/language.lua:137]: VSC language: nil
+[20:49:01.649][info] [#0:script/language.lua:138]: LS  language: en-us
+[20:49:01.649][info] [#0:script/language.lua:138]: LS  language: en-us
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///acc/common/hdots/.config/hypr
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///acc/common/hdots/.config/hypr
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log/file_acc_common_hdots_.config_hypr.log
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log/file_acc_common_hdots_.config_hypr.log
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:71]: Lua Lsp startup, root: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:72]: ROOT:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:73]: LOGPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:74]: METAPATH:	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta
+[20:49:01.618][info] [#0:/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/main.lua:75]: VERSION:	3.18.2-dev
+[20:49:01.644][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[20:49:01.644][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.927 MB
+        # 00 : 1.927 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[20:49:01.645][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[20:49:01.645][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 1.927 MB
+        # 00 : 1.927 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[20:49:01.649][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {
+      localDocs = true,
+      serverStatusNotification = true
+    },
+    general = {
+      positionEncodings = { "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "refactor", "quickfix", "source" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "kind", "diagnostics", "isPreferred", "disabled", "edit", "command" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = true
+      },
+      colorProvider = {
+        dynamicRegistration = true
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          insertReplaceSupport = true,
+          insertTextModeSupport = {
+            valueSet = { 1, 2 }
+          },
+          labelDetailsSupport = true,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command", "detail", "documentation" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionList = {
+          itemDefaults = { "commitCharacters", "editRange", "insertTextMode", "insertTextFormat", "data" }
+        },
+        contextSupport = true,
+        dynamicRegistration = true,
+        insertTextMode = 2
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      },
+      documentLink = {
+        dynamicRegistration = true,
+        tooltipSupport = true
+      },
+      documentSymbol = {
+        dynamicRegistration = true,
+        hierarchicalDocumentSymbolSupport = true
+      },
+      foldingRange = {
+        dynamicRegistration = true,
+        foldingRange = {
+          collapsedText = true
+        },
+        foldingRangeKind = {
+          valueSet = { "comment", "region", "imports" }
+        },
+        lineFoldingOnly = false
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown" },
+        dynamicRegistration = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "label.tooltip", "label.location", "label.command" }
+        }
+      },
+      onTypeFormatting = {
+        dynamicRegistration = true
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = true,
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        },
+        versionSupport = true
+      },
+      rangeFormatting = {
+        dynamicRegistration = true
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true,
+        prepareSupportDefaultBehavior = 1
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = true,
+        formats = { "relative" },
+        multilineTokenSupport = true,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          }
+        },
+        serverCancelSupport = true,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary", "constant" },
+        tokenTypes = { "namespace", "class", "enum", "interface", "struct", "typeParameter", "type", "parameter", "variable", "property", "enumMember", "decorator", "function", "method", "macro", "label", "comment", "string", "keyword", "number", "regexp", "operator", "modifier", "event", "lifetime" }
+      },
+      signatureHelp = {
+        dynamicRegistration = true,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = true
+      }
+    },
+    window = {
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      codeLens = {
+        refreshSupport = true
+      },
+      configuration = true,
+      diagnostics = {
+        refreshSupport = true
+      },
+      didChangeConfiguration = {
+        dynamicRegistration = true
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true
+      },
+      executeCommand = {
+        dynamicRegistration = true
+      },
+      fileOperations = {
+        didRename = true,
+        dynamicRegistration = true,
+        willRename = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = true
+      },
+      workspaceEdit = {
+        documentChanges = true,
+        resourceOperations = { "create", "rename", "delete" },
+        snippetEditSupport = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Zed",
+    version = "1.12.1+stable.330.2a37601c02a32b22e7700835c04b89ff75ffcd5d"
+  },
+  processId = 11045,
+  rootPath = "/acc/common/hdots/.config/hypr",
+  rootUri = "file:///acc/common/hdots/.config/hypr",
+  workspaceFolders = { {
+      name = "",
+      uri = "file:///acc/common/hdots/.config/hypr/keybinds.lua"
+    } }
+}
+[20:49:01.649][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    experimental = {
+      localDocs = true,
+      serverStatusNotification = true
+    },
+    general = {
+      positionEncodings = { "utf-16" }
+    },
+    textDocument = {
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "refactor", "quickfix", "source" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "kind", "diagnostics", "isPreferred", "disabled", "edit", "command" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = true
+      },
+      colorProvider = {
+        dynamicRegistration = true
+      },
+      completion = {
+        completionItem = {
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          insertReplaceSupport = true,
+          insertTextModeSupport = {
+            valueSet = { 1, 2 }
+          },
+          labelDetailsSupport = true,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command", "detail", "documentation" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionList = {
+          itemDefaults = { "commitCharacters", "editRange", "insertTextMode", "insertTextFormat", "data" }
+        },
+        contextSupport = true,
+        dynamicRegistration = true,
+        insertTextMode = 2
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = true,
+        relatedDocumentSupport = true
+      },
+      documentLink = {
+        dynamicRegistration = true,
+        tooltipSupport = true
+      },
+      documentSymbol = {
+        dynamicRegistration = true,
+        hierarchicalDocumentSymbolSupport = true
+      },
+      foldingRange = {
+        dynamicRegistration = true,
+        foldingRange = {
+          collapsedText = true
+        },
+        foldingRangeKind = {
+          valueSet = { "comment", "region", "imports" }
+        },
+        lineFoldingOnly = false
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown" },
+        dynamicRegistration = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "label.tooltip", "label.location", "label.command" }
+        }
+      },
+      onTypeFormatting = {
+        dynamicRegistration = true
+      },
+      publishDiagnostics = {
+        codeDescriptionSupport = true,
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        },
+        versionSupport = true
+      },
+      rangeFormatting = {
+        dynamicRegistration = true
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true,
+        prepareSupportDefaultBehavior = 1
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = true,
+        formats = { "relative" },
+        multilineTokenSupport = true,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          }
+        },
+        serverCancelSupport = true,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary", "constant" },
+        tokenTypes = { "namespace", "class", "enum", "interface", "struct", "typeParameter", "type", "parameter", "variable", "property", "enumMember", "decorator", "function", "method", "macro", "label", "comment", "string", "keyword", "number", "regexp", "operator", "modifier", "event", "lifetime" }
+      },
+      signatureHelp = {
+        dynamicRegistration = true,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = true
+      }
+    },
+    window = {
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      codeLens = {
+        refreshSupport = true
+      },
+      configuration = true,
+      diagnostics = {
+        refreshSupport = true
+      },
+      didChangeConfiguration = {
+        dynamicRegistration = true
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true
+      },
+      executeCommand = {
+        dynamicRegistration = true
+      },
+      fileOperations = {
+        didRename = true,
+        dynamicRegistration = true,
+        willRename = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = true
+      },
+      workspaceEdit = {
+        documentChanges = true,
+        resourceOperations = { "create", "rename", "delete" },
+        snippetEditSupport = true
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Zed",
+    version = "1.12.1+stable.330.2a37601c02a32b22e7700835c04b89ff75ffcd5d"
+  },
+  processId = 11045,
+  rootPath = "/acc/common/hdots/.config/hypr",
+  rootUri = "file:///acc/common/hdots/.config/hypr",
+  workspaceFolders = { {
+      name = "",
+      uri = "file:///acc/common/hdots/.config/hypr/overview.lua"
+    } }
+}
+[20:49:01.649][info] [#0:script/language.lua:137]: VSC language: nil
+[20:49:01.649][info] [#0:script/language.lua:137]: VSC language: nil
+[20:49:01.649][info] [#0:script/language.lua:138]: LS  language: en-us
+[20:49:01.649][info] [#0:script/language.lua:138]: LS  language: en-us
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///acc/common/hdots/.config/hypr
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:38]: Workspace init root: 	file:///acc/common/hdots/.config/hypr
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log/file_acc_common_hdots_.config_hypr.log
+[20:49:01.649][info] [#0:script/workspace/workspace.lua:42]: Log path: 	/acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/log/file_acc_common_hdots_.config_hypr.log
+[20:49:01.650][info] [#0:script/workspace/workspace.lua:48]: Workspace create: 	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:01.650][info] [#0:script/workspace/workspace.lua:48]: Workspace create: 	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[20:49:01.659][info] [#0:script/provider/provider.lua:66]: nil
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][info] [#0:script/provider/provider.lua:66]: nil
+[20:49:01.659][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[20:49:01.659][info] [#0:script/provider/provider.lua:66]: nil
+[20:49:01.659][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:49:01.659][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[20:49:01.659][info] [#0:script/provider/provider.lua:66]: nil
+[20:49:01.660][info] [#0:script/provider/completion.lua:43]: Enable completion.
+[20:49:01.660][info] [#0:script/provider/completion.lua:43]: Enable completion.
+[20:49:01.862][info] [#0:script/library.lua:216]: Init builtin library at:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:01.862][info] [#0:script/library.lua:216]: Init builtin library at:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:01.875][info] [#0:script/library.lua:216]: Init builtin library at:	nil
+[20:49:01.875][info] [#0:script/library.lua:216]: Init builtin library at:	nil
+[20:49:01.983][info] [#0:script/workspace/workspace.lua:330]: Preload start:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:01.983][info] [#0:script/workspace/workspace.lua:330]: Preload start:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:01.986][info] [#0:script/workspace/workspace.lua:336]: Scan files at:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:01.986][info] [#0:script/workspace/workspace.lua:336]: Scan files at:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:01.987][info] [#0:script/workspace/workspace.lua:330]: Preload start:	<fallback>
+[20:49:01.987][info] [#0:script/workspace/workspace.lua:330]: Preload start:	<fallback>
+[20:49:01.989][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:01.989][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:01.989][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:01.989][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:01.990][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:01.990][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:01.990][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:01.990][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:01.991][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:01.992][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:01.993][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:01.994][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:01.994][info] [#0:script/workspace/workspace.lua:359]: Scan library at:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:02.189][info] [#0:script/workspace/workspace.lua:385]: Found 11 files at:	<fallback>
+[20:49:02.189][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	<fallback>
+[20:49:02.189][info] [#0:script/workspace/workspace.lua:385]: Found 12 files at:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.189][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.190][info] [#0:script/workspace/workspace.lua:385]: Found 11 files at:	<fallback>
+[20:49:02.190][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	<fallback>
+[20:49:02.190][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua , size = 5.662 KB
+[20:49:02.190][info] [#0:script/workspace/workspace.lua:385]: Found 12 files at:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.190][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.191][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua , size = 5.662 KB
+[20:49:02.195][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:02.196][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:02.196][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua , size = 5.020 KB
+[20:49:02.196][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:02.196][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/os.lua
+[20:49:02.196][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua , size = 5.020 KB
+[20:49:02.198][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:02.198][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:02.198][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua , size = 0.302 KB
+[20:49:02.199][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:02.199][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/table.lua
+[20:49:02.199][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:02.199][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua , size = 0.302 KB
+[20:49:02.199][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:02.199][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua , size = 7.637 KB
+[20:49:02.200][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:02.200][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[20:49:02.200][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua , size = 7.637 KB
+[20:49:02.203][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:02.203][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:02.204][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua , size = 8.595 KB
+[20:49:02.204][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:02.204][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[20:49:02.204][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua , size = 8.595 KB
+[20:49:02.208][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:02.208][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:02.208][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua , size = 6.364 KB
+[20:49:02.210][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:02.210][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/math.lua
+[20:49:02.210][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua , size = 6.364 KB
+[20:49:02.212][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:02.212][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:02.212][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua , size = 2.944 KB
+[20:49:02.214][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:02.214][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:02.214][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:02.214][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua , size = 2.590 KB
+[20:49:02.217][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:02.217][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:02.217][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:02.217][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua , size = 6.389 KB
+[20:49:02.217][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/io.lua
+[20:49:02.217][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua , size = 2.944 KB
+[20:49:02.219][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:02.219][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/package.lua
+[20:49:02.219][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua , size = 2.590 KB
+[20:49:02.221][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:02.221][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:02.221][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[20:49:02.221][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua , size = 6.389 KB
+[20:49:02.223][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:02.223][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:02.223][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua , size = 17.330 KB
+[20:49:02.225][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:02.225][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/string.lua
+[20:49:02.225][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua , size = 17.330 KB
+[20:49:02.232][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:02.232][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:02.232][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.232][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua , size = 2.387 KB
+[20:49:02.233][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:02.233][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[20:49:02.233][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua , size = 2.387 KB
+[20:49:02.233][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:02.233][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:02.233][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.048] sec: file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.233][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.233][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.233][info] [#0:script/workspace/workspace.lua:387]: Preload finish at:	file:///acc/common/hdots/.config/hypr/keybinds.lua
+[20:49:02.234][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:02.234][info] [#0:script/workspace/loading.lua:97]: Skip loaded file: file:///acc/common/hdots/.local/share/zed/extensions/work/lua/lua-language-server-3.18.2/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[20:49:02.235][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.049] sec: <fallback>
+[20:49:02.235][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: <fallback>
+[20:49:02.235][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	<fallback>
+[20:49:02.235][info] [#0:script/workspace/workspace.lua:387]: Preload finish at:	<fallback>
+[20:49:02.237][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.237][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.051] sec: file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.237][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.237][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.237][info] [#0:script/workspace/workspace.lua:387]: Preload finish at:	file:///acc/common/hdots/.config/hypr/overview.lua
+[20:49:02.242][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/.config/hypr/overview.lua], files count:[12]
+[20:49:02.250][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/.config/hypr/overview.lua] finished, takes [0.008] sec.
+[20:49:02.389][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.104] sec: <fallback>
+[20:49:02.389][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: <fallback>
+[20:49:02.389][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	<fallback>
+[20:49:02.389][info] [#0:script/workspace/workspace.lua:387]: Preload finish at:	<fallback>
+[20:49:03.304][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///acc/common/hdots/.config/hypr/keybinds.lua], files count:[12]
+[20:49:03.345][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///acc/common/hdots/.config/hypr/keybinds.lua] finished, takes [0.041] sec.
+[20:50:10.618][info] [#0:script/provider/provider.lua:176]: Server shutdown.
+[20:50:10.672][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:50:10.675][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:50:10.675][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[20:50:10.676][info] [#0:script/provider/provider.lua:66]: nil
+[20:55:59.464][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:55:59.467][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[20:55:59.467][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[20:55:59.467][info] [#0:script/provider/provider.lua:66]: nil
+[20:59:01.620][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 9.962 MB
+        # 00 : 9.578 MB
+        # 01 : 0.062 MB
+        # 02 : 0.062 MB
+        # 03 : 0.130 MB
+        # 04 : 0.130 MB
+    --------------- Coroutine ---------------
+        Total:     108
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      108
+    --------------- Cache ---------------
+        Total: 2
+        Dead:  1
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[21:01:59.577][info] [#0:script/provider/diagnostic.lua:171]: clearDiagnostics	file:///acc/common/hdots/.config/hypr/overview.lua
+[21:01:59.578][info] [#0:script/provider/provider.lua:176]: Server shutdown.

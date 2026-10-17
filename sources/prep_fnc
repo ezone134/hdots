@@ -1,0 +1,177 @@
+# -*- mode: sh -*-
+
+# pair-array definitions, in ONE place
+pb_load () {
+    . "$SCRIPT_DIR/prep_folders"
+    . "$SCRIPT_DIR/prep_files"
+    . "$SCRIPT_DIR/prep_others"
+    . "$SCRIPT_DIR/prep_ptc_a"
+}
+pb_load
+
+fix_broken_symlink () {
+    local dirs=("/var/lib/NetworkManager" "/var/tmp" "/var/spool" "/var/adm")
+    for d in "${dirs[@]}"; do
+        if [[ ! -e "$d" ]]; then
+            rm -f "$d"
+        fi
+    done
+    mkdir -p "${dirs[@]}"
+}
+
+777_it_function () {
+    [[ ${#chmod_1777_array[@]} -gt 0 ]] && "$SCRIPT_DIR/1777_it" "${chmod_1777_array[@]}"
+    [[ ${#chmod_777_array[@]} -gt 0 ]] && "$SCRIPT_DIR/777_it" "${chmod_777_array[@]}"
+}
+
+own_it_function () {
+    [[ ${#chown_array[@]} -gt 0 ]] && "$SCRIPT_DIR/own_it" "${chown_array[@]}"
+}
+
+fix_sudo_perm () {
+    for bin in /usr/bin/sudo /bin/sudo /usr/local/bin/sudo; do
+        [[ -e "$bin" ]] && {
+            [[ "$(stat -c '%U:%G:%a' "$bin")" != "root:root:4755" ]] && {
+                chown root:root "$bin" && chmod 4755 "$bin" && echo "Restored sudo: $bin.. You need to review ur codes" || echo "Failed to set sudo perms"
+            }
+        }
+    done
+}
+
+zypper_donot_recommend_packages () {
+    if [[ ! -f "/etc/zypp/zypp.conf.bak" ]]; then
+        cp "/etc/zypp/zypp.conf" "/etc/zypp/zypp.conf.bak"
+        { echo ""; echo "# added by boot.sh "; echo "solver.onlyRequires = true"; } >> "/etc/zypp/zypp.conf"
+    fi
+}
+
+link_to_bossbin () {
+    local pairs=() q=()
+    [[ ${link_quiet:-1} == 1 ]] && q=(-q)
+    for i in "${boss_a[@]}"; do
+        if [[ -f "$i" ]]; then
+            pairs+=("$i" "$boss_bin/${i##*/}")
+        else
+            for target in "$i"/*; do
+                [[ -e "$target" ]] || continue
+                pairs+=("$target" "$boss_bin/${target##*/}")
+            done
+        fi
+    done
+    [[ ${#pairs[@]} -gt 0 ]] && link_file -s "${q[@]}" "${pairs[@]}"
+    chmod +x $boss_bin/* 2>/dev/null
+}
+
+link-busybox-applets () {
+    local bb_bin=$(command -v busybox)
+    [[ -z "$bb_bin" ]] && return 0
+    local pairs=() q=()
+    [[ ${link_quiet:-1} == 1 ]] && q=(-q)
+    for applet in $($bb_bin --list); do
+        pairs+=("$bb_bin" "$busy_box/$applet")
+    done
+    [[ ${#pairs[@]} -gt 0 ]] && link_file -sf "${q[@]}" "${pairs[@]}"
+}
+
+link_logic () {
+    # mind the order do not mess up
+    pb_load
+    local q=()
+    [[ ${link_quiet:-1} == 1 ]] && q=(-q)   # prep -q: drop the Already/Linked pair chatter
+    # also allow overriding via args
+    while (($#)); do
+        case "$1" in
+            (-q|--quiet) q=(-q) ;;
+            (-v|--verbose) q=() ;;
+        esac
+        shift
+    done
+    link -s "${q[@]}" "${folders_pairs[@]}"
+    link_file -s "${q[@]}" "${files_pairs[@]}"
+    ptc "${q[@]}" "${ptc_pairs[@]}"
+    link_to_bossbin &
+}
+
+for_all_users () {
+    # link-all + own_it_function & logic for every normal user (root boot, based on u_array).
+    # falls back to the single non-root user when u_array is unset (user boot path).
+    local users=("${u_array[@]}")
+    (( ${#users[@]} )) || users=("$u")
+    local user
+    777_it_function &   # chmod_777_array is user-independent: once is enough
+    for user in "${users[@]}"; do
+        [[ -n "$user" ]] || continue
+        u="$user"
+        export u
+        global_vars
+        link_logic
+        own_it_function &
+    done
+}
+
+boot_logic () {
+    link_quiet=0
+    while (($#)); do
+        case "$1" in
+            (-v|--verbose) link_quiet=0 ;;
+            (-q|--quiet)   link_quiet=1 ;;
+            (-h|--help)    echo "usage: prep [-q|--quiet|-v|--verbose]"; exit 0 ;;
+            (*) echo "prep: unknown option: $1 (try -h)" >&2; exit 1 ;;
+        esac
+        shift
+    done
+    export link_quiet   # link-all passes it down as -q to link/link_file/ptc
+
+    local boot_log=/tmp/boot.log
+    local log_dir=${boot_log%/*}
+    local can_tee=1
+    [[ -e $boot_log && ! -w $boot_log ]] && can_tee=0        # stale foreign owner (non-root run)
+    [[ ! -e $boot_log && ! -w $log_dir ]] && can_tee=0
+
+    _boot_body () {
+        save_log_func () {
+            log_file=/tmp/prep.log
+            > "$log_file" || return
+            exec >> "$log_file" 2>&1
+        }
+        [[ $enable_log == 1 ]] && save_log_func
+        for_all_users
+        echo "all linking done"
+        rfkill unblock bluetooth &
+        zypper_donot_recommend_packages &
+        {
+            if [[ "$(timedatectl show --property=Timezone --value)" != "Asia/Kathmandu" ]]; then
+                timedatectl set-timezone Asia/Kathmandu
+            fi
+
+            if [[ "$(timedatectl show --property=NTP --value)" != "yes" ]]; then
+                timedatectl set-ntp true
+            fi
+        } &
+
+        wait
+        fix_sudo_perm &
+        [[ -f "/var/readme" ]] || {
+            echo "HEY!!!, /var/tmp as symlink does not support gives errors. Mount tmpfs instead." > /var/readme
+        }
+
+        if [[ $(systemctl is-active NetworkManager) == inactive ]]; then
+            systemctl start NetworkManager
+            echo "NetworkManager started and enabled."
+        else
+            echo "NetworkManager is already active."
+        fi
+
+        echo "End of Prep"
+    }
+
+    if (( link_quiet )); then
+        _boot_body                              # quiet: pair lines nowhere (everything else -> log)
+    elif (( can_tee )); then
+        enable_log=0
+        _boot_body 2>&1 | tee "$boot_log"       # show Already/Linked, still keep the log
+    else
+        enable_log=0
+        _boot_body                              # log not writable: print straight to the terminal
+    fi
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env luajit
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/blur_body")
+blur_cmd(unpack(arg))

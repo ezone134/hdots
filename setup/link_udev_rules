@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+. "${BASH_SOURCE[0]%/*}/setup_vars"
+. "$SCRIPT_DIR/link_udev_body"
+link_udev_main

@@ -1,0 +1,5 @@
+-- init_array: expand_gen template -> output pairs run once per session start.
+-- The udev power rule is not here: it lives in $r_daemon (root-owned, 711) and
+-- is written by the root daemon bootstrap at boot, not by this session.
+init_array = {
+}

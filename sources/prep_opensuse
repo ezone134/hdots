@@ -1,0 +1,25 @@
+# -*- mode: sh -*-
+alias zp='zypper '
+alias zyp='zypper '
+alias zpr='zypper '
+alias zypp='zypper '
+
+ref () {
+    sudo zypper -vvv ref
+    . $sources/git_body
+    up_zypp_func
+}
+
+alias dup='sudo zypper dup '
+alias up='sudo zypper up '
+alias ff='fastfetch '
+alias nf='neofetch '
+alias mm='master-menu '
+
+clean-deps () {
+	sudo zypper rm $(zypper packages --unneeded | grep ^i | cut -d '|' -f 3)
+}
+
+rmd () {
+	sudo zypper rm --clean-deps "$@"
+}

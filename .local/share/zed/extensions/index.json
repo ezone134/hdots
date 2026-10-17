@@ -1,0 +1,365 @@
+{
+  "extensions": {
+    "dracula": {
+      "manifest": {
+        "id": "dracula",
+        "name": "Dracula",
+        "version": "1.1.2",
+        "schema_version": 1,
+        "description": "Official Dracula theme for Zed",
+        "repository": "https://github.com/dracula/zed",
+        "authors": [
+          "Ben Hamment <fisix1@gmail.com>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [
+          "themes/dracula.json"
+        ],
+        "icon_themes": [],
+        "languages": [],
+        "grammars": {},
+        "language_servers": {},
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "html": {
+      "manifest": {
+        "id": "html",
+        "name": "HTML",
+        "version": "0.3.1",
+        "schema_version": 1,
+        "description": "HTML support.",
+        "repository": "https://github.com/zed-industries/zed",
+        "authors": [
+          "Isaac Clayton <slightknack@gmail.com>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/html"
+        ],
+        "grammars": {
+          "html": {
+            "repository": "https://github.com/tree-sitter/tree-sitter-html",
+            "rev": "bfa075d83c6b97cd48440b3829ab8d24a2319809",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "vscode-html-language-server": {
+            "language": "HTML",
+            "languages": [],
+            "language_ids": {
+              "CSS": "css",
+              "HTML": "html"
+            },
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "lua": {
+      "manifest": {
+        "id": "lua",
+        "name": "Lua",
+        "version": "0.1.10",
+        "schema_version": 1,
+        "description": "Lua support.",
+        "repository": "https://github.com/zed-extensions/lua",
+        "authors": [
+          "Max Brunsfeld <max@zed.dev>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/lua",
+          "languages/emmyluadoc"
+        ],
+        "grammars": {
+          "emmyluadoc": {
+            "repository": "https://github.com/EmmyLuaLs/tree-sitter-emmyluadoc",
+            "rev": "ea755c0fd34c07e16597bd62a404d6eba2a3891e",
+            "path": null
+          },
+          "lua": {
+            "repository": "https://github.com/tree-sitter-grammars/tree-sitter-lua",
+            "rev": "10fe0054734eec83049514ea2e718b2a56acd0c9",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "lua-language-server": {
+            "language": null,
+            "languages": [
+              "Lua",
+              "EmmyLuadoc"
+            ],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "neon-comfy-soft-themes": {
+      "manifest": {
+        "id": "neon-comfy-soft-themes",
+        "name": "Neon Comfy & Soft Themes (opaque/blured/transparent)",
+        "version": "0.1.0",
+        "schema_version": 1,
+        "description": "A Comfy & Soft Dark theme with neon Violet, Pink and Vaporwave syntax colors.",
+        "repository": "https://github.com/guustavocl/zed-neon-comfy-soft-themes",
+        "authors": [
+          "Gustavo <gus@gus.sh>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [
+          "themes/zed-neon-comfy-soft-themes.json"
+        ],
+        "icon_themes": [],
+        "languages": [],
+        "grammars": {},
+        "language_servers": {},
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "nu": {
+      "manifest": {
+        "id": "nu",
+        "name": "Nu",
+        "version": "0.0.10",
+        "schema_version": 1,
+        "description": "Nushell language support for Zed",
+        "repository": "https://github.com/zed-extensions/nu",
+        "authors": [
+          "Mikayla Maki <mikayla@zed.dev>",
+          "Joseph Lyons <joseph@zed.dev>",
+          "Darren Schroeder"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/nu"
+        ],
+        "grammars": {
+          "nu": {
+            "repository": "https://github.com/nushell/tree-sitter-nu",
+            "rev": "47d4b4f5369c0cae866724758ae88ef07e10e4f1",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "nu": {
+            "language": null,
+            "languages": [
+              "Nu"
+            ],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "qml": {
+      "manifest": {
+        "id": "qml",
+        "name": "QML",
+        "version": "0.0.4",
+        "schema_version": 1,
+        "description": "QML support.",
+        "repository": "https://github.com/lkroll/zed-qml",
+        "authors": [
+          "Lennart Kroll <24440161+lkroll@users.noreply.github.com>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.1.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/qml"
+        ],
+        "grammars": {
+          "qmljs": {
+            "repository": "https://github.com/yuja/tree-sitter-qmljs",
+            "rev": "febf48a5b6928600cd8fb2a01254743af550780d",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "qmljs": {
+            "language": "QML",
+            "languages": [],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    }
+  },
+  "themes": {
+    "Dark Plum Blossom (Blurred)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Plum Blossom (Opaque)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Plum Blossom (Transparent)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Vaporwave (Blurred)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Vaporwave (Opaque)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Vaporwave (Transparent)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Violet (Blurred)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Violet (Opaque)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dark Violet (Transparent)": {
+      "extension": "neon-comfy-soft-themes",
+      "path": "themes/zed-neon-comfy-soft-themes.json"
+    },
+    "Dracula": {
+      "extension": "dracula",
+      "path": "themes/dracula.json"
+    },
+    "Dracula Light (Alucard": {
+      "extension": "dracula",
+      "path": "themes/dracula.json"
+    },
+    "Dracula Solid": {
+      "extension": "dracula",
+      "path": "themes/dracula.json"
+    }
+  },
+  "icon_themes": {},
+  "languages": {
+    "EmmyLuadoc": {
+      "extension": "lua",
+      "path": "languages/emmyluadoc",
+      "matcher": {
+        "path_suffixes": [],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": true,
+      "grammar": "emmyluadoc"
+    },
+    "HTML": {
+      "extension": "html",
+      "path": "languages/html",
+      "matcher": {
+        "path_suffixes": [
+          "html",
+          "htm",
+          "shtml"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "html"
+    },
+    "Lua": {
+      "extension": "lua",
+      "path": "languages/lua",
+      "matcher": {
+        "path_suffixes": [
+          "lua"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "lua"
+    },
+    "Nu": {
+      "extension": "nu",
+      "path": "languages/nu",
+      "matcher": {
+        "path_suffixes": [
+          "nu",
+          "nuon"
+        ],
+        "first_line_pattern": "^#!.*\\b(?:nu)\\b",
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "nu"
+    },
+    "QML": {
+      "extension": "qml",
+      "path": "languages/qml",
+      "matcher": {
+        "path_suffixes": [
+          "qml"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "qmljs"
+    }
+  }
+}

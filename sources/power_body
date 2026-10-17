@@ -1,0 +1,22 @@
+#!/usr/bin/env luajit
+-- helper power_body
+
+local NOTIFY_DELAY = 5000
+run_bg("notify-send -a System -t " .. tostring(NOTIFY_DELAY) .. " 'System' 'State files in sync — please wait…'")
+dofile(sources .. "/sb_body")
+
+function custom_logout_function()
+    print(tui_msg)
+    io.write("Are you sure you want to logout? [Y/n]: ")
+    io.flush()
+    local answer = io.read("*l")
+    if answer == "" then answer = "Y" end
+    if answer:match("^[Yy]") then
+        print("Logging out...")
+        run("loginctl terminate-user " .. shq(os.getenv("USER")) .. " || exit 0")
+    elseif answer:match("^[Nn]") then
+        print("Logout cancelled.")
+    else
+        print("Invalid input. Logout cancelled.")
+    end
+end

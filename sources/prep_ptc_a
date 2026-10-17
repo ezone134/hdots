@@ -1,0 +1,5 @@
+# -*- mode: sh -*-
+ptc_pairs=(
+    "$p_user/.fonts" "$home_dir/.fonts"
+    "$home_dir/.pixi/bin" "$boss_bin"
+)

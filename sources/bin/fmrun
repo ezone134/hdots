@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+if pidof thunar; then
+    thunar
+else
+    if command -v thunar; then
+        pkill thunar
+        sleep 0.1
+        notify-send "fmrun" "Launching thunar daemon first..." &
+        hyprctl dispatch "hl.dsp.exec_cmd('thunar --daemon')"
+        hyprctl dispatch "hl.dsp.exec_cmd('thunar')"
+    else
+        dolphin || nemo
+    fi
+fi
+exit 0

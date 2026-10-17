@@ -1,0 +1,282 @@
+#!/usr/bin/env luajit
+
+-- Root daemon logic (power plan apply + scheduling loop).
+-- SCRIPT_DIR is set by the entry script before dofile(main_body).
+-- Sources utils for ff/tf/run/etc, then defines daemon functions.
+
+dofile(SCRIPT_DIR .. "/utils")
+
+-- runtime base. SCRIPT_DIR is /run/<rdmnb> when the daemon runs (the root
+-- bootstrap owns it, 711). plan config lives in states/ (world-writable),
+-- trip-flags in states2/ (world-writable so non-root can queue work).
+rstates  = SCRIPT_DIR .. "/states"
+rstates2 = SCRIPT_DIR .. "/states2"
+
+-- parse a lua plan file (e.g. performance / powersave) from SCRIPT_DIR
+local function load_plan(plan_name)
+    return dofile(SCRIPT_DIR .. "/" .. plan_name) or {}
+end
+
+-- ---------------------------------------------------------------------------
+-- tamper verification for world-writable state files under SCRIPT_DIR/states
+-- other users can write these, so every read is validated before use.
+-- ---------------------------------------------------------------------------
+
+-- valid plan names
+local _valid_plans = { performance = true, powersave = true }
+
+-- sanitize a plan name read from a state file; falls back to "powersave"
+local function sanitize_plan(value)
+    value = tostring(value or "")
+    if _valid_plans[value] then return value end
+    return "powersave"
+end
+
+-- sanitize a numeric mhz value; must be digits only, clamped to a safe range
+local function sanitize_mhz(value, default)
+    local s = tostring(value or "")
+    if not s:match("^%d+$") then return default end
+    local n = tonumber(s)
+    if not n or n < 1 or n > 99999 then return default end
+    return n
+end
+
+-- sanitize the daemon enable flag (ps): only "0" or "1" accepted
+local function sanitize_ps(value)
+    local s = tostring(value or "")
+    if s == "0" or s == "1" then return s end
+    return "0"
+end
+
+-- sanitize a counter value: digits only, clamped non-negative
+local function sanitize_counter(value, default)
+    local s = tostring(value or "")
+    if not s:match("^%d+$") then return default end
+    return tonumber(s) or default
+end
+
+-- write value to a sysfs path via tee
+local function write_sysfs(path, value)
+    if value == nil or value == "" then return end
+    run("printf '%s\\n' " .. shq(value) .. " | tee " .. path)
+end
+
+-- apply a power plan to CPU and GPU sysfs
+local function apply_plan(plan_vars, max_mhz, label)
+    print(label)
+    write_sysfs("/sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq", tostring(max_mhz * 1000))
+    write_sysfs("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor", plan_vars.scaling_governor)
+
+    local dpm_force = plan_vars.power_dpm_force_performance_level or plan_vars.dpm_force_performance_level
+    write_sysfs("/sys/class/drm/card*/device/power_dpm_force_performance_level", dpm_force)
+    write_sysfs("/sys/class/drm/card*/device/power_dpm_state", plan_vars.power_dpm_state)
+    if dpm_force ~= "auto" then
+        write_sysfs("/sys/class/drm/card*/device/pp_dpm_sclk", plan_vars.pp_dpm_sclk or "0")
+    end
+end
+
+-- main power source check + plan apply
+function main_logic_function()
+    print(os.date() .. ": Checking power source")
+    local power_status = 0
+
+    local power_adp = "0"
+    local adp_files = list_dir("/sys/class/power_supply")
+    for _, d in ipairs(adp_files) do
+        if d:match("^ADP") then
+            local val = ff("/sys/class/power_supply/" .. d .. "/online")
+            if val then power_adp = val end
+        end
+    end
+
+    local power_usbc = "0"
+    for _, d in ipairs(adp_files) do
+        if d:match("^ucsi%-source%-psy%-") then
+            local val = ff("/sys/class/power_supply/" .. d .. "/online")
+            if val then power_usbc = val end
+        end
+    end
+
+    if tonumber(power_adp) == 1 then power_status = 1 end
+    if tonumber(power_usbc) == 1 then power_status = 1 end
+
+    if power_status == 1 then
+        local ac_plan = sanitize_plan(ff(rstates .. "/ap")) or "powersave"
+        local plan_vars = load_plan(ac_plan)
+        local max_ac_mhz = sanitize_mhz(ff(rstates .. "/amf"), 0)
+        apply_plan(plan_vars, max_ac_mhz, "On AC")
+    else
+        local bat_plan = sanitize_plan(ff(rstates .. "/bp")) or "powersave"
+        local plan_vars = load_plan(bat_plan)
+        local max_bat_mhz = sanitize_mhz(ff(rstates .. "/bmf"), 0)
+        apply_plan(plan_vars, max_bat_mhz, "On Battery")
+    end
+end
+
+-- write pid to last_trigger, then run main_logic_function if still our pid
+function init_func_2()
+    local state_file = rstates2 .. "/last_trigger"
+    local pid = getpid()
+    tf(state_file, tostring(pid) .. "\n")
+    sleep(2)
+    local last_pid = tonumber(ff(state_file) or "0") or 0
+    if last_pid == pid then
+        main_logic_function()
+    end
+end
+
+-- apply plan if daemon is enabled (state == 1)
+function normal_apply_function()
+    local state = tonumber(sanitize_ps(ff(rstates .. "/ps")) or "0")
+    if state == 1 then
+        main_logic_function()
+    end
+end
+
+-- udev trigger: re-apply plan on power source change
+function on_udev_trigger_function()
+    local state = tonumber(sanitize_ps(ff(rstates .. "/ps")) or "0")
+    if state == 1 then
+        init_func_2()
+    end
+end
+
+-- one-time daemon initialization
+function before_loop()
+    sleep(1)
+
+    local sysrq_state = ff("/proc/sys/kernel/sysrq") or "0"
+    if tonumber(sysrq_state) ~= 1 then
+        tf("/proc/sys/kernel/sysrq", "1\n")
+    end
+
+    -- /run/<rdmnb> is tmpfs: build the world-writable state dirs every boot and
+    -- seed defaults, so the loop works even before the session touches anything.
+    mkdir_p(rstates, rstates2)
+    chmod(rstates, "777")
+    chmod(rstates2, "777")
+
+    if not is_file(rstates .. "/ps")  then tf(rstates .. "/ps",  "0") end
+    if not is_file(rstates .. "/ap")  then tf(rstates .. "/ap",  "powersave") end
+    if not is_file(rstates .. "/bp")  then tf(rstates .. "/bp",  "powersave") end
+    if not is_file(rstates .. "/bmf") then tf(rstates .. "/bmf", "1200") end
+    if not is_file(rstates .. "/amf") then tf(rstates .. "/amf", "3500") end
+
+    if not is_file(rstates2 .. "/fire_count")       then tf(rstates2 .. "/fire_count", "1") end
+    if not is_file(rstates2 .. "/flag_cpu")         then tf(rstates2 .. "/flag_cpu", "1") end
+    if not is_file(rstates2 .. "/unmounter_ready") then tf(rstates2 .. "/unmounter_ready", "1\n") end
+    if not is_file(rstates2 .. "/loop_started")  then tf(rstates2 .. "/loop_started", "") end
+
+    -- singleton: the systemd bootstrap reads this pid and skips a second daemon.
+    tf(rstates2 .. "/loop_pid", tostring(getpid()))
+
+    -- hardening: daemon logic scripts are owner-only (no read for other users);
+    -- states/ and everything under states2/ stay world-writable so non-root can
+    -- read the plan config and trip the daemon via flags.
+    for _, f in ipairs({ SCRIPT_DIR .. "/loop", SCRIPT_DIR .. "/main_body",
+                         SCRIPT_DIR .. "/udev_run" }) do
+        if is_file(f) then chmod(f, "700") end
+    end
+    for _, f in ipairs({ "fire_count", "flag_cpu", "flag_disk_unmount",
+                         "disk_to_umount", "unmounter_ready", "loop_started",
+                         "last_trigger", "loop_pid" }) do
+        local p = rstates2 .. "/" .. f
+        if is_file(p) then chmod(p, "777") end
+    end
+    for _, f in ipairs(list_dir(rstates)) do chmod(rstates .. "/" .. f, "777") end
+end
+
+-- queued work + disk unmount processing (one iteration)
+function during_loop()
+    local fire_count = sanitize_counter(ff(rstates2 .. "/fire_count"), 0)
+    local new_count = fire_count - 1
+    if new_count < 0 then new_count = 0 end
+    tf(rstates2 .. "/fire_count", tostring(new_count) .. "\n")
+
+    local flag_cpu = sanitize_ps(ff(rstates2 .. "/flag_cpu")) or "0"
+    if flag_cpu == "1" then
+        normal_apply_function()
+        tf(rstates2 .. "/flag_cpu", "0\n")
+    end
+
+    local umount_counter = 0
+
+    while umount_counter < 10 do
+        local batch_dir = rstates2 .. "/disks_to_umount_batch"
+        local files = list_dir(batch_dir)
+        if #files == 0 then break end
+
+        for _, file in ipairs(files) do
+            local full_path = batch_dir .. "/" .. file
+            local base_name = basename(file)
+            local mount_point = "/dev/" .. base_name
+
+            if base_name:match("%d") then
+                print(base_name .. " contains a number.")
+                local mounts = ff("/proc/mounts") or ""
+                if mounts:find(mount_point, 1, true) then
+                    run_bg(string.format(
+                        "umount %s || umount -l %s && sleep 0.5 && grep -qF %s /proc/mounts || rm -f %s",
+                        shq(mount_point), shq(mount_point), shq(mount_point), shq(full_path)
+                    ))
+                else
+                    rm(full_path)
+                end
+            else
+                print(base_name .. " does not contain a number.")
+                print(base_name .. " does not contain a number. Finding partitions in /proc/mounts...")
+
+                local awk_cmd = string.format(
+                    "awk '$1 ~ /^\\/dev\\/%s[0-9]/ {print $1}' /proc/mounts", base_name
+                )
+                local partitions = out(awk_cmd) or ""
+
+                if partitions == "" then
+                    rm(full_path)
+                else
+                    for part in partitions:gmatch("%S+") do
+                        run_bg(string.format("echo 'Unmounting %s...' && umount %s || umount -l %s",
+                            part, shq(part), shq(part)))
+                    end
+                end
+            end
+        end
+
+        umount_counter = umount_counter + 1
+        sleep(1)
+    end
+
+    chmod(rstates2 .. "/fire_count", "777")
+    chmod(rstates2 .. "/flag_disk_unmount", "777")
+    tf(rstates2 .. "/loop_started", "hi_from_inside_loop\n")
+end
+
+-- main scheduling loop (blocking, never returns)
+-- waits on fire_count via inotify (0% CPU) and spins during_loop() on change
+function loop()
+    before_loop()
+
+    local fire_count_path = rstates2 .. "/fire_count"
+    local fd = inotify_init()
+    if fd then
+        inotify_watch(fd, fire_count_path, 0x2 + 0x8) -- IN_MODIFY + IN_CLOSE_WRITE
+    end
+
+    -- drain work queued before we started watching (the session can set
+    -- fire_count=1 while the daemon is still booting, missing our first watch).
+    if sanitize_counter(ff(fire_count_path), 0) ~= 0 then
+        during_loop()
+    end
+
+    while true do
+        if fd and inotify_wait_event(fd, -1) then
+            -- fall through to read & act on change
+        end
+        local fire_count = sanitize_counter(ff(fire_count_path), 0)
+        if fire_count ~= 0 then
+            during_loop()
+        end
+    end
+
+    if fd then inotify_close(fd) end
+end

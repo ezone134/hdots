@@ -1,0 +1,2 @@
+You can delete mconfnig folder... but you have to re run 'link' from ~/.local/share/
+and you can also delete etc_synced folder if u dont like syncing etc files if theere is no such folder system will skip syncing to there.. 

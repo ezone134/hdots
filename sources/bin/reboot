@@ -1,0 +1,9 @@
+#!/usr/bin/env luajit
+-- reboot — sync state files then reboot.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+
+dofile(sources .. "/power_body")
+print()
+print("Rebooting...")
+run("sudo systemctl reboot")

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+pkill zen-shell
+hyprctl reload
+sleep 1
+exec zen-shell

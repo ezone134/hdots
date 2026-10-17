@@ -1,0 +1,21 @@
+# -*- mode: sh -*-
+point_to_contents_function() {
+    mkdir -p "$1" "$2"
+
+    shopt -s nullglob
+    for target in "$1"/*; do
+        local base="${target##*/}"
+        local point="$2/$base"
+
+        if [[ ! "$point" -ef "$target" ]]; then
+            if [[ -L "$point" ]]; then
+                mv "$point" "/tmp/${base}.hypr_init_deleted_$RANDOM" 2>/dev/null
+            fi
+
+            mv "$point" "${point}.$RANDOM" 2>/dev/null
+
+            ln -s "$target" "$point" 2>/dev/null
+        fi
+    done
+    shopt -u nullglob
+}

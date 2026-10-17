@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+[[ -e "$1" ]] && {
+base="${1##*/}"
+dirpath="${1%/*}"
+if commnd -v zip; then
+zip -r "$dirpath/${base}.zip" "$1"
+    else
+notify-send "Zip" "Zip package is not found" &
+    fi
+}

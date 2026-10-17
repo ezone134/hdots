@@ -1,0 +1,132 @@
+2026-07-13T13:02:39Z [INFO] Spawning terminal server process...
+2026-07-13T13:02:39Z [INFO] Running terminal server...
+2026-07-13T13:02:39Z [ERROR] error creating connection to Xorg server: $DISPLAY variable not set and no value was provided explicitly
+2026-07-13T13:02:39Z [INFO] Running app with windowing system: Wayland
+2026-07-13T13:02:40Z [INFO] Unable to fetch Linux system color scheme: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+2026-07-13T13:02:40Z [ERROR] Failed to acquire default Secret Service collection: unknown error
+2026-07-13T13:02:40Z [INFO] Database directory permissions: 40777
+2026-07-13T13:02:40Z [INFO] Database permissions: 100777
+2026-07-13T13:02:40Z [ERROR] SQLite initialization error: Failed to enable WAL: file is not a database
+2026-07-13T13:02:40Z [INFO] Initializing crash reporting Some("linux_stable_release") with tag "v0.2026.03.04.08.20.stable_03"...
+2026-07-13T13:02:40Z [INFO] Starting warp with channel state ChannelState { channel: Stable, app_id: AppId { qualifier: "dev", organization: "warp", application_name: "Warp" }, additional_features: {}, firebase_api_key: "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs", server_root_url: "https://app.warp.dev", workload_audience_url: None, ws_server_url: "wss://rtc.app.warp.dev/graphql/v2", session_sharing_server_url: Some("wss://sessions.app.warp.dev"), oz_root_url: "https://oz.warp.dev", rudderstack_config: RudderStackConfig { write_key: "2iyG8S1RaV4XTX6SEypetFSEbLK", root_url: "https://warpianwzlfqdq.dataplane.rudderstack.com", ugc_write_key: "2uBazVfcqYBDYSOHnqSVx45GpTV" }, releases_base_url: "https://releases.warp.dev", sentry_url: "https://0195a81da0714f55a93ee4624825f9ec@o540343.ingest.sentry.io/5658526", logfile_name: "warp.log", telemetry_file_name: "warp.telemetry", show_autoupdate_menu_items: true } and version Some("v0.2026.03.04.08.20.stable_03")
+2026-07-13T13:02:40Z [INFO] Computing available system fonts
+2026-07-13T13:02:40Z [INFO] Start to send telemetry events to RudderStack
+2026-07-13T13:02:40Z [INFO] Start to send telemetry events to RudderStack
+2026-07-13T13:02:40Z [INFO] Initializing app services
+2026-07-13T13:02:40Z [INFO] Loaded 83 font families
+2026-07-13T13:02:40Z [ERROR] Could not establish read only database connection for reading MCP environment variables: Failed to enable WAL
+
+Caused by:
+    file is not a database
+2026-07-13T13:02:40Z [INFO] Checking for update on channel stable_release. Update id is TpP6odz
+2026-07-13T13:02:40Z [INFO] Fetching channel versions (without changelogs) from Warp server
+2026-07-13T13:02:40Z [INFO] Initialized execution profile model with state: Unsynced
+2026-07-13T13:02:40Z [INFO] Loaded onnx classifier
+2026-07-13T13:02:40Z [INFO] dispatching global action for root_view:open_from_restored
+2026-07-13T13:02:40Z [INFO] dispatching global action for root_view:open_new
+2026-07-13T13:02:40Z [INFO] Start to send telemetry events to RudderStack
+2026-07-13T13:02:40Z [INFO] Computing available system fonts
+2026-07-13T13:02:40Z [INFO] Loaded 83 font families
+2026-07-13T13:02:40Z [INFO] Start to send telemetry events to RudderStack
+2026-07-13T13:02:40Z [INFO] Fetching channel versions and changelogs from Warp server
+2026-07-13T13:02:40Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-07-13T13:02:40Z [WARN] Action HandleFocusChange was dispatched, but no view handled it
+2026-07-13T13:02:40Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-07-13T13:02:40Z [WARN] Action HandleFocusChange was dispatched, but no view handled it
+2026-07-13T13:02:40Z [WARN] Tried to update block filter query without active_filter_editor_block_index set
+2026-07-13T13:02:40Z [WARN] Re-initializing Gles context due to Wayland window
+2026-07-13T13:02:40Z [INFO] Enabled wgpu backends: Backends(NOOP | VULKAN | GL | METAL | DX12 | BROWSER_WEBGPU)
+2026-07-13T13:02:40Z [INFO] Available wgpu adapters (in priority order):
+2026-07-13T13:02:40Z [INFO] Other: AMD Radeon Graphics (radeonsi, renoir, ACO, DRM 3.64, 7.0.10-2-default)
+	Backend: Gl
+	Driver: Unknown (4.6 (Core Profile) Mesa 26.1.4)
+	Can present: true
+	Supported texture format: Some(Rgba8UnormSrgb)
+	Supported alpha mode: [Opaque]
+2026-07-13T13:02:40Z [INFO] Cpu: llvmpipe (LLVM 22.1.3, 256 bits)
+	Backend: Vulkan
+	Driver: llvmpipe (Mesa 26.0.5 (LLVM 22.1.3))
+	Can present: true
+	Supported texture format: Some(Bgra8UnormSrgb)
+	Supported alpha mode: [Opaque, PreMultiplied]
+2026-07-13T13:02:40Z [INFO] Verifying adapter "AMD Radeon Graphics (radeonsi, renoir, ACO, DRM 3.64, 7.0.10-2-default)" is valid...
+2026-07-13T13:02:40Z [INFO] Using Gl Other (AMD Radeon Graphics (radeonsi, renoir, ACO, DRM 3.64, 7.0.10-2-default)) for rendering new window.
+2026-07-13T13:02:40Z [INFO] Starting shell /bin/bash
+2026-07-13T13:02:40Z [INFO] No isolation platform detected
+2026-07-13T13:02:40Z [INFO] Successfully spawned tty with pid: 30793
+2026-07-13T13:02:40Z [INFO] Successfully spawned child bash process with pid 30793
+2026-07-13T13:02:40Z [INFO] window resized
+2026-07-13T13:02:40Z [INFO] dispatching global action for workspace:save_app
+2026-07-13T13:02:40Z [WARN] SuggestedAgentModeWorkflowModal has not been initialized
+2026-07-13T13:02:40Z [INFO] Unable to fetch Linux system color scheme: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+2026-07-13T13:02:40Z [INFO] Unable to fetch Linux system color scheme: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+2026-07-13T13:02:40Z [WARN] Tried to render share modal without a model
+2026-07-13T13:02:40Z [INFO] Received InitShell hook
+2026-07-13T13:02:40Z [WARN] No alert dialog was set for the native modal
+2026-07-13T13:02:40Z [INFO] No isolation platform detected
+2026-07-13T13:02:40Z [INFO] window resized
+2026-07-13T13:02:40Z [INFO] dispatching global action for workspace:save_app
+2026-07-13T13:02:40Z [INFO] Unable to fetch Linux system color scheme: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+2026-07-13T13:02:40Z [INFO] Unable to fetch Linux system color scheme: org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.freedesktop.portal.Settings” on object at path /org/freedesktop/portal/desktop
+2026-07-13T13:02:41Z [INFO] Successfully flushed events to rudder from disk
+2026-07-13T13:02:41Z [INFO] Received CommandFinished hook
+2026-07-13T13:02:41Z [INFO] Tried to exit the alternate screen, but it was already inactive
+2026-07-13T13:02:41Z [INFO] Block finished with new state DoneWithNoExecution
+2026-07-13T13:02:41Z [INFO] Incrementing stage from WarpInput to ScriptExecution
+2026-07-13T13:02:41Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-07-13T13:02:41Z [INFO] Received Precmd hook
+2026-07-13T13:02:41Z [INFO] Received Bootstrapped hook
+2026-07-13T13:02:41Z [INFO] Configured typeahead mode as ShellReported
+2026-07-13T13:02:41Z [INFO] creating a local executor!
+2026-07-13T13:02:41Z [INFO] Parsed shell version string: Some([Number(5), Number(3), Number(9), Number(1), Text("release")])
+2026-07-13T13:02:41Z [INFO] Shell is bootstrapped with session_id SessionId(17839477609823)
+2026-07-13T13:02:41Z [INFO] Loading history from file /home/tw/.bash_history for shell bash
+2026-07-13T13:02:41Z [INFO] dispatching global action for workspace:save_app
+2026-07-13T13:02:41Z [INFO] Received CommandFinished hook
+2026-07-13T13:02:41Z [INFO] Tried to exit the alternate screen, but it was already inactive
+2026-07-13T13:02:41Z [INFO] Block finished with new state DoneWithNoExecution
+2026-07-13T13:02:41Z [INFO] Incrementing stage from Bootstrapped to PostBootstrapPrecmd
+2026-07-13T13:02:41Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-07-13T13:02:41Z [INFO] Received Precmd hook
+2026-07-13T13:02:41Z [INFO] Received channel versions from Warp server: dev: ChannelVersion { version_info: VersionInfo { version: "v0.2026.07.13.09.16.dev_00", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2023.05.12.08.03.dev_00"), last_prominent_update: Some("v0.2025.03.05.08.02.dev_00"), is_rollback: None }, overrides: [] }; preview: ChannelVersion { version_info: VersionInfo { version: "v0.2026.07.08.17.54.preview_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.05.27.15.44.preview_01"), last_prominent_update: Some("v0.2026.05.20.09.21.preview_04"), is_rollback: None }, overrides: [] }; canary: ChannelVersion { version_info: VersionInfo { version: "v0.2022.09.29.08.08.canary_00", version_for_new_users: None, update_by: None, soft_cutoff: None, last_prominent_update: None, is_rollback: None }, overrides: [] }; beta: ChannelVersion { version_info: VersionInfo { version: "v0.2024.12.18.08.02.beta_00", version_for_new_users: None, update_by: None, soft_cutoff: None, last_prominent_update: None, is_rollback: None }, overrides: [] }; stable: ChannelVersion { version_info: VersionInfo { version: "v0.2026.07.08.17.54.stable_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.05.27.15.44.stable_01"), last_prominent_update: Some("v0.2026.05.20.09.21.stable_03"), is_rollback: None }, overrides: [] }
+2026-07-13T13:02:41Z [INFO] Downloading https://releases.warp.dev/stable/v0.2026.07.08.17.54.stable_02/Warp-x86_64.AppImage to /tmp/.tmp1nkgRm...
+2026-07-13T13:02:41Z [INFO] Received InputBuffer hook
+2026-07-13T13:02:41Z [INFO] Not opting existing user into cloud preferences
+2026-07-13T13:02:41Z [INFO] Start to send telemetry events to RudderStack
+2026-07-13T13:02:41Z [INFO] fetching updated cloud objects
+2026-07-13T13:02:41Z [INFO] forcing sync of all objects
+2026-07-13T13:02:41Z [INFO] dispatching typed action: warp::pane_group::PaneGroupAction::HandleFocusChange
+2026-07-13T13:02:41Z [INFO] Attempting to start websocket connection in CloudObjects::Listener
+2026-07-13T13:02:42Z [INFO] Received default execution profile from cloud. Marking profile as synced: ServerId(ServerId(bfGz79CDOrA77tnF1CfFeH))
+2026-07-13T13:02:42Z [INFO] Ensuring no duplicate cloud prefs
+2026-07-13T13:02:42Z [INFO] Initial load complete, syncing cloud preferences. Force cloud to match local: No
+2026-07-13T13:02:42Z [INFO] Warp Drive privacy preferences are set, using those for telemetry, crash reporting, and cloud conversation storage
+2026-07-13T13:02:42Z [INFO] Warp Drive privacy preferences are set, using those for telemetry, crash reporting, and cloud conversation storage
+2026-07-13T13:02:42Z [INFO] Received channel versions from Warp server: dev: ChannelVersion { version_info: VersionInfo { version: "v0.2026.07.13.09.16.dev_00", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2023.05.12.08.03.dev_00"), last_prominent_update: Some("v0.2025.03.05.08.02.dev_00"), is_rollback: None }, overrides: [] }; preview: ChannelVersion { version_info: VersionInfo { version: "v0.2026.07.08.17.54.preview_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.05.27.15.44.preview_01"), last_prominent_update: Some("v0.2026.05.20.09.21.preview_04"), is_rollback: None }, overrides: [] }; canary: ChannelVersion { version_info: VersionInfo { version: "v0.2022.09.29.08.08.canary_00", version_for_new_users: None, update_by: None, soft_cutoff: None, last_prominent_update: None, is_rollback: None }, overrides: [] }; beta: ChannelVersion { version_info: VersionInfo { version: "v0.2024.12.18.08.02.beta_00", version_for_new_users: None, update_by: None, soft_cutoff: None, last_prominent_update: None, is_rollback: None }, overrides: [] }; stable: ChannelVersion { version_info: VersionInfo { version: "v0.2026.07.08.17.54.stable_02", version_for_new_users: None, update_by: None, soft_cutoff: Some("v0.2026.05.27.15.44.stable_01"), last_prominent_update: Some("v0.2026.05.20.09.21.stable_03"), is_rollback: None }, overrides: [] }
+2026-07-13T13:02:42Z [WARN] Failed to bulk create generic objects because of a unique key conflict
+2026-07-13T13:02:42Z [INFO] Removing object ClientId(ClientId(c5a04dce-3df8-419b-9001-82f37b0b8151)) after unique key conflict
+2026-07-13T13:02:42Z [INFO] Removing object ClientId(ClientId(3a3606eb-be1b-46da-9cf1-590efdf7e2e9)) after unique key conflict
+2026-07-13T13:02:42Z [INFO] Removing object ClientId(ClientId(d1139f91-ca0f-4506-a3ba-3e718880aa4c)) after unique key conflict
+2026-07-13T13:02:42Z [INFO] Removing object ClientId(ClientId(5b815940-a710-461e-95b1-8a99561e8934)) after unique key conflict
+2026-07-13T13:02:42Z [INFO] Removing object ClientId(ClientId(21bc2399-7340-48ce-b4f2-6eaa52b2b780)) after unique key conflict
+2026-07-13T13:02:42Z [INFO] Initial websocket connection established; skipping out-of-band refresh.
+2026-07-13T13:02:43Z [WARN] Failed to bulk create generic objects because of a unique key conflict
+2026-07-13T13:02:43Z [INFO] Removing object ClientId(ClientId(665dea84-921c-444e-87d3-54397078eb7e)) after unique key conflict
+2026-07-13T13:02:43Z [INFO] Removing object ClientId(ClientId(d4242b56-a73f-494d-91d3-c727485a71ed)) after unique key conflict
+2026-07-13T13:02:43Z [INFO] Removing object ClientId(ClientId(0e502b29-9afd-44e3-85a5-9381d68dbada)) after unique key conflict
+2026-07-13T13:02:43Z [INFO] Removing object ClientId(ClientId(a392b4d1-2bba-4c07-ac25-b7608a302e08)) after unique key conflict
+2026-07-13T13:02:51Z [INFO] active window changed: Some(WindowId(0))
+2026-07-13T13:02:51Z [INFO] dispatching global action for root_view:update_quake_mode_state
+2026-07-13T13:02:51Z [INFO] dispatching global action for workspace:save_app
+2026-07-13T13:02:52Z [INFO] notifying view observers and updating windows for timer id 1
+2026-07-13T13:02:52Z [INFO] notifying view observers and updating windows for timer id 2
+2026-07-13T13:02:52Z [INFO] No windows left, terminating app
+2026-07-13T13:02:52Z [INFO] application will terminate
+2026-07-13T13:02:52Z [INFO] Writing queued events to disk because telemetry is enabled.
+2026-07-13T13:02:52Z [INFO] Successfully wrote telemetry events to disk
+2026-07-13T13:02:52Z [INFO] Terminating all LSP servers for 0 workspaces
+2026-07-13T13:02:52Z [INFO] Tearing down terminal server...
+2026-07-13T13:02:52Z [INFO] Received empty message; assuming the connection has been closed.
+2026-07-13T13:02:52Z [INFO] Tearing down app services...
+2026-07-13T13:02:52Z [WARN] task 31 was cancelled
+2026-07-13T13:02:52Z [INFO] Uninitializing crash reporting...

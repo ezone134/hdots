@@ -1,0 +1,83 @@
+#!/usr/bin/env luajit
+-- helper blur_body
+
+s = flagf_get(states2 .. "/s")
+
+function blur_restore_func()
+    local state = ff(states .. "/hypr_blur_" .. s)
+    local blur_size = ff(states .. "/hypr_blur_size_" .. s)
+    local blur_passes = ff(states .. "/hypr_blur_passes_" .. s)
+    local blur_vibrancy = ff(states .. "/hypr_blur_vibrancy_" .. s)
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/blur.lua", string.format(
+        [[hl.config({
+    decoration = {
+        blur = {
+            enabled = %s,
+            size = %s,
+            passes = %s,
+            vibrancy = %s,
+        },
+    },
+    })]], state, blur_size, blur_passes, blur_vibrancy))
+    run_bg("notify-send -a Blur 'Blur' 'Restored'")
+    flagf_set(states2 .. "/blur_done", "1")
+end
+
+function blur_on_func()
+    tf(states .. "/hypr_blur_" .. s, "1")
+    local blur_size = ff(states .. "/hypr_blur_size_" .. s)
+    local blur_passes = ff(states .. "/hypr_blur_passes_" .. s)
+    local blur_vibrancy = ff(states .. "/hypr_blur_vibrancy_" .. s)
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/blur.lua", string.format(
+        [[hl.config({
+    decoration = {
+        blur = {
+            enabled = 1,
+            size = %s,
+            passes = %s,
+            vibrancy = %s,
+        },
+    },
+    })]], blur_size, blur_passes, blur_vibrancy))
+    run_bg("notify-send -a Blur 'Blur' 'Enabled'")
+end
+
+function blur_off_func()
+    tf(states .. "/hypr_blur_" .. s, "0")
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/blur.lua", [[hl.config({
+    decoration = {
+        blur = {
+            enabled = 0,
+        },
+    },
+    })]])
+    run_bg("notify-send -a Blur 'Blur' 'Disabled'")
+end
+
+function blur_toggle_func()
+    local state = tonumber(ff(states .. "/hypr_blur_" .. s))
+    if state == 0 then
+        blur_on_func()
+    else
+        blur_off_func()
+    end
+end
+
+function blur_reset_func()
+    tf(os.getenv("HOME") .. "/.config/hypr/luas/blur.lua", "")
+    run_bg("notify-send -a Blur 'Blur' 'Reset'")
+end
+
+function blur_cmd(cmd)
+    if cmd == "toggle" then
+        blur_toggle_func()
+    elseif cmd == "on" then
+        blur_on_func()
+    elseif cmd == "off" then
+        blur_off_func()
+    elseif cmd == "restore" then
+        blur_restore_func()
+    elseif cmd == "reset" then
+        blur_reset_func()
+    end
+end

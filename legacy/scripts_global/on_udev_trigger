@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+SCRIPT_DIR=${BASH_SOURCE[0]%/*}
+. $SCRIPT_DIR/main_body
+{
+on_udev_trigger_function >> "$SCRIPT_DIR/power_script.log" 2>&1
+} & # this must run in bg

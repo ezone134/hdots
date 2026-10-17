@@ -1,0 +1,93 @@
+#!/usr/bin/env luajit
+-- helper power_main_body
+
+function battery_pct()
+    local p = "?"
+    for _, d in ipairs(list_dir("/sys/class/power_supply")) do
+        if d:match("^BAT") then
+            local path = "/sys/class/power_supply/" .. d
+            if is_dir(path) then
+                p = ff(path .. "/capacity")
+                break
+            end
+        end
+    end
+    return p
+end
+
+function battery_state()
+    local s = "?"
+    for _, d in ipairs(list_dir("/sys/class/power_supply")) do
+        if d:match("^BAT") then
+            local path = "/sys/class/power_supply/" .. d
+            if is_dir(path) then
+                s = ff(path .. "/status")
+                break
+            end
+        end
+    end
+    return s
+end
+
+function ac_state()
+    local o = "?"
+    for _, d in ipairs(list_dir("/sys/class/power_supply")) do
+        local path = "/sys/class/power_supply/" .. d
+        if is_dir(path) then
+            local t = ff(path .. "/type")
+            if t == "Mains" then
+                o = ff(path .. "/online")
+                break
+            end
+        end
+    end
+    return o
+end
+
+function power_cmd(action)
+    if action == "battery" or action == "pct" or action == "percent" then
+        print(battery_pct() .. "%")
+    elseif action == "ac" then
+        print(ac_state())
+    elseif action == "state" then
+        print(battery_state())
+    elseif action == "status" then
+        print(string.format("battery: %s%%  %s  ac: %s", battery_pct(), battery_state(), ac_state()))
+    else
+        err("power: use status|battery|ac|state")
+    end
+end
+
+function session_cmd(action)
+    if action == "lock" then
+        print("Since called lock not syncing state files")
+        run_bg("notify-send 'lock is called'")
+    else
+        print("calling " .. sources .. "/sync_back_call")
+        run(sources .. "/sync_back_call")
+        run_bg("notify-send '" .. action .. " is called'")
+    end
+    if action == "lock" then
+        run("hyprlock 2>/dev/null || loginctl lock-session")
+    elseif action == "logout" then
+        run("loginctl terminate-user " .. shq(os.getenv("USER")) .. " 2>/dev/null || hyprctl dispatch exit 2>/dev/null || loginctl terminate-user " .. shq(os.getenv("USER")) .. " 2>/dev/null || pkill -u " .. shq(os.getenv("USER")) .. " Hyprland")
+    elseif action == "suspend" then
+        run("custom-sleep")
+    elseif action == "hibernate" then
+        run("systemctl hibernate")
+    elseif action == "reboot" then
+        run("systemctl reboot")
+    elseif action == "shutdown" then
+        run("systemctl poweroff")
+    else
+        err("session: use lock|logout|suspend|hibernate|reboot|shutdown")
+    end
+end
+
+function power_main_cmd(cmd, ...)
+    if cmd == "session" then
+        session_cmd(...)
+    else
+        power_cmd(cmd, ...)
+    end
+end

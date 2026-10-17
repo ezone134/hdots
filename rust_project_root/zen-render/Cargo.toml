@@ -1,0 +1,28 @@
+[package]
+name = "zen-render"
+version = "0.1.0"
+edition = "2021"
+description = "Shared zen renderers: EGL/GL and Vulkan backends for zen Wayland surfaces."
+license = "MIT"
+
+[lib]
+name = "zen_render"
+path = "src/lib.rs"
+
+[features]
+default = ["gl"]
+gl = ["dep:glow", "dep:egl", "dep:wayland-egl"]
+vk = ["dep:ash", "dep:naga"]
+
+[dependencies]
+glow = { version = "0.16", optional = true }
+egl = { version = "0.1", optional = true }
+wayland-egl = { version = "0.32", optional = true }
+ash = { version = "0.38", optional = true }
+naga = { version = "29", features = ["wgsl-in", "spv-out"], optional = true }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

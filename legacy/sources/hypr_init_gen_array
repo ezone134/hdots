@@ -1,0 +1,4 @@
+# these configs are generated each time hyprinit runs
+hypr_init_run_array=(
+$hdots/sources/udev_rule/power_rule:$hypr_global/99-power-source.rules
+)

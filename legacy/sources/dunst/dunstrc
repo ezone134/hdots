@@ -1,0 +1,61 @@
+[global]
+#    width = 300
+#    height = 500
+    origin = top-right
+    font = mono 12
+    background = "${bg}bf"
+    foreground = "$fg"
+    frame_color = "$border8"
+    frame_width = 2
+    corner_radius = 10
+    timeout = 5
+    notification_limit = 20
+    max_history_size = 50
+    progress_bar = true
+    progress_bar_foreground = "${acc_ec}"
+
+[urgency_low]
+    frame_color = "$border8"
+
+[urgency_normal]
+    frame_color = "$border8"
+
+[urgency_critical]
+    frame_color = "#ff5555"
+
+[category_inverted]
+    category = inverted
+    background = "$fg"
+    foreground = "$bg"
+
+[caps_on_notif]
+    appname = "caps_on_notif"
+    origin = center
+    background = "$bg"
+    foreground = "$fg"
+    frame_color = "#ff0000ff"
+    timeout = 0.65
+
+[caps_off_notif]
+    appname = "caps_off_notif"
+    origin = center
+    background = "$bg"
+    foreground = "$fg"
+    timeout = 0.65
+
+[caps_on_notif_alt]
+    appname = "caps_on_notif_alt"
+    origin = bottom-center
+    offset = 0x20
+    background = "$bg"
+    foreground = "$fg"
+    frame_color = "#ff0000ff"
+    timeout = 0.65
+
+[caps_off_notif_alt]
+    appname = "caps_off_notif_alt"
+    origin = bottom-center
+    offset = 0x20
+    background = "$bg"
+    foreground = "$fg"
+    timeout = 0.65

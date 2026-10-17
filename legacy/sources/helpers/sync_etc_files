@@ -1,0 +1,79 @@
+# -*- mode: sh -*-
+
+[[ -e $lock_files/etc_synced ]] && exit 0
+> $lock_files/etc_synced
+
+sync_it_file () {
+    mkdir -p "${r%/*}"
+	[[ -e $r ]] || {
+		< $l > $r 2>/dev/null && echo "Created NEW FILE, $l -> $r"
+		return 0
+	}
+    [[ "$(<$l)" = "$(<$r)" ]] || {
+        < $l > $r 2>/dev/null && echo "Updated, $l -> $r"
+	}
+}
+
+sync_it_dir () {
+:
+rsync -cr --inplace --no-whole-file $l/ $r/
+}
+
+sync_files_11 () {
+files_pairs=(
+    /etc/fstab:$hdots/system-tumbleweed/etc/fstab
+    /etc/group:$hdots/system-tumbleweed/etc/group
+    /etc/group-:$hdots/system-tumbleweed/etc/group-
+    /etc/tlp.conf:$hdots/system-tumbleweed/etc/tlp.conf
+    /etc/hosts:$hdots/system-tumbleweed/etc/hosts
+    /etc/host.conf:$hdots/system-tumbleweed/etc/host.conf
+    /etc/machine-id:$hdots/system-tumbleweed/etc/machine-id
+    /etc/hostname:$hdots/system-tumbleweed/etc/hostname
+    /usr/etc/sudoers:$hdots/system-tumbleweed/usr/etc/sudoers
+    /etc/sudoers:$hdots/system-tumbleweed/etc/sudoers
+    /etc/zypp/zypp.conf:$hdots/system-tumbleweed/etc/zypp/zypp.conf
+    /etc/zypp/zypper.conf:$hdots/system-tumbleweed/etc/zypp/zypper.conf
+    /etc/zypp/repos.d/oss.repo:$hdots/system-tumbleweed/etc/zypp/repos.d/oss.repo
+)
+
+for pair in ${files_pairs[@]}; do
+    l=${pair%%:*}
+    r=${pair##*:}
+    sync_it_file &
+done
+}
+
+sync_files_11 &  # call sync func
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sync_folders_11 () {
+folders_pairs=(
+    /etc/zypp/repos.d:$hdots/system-tumbleweed/etc/zypp/repos.d
+)
+for pair in ${folders_pairs[@]}; do
+    l=${pair%%:*}
+    r=${pair##*:}
+    mkdir -p $l
+    mkdir -p $r
+    sync_it_dir &
+done
+}
+echo "All etc files synced"

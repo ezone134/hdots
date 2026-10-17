@@ -1,0 +1,63 @@
+# -*- mode: sh -*-
+ ##"CaskaydiaCove Nerd Font Mono"  <- lke this  never use mono variant propo is fine
+nerd_fonts=(
+        "LiterationMono Nerd Font Propo"
+        "FantasqueSansMono Nerd Font"
+        "CaskaydiaCove Nerd Font"  # is great
+        "LiterationMono Nerd Font"
+        "Lilex Nerd Font"
+        "JetBrainsMono Nerd Font Propo"
+        "RobotoMono Nerd Font"
+        "Iosevka Nerd Font"
+        "CaskaydiaCove Nerd Font Propo"
+        "LiterationSerif Nerd Font Propo"
+        "LiterationSans Nerd Font"
+        "CaskaydiaMono Nerd Font"   # is great
+        "JetBrainsMono Nerd Font"
+        "LiterationSerif Nerd Font"
+        "LiterationSans Nerd Font Propo"
+        "CaskaydiaMono Nerd Font Propo"
+        "Lilex Nerd Font Propo"
+        "JetBrainsMonoNL Nerd Font"  # is great
+        "JetBrainsMonoNL Nerd Font Propo"
+        "Hurmit Nerd Font Propo"
+        "Hurmit Nerd Font"
+        "FiraCode Nerd Font"
+        "FiraMono Nerd Font Propo"
+
+
+        "MonaspiceNe Nerd Font Propo"
+        "MonaspiceXe Nerd Font"
+        "MonaspiceAr Nerd Font Propo"
+        "MonaspiceNe Nerd Font"  # is great  is main font
+        "MonaspiceAr Nerd Font"
+        "MonaspiceXe Nerd Font Propo"
+        "MonaspiceRn Nerd Font"
+        "MonaspiceRn Nerd Font Propo"
+        "MonaspiceKr Nerd Font Propo"
+        "MonaspiceKr Nerd Font"
+
+
+        "InconsolataGo Nerd Font"
+        "Inconsolata LGC Nerd Font"
+        "Inconsolata Nerd Font"
+
+        "CommitMono Nerd Font"   # is great
+        "BlexMono Nerd Font"   # is great
+        "GeistMono Nerd Font"  # is great
+
+        "AdwaitaMono Nerd Font"
+        "IntoneMono Nerd Font"  # is okish a bit off when mixed with text
+        "0xProto Nerd Font"  # is great okish
+
+        "Hack Nerd Font"  #bad
+        "IosevkaTerm Nerd Font"  # okish
+        "MartianMono Nerd Font"  #bad
+        "ComicShannsMono Nerd Font" #bad
+
+
+        "UbuntuMono Nerd Font"
+        "Ubuntu Nerd Font"
+        "UbuntuSans Nerd Font"
+        "UbuntuSansMono Nerd Font"
+)

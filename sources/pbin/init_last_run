@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+if [[ $1 == hypr_init ]]; then
+cp "/acc/data/p-user/Local State" "$HOME/.config/google-chrome/Local State"
+> "$HOME/.config/google-chrome/First Run"
+else
+rsync -c --inplace --no-whole-file "$HOME/.config/google-chrome/Local State" /acc/data/p-user/ &
+fi

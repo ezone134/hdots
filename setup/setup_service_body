@@ -1,0 +1,33 @@
+# -*- mode: sh -*-
+
+setup_systemd_serv() {
+    sudo install -m 755 "$SCRIPT_DIR/rd_run" /usr/local/bin/rd_run
+
+    sudo install -m 644 /dev/stdin /etc/systemd/system/rd.service <<EOF
+[Unit]
+Description=Root Loop - Persistent Wait
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/rd_run
+
+Restart=always
+RestartSec=30s
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl disable rd.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now rd.service
+
+    sudo mkdir -p /etc/systemd/logind.conf.d
+    sudo tee /etc/systemd/logind.conf.d/lid.conf >/dev/null <<'EOF'
+[Login]
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore
+EOF
+}

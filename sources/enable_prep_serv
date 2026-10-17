@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+prep_path=$(find -L /acc/cmn/sources -maxdepth 3 -name "prep" -print -quit 2>/dev/null)
+[[ -e $prep_path ]] && {
+sudo sh -c 'echo "[Unit]
+Description=Prep Service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=$1
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/prep.service
+systemctl daemon-reload
+systemctl disable prep
+systemctl enable prep' _ "/bin/bash -c '$prep_path'"
+
+cat /etc/systemd/system/prep.service
+}

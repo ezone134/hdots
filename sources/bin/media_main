@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- media_main — MPRIS (playerctl) CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/media_body")
+media_cmd(unpack(arg))

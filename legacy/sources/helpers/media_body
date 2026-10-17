@@ -1,0 +1,28 @@
+# -*- mode: sh -*-
+# media_body — functions for the media_main CLI: media
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- media (MPRIS) ------------------------------------------------------
+
+media_status() {
+    local st t
+    st="$(playerctl status 2>/dev/null)"
+    [[ -z "$st" ]] && { printf 'media:  no player\n'; return; }
+    t="$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null)"
+    [[ -z "$t" ]] && t='(no metadata)'
+    printf 'media:  %-5s %s\n' "$st" "$t"
+}
+
+media_cmd() {
+    case "${1:-status}" in
+        status|cur) media_status;;
+        play)       playerctl play;;
+        pause)      playerctl pause;;
+        play-pause|toggle) playerctl play-pause;;
+        next|n)     playerctl next;;
+        prev|previous|p) playerctl previous;;
+        stop)       playerctl stop;;
+        *)          err "media: use status|play|pause|next|prev|stop";;
+    esac
+}
+

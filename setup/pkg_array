@@ -1,0 +1,19 @@
+pkgs=(
+    inotify-tools
+    hyprlock
+    hypridle
+    wfl-recorder
+    udisks2
+    rsync
+    thunar
+    tumbler
+    sypper
+    mako
+    libnotify-tools
+    cliphist
+    bluetui
+    gvfs-backends
+    hyprland
+)
+        sudo zypper ref
+        sudo zypper in ${pkgs[@]}

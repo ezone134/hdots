@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+source "$hypr_sources/helpers/power_body"
+echo
+echo "Going to Shut Down..."
+sudo systemctl poweroff

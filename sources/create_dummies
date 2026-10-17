@@ -1,0 +1,36 @@
+#!/usr/bin/env luajit
+
+-- Directory and dummy file setup logic for Hyprland luas
+local home = os.getenv("HOME") or ""
+local luas_dir = rconf .. "/rconfig/hypr/luas"
+local config_luas = home .. "/.config/hypr/luas"
+
+if not is_dir(luas_dir) then
+    mkdir_p(luas_dir)
+end
+
+if not is_dir(config_luas) then
+    if is_symlink(config_luas) then
+        rm(config_luas)
+    else
+        mv(config_luas, config_luas .. "." .. tostring(os.time()))
+    end
+    symlink(luas_dir, config_luas)
+end
+
+touch(config_luas .. "/border.lua")
+touch(config_luas .. "/blur.lua")
+touch(config_luas .. "/shadow.lua")
+touch(config_luas .. "/opacity.lua")
+touch(config_luas .. "/general.lua")
+touch(config_luas .. "/shader.lua")
+
+local m_scl = ff(dots .. "/states/m_scl") or "1"
+local monitor_content = string.format([[hl.monitor({
+    output     = "",
+    mode       = "preferred",
+    position   = "auto",
+    scale      = "%s",
+})]], m_scl)
+
+tf(config_luas .. "/monitors.lua", monitor_content)

@@ -1,0 +1,28 @@
+[package]
+name = "zen-ai"
+version = "0.1.0"
+edition = "2021"
+description = "Offline/online voice AI assistant for the zen shell. Runs llama.cpp in-process, talks to master (sources/bin/master) to run every shell task."
+license = "MIT"
+
+[[bin]]
+name = "zen-ai"
+path = "src/main.rs"
+
+[dependencies]
+llama-cpp-2 = "0.1.159"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+which = "8"
+
+[profile.dev]
+# Same reasoning as zd/sp: opt-level 1 keeps iteration fast and runtime sane.
+opt-level = 1
+strip = "debuginfo"
+
+[profile.release]
+# llama.cpp inference dominates runtime; size is irrelevant here, speed is.
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

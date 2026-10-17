@@ -1,0 +1,65 @@
+# -*- mode: sh -*-
+
+(
+dir="$HOME/.config/hypr/shaders/saturations"
+[[ -e $dir/100.glsl ]] || {
+for i in {0..200}; do
+    int_part=$((i / 100))
+    dec_part=$((i % 100))
+    if [ $dec_part -lt 10 ]; then
+        amt="${int_part}.0${dec_part}"
+    else
+        amt="${int_part}.${dec_part}"
+    fi
+
+cat > "$dir/$i.glsl" <<EOF
+#version 300 es
+precision highp float;
+in vec2 v_texcoord;
+layout(location = 0) out vec4 fragColor;
+uniform sampler2D tex;
+
+void main() {
+    vec4 rgba = texture(tex, v_texcoord);
+    float luma = dot(rgba.rgb, vec3(0.2126, 0.7152, 0.0722));
+    vec3 desaturated = mix(vec3(luma), rgba.rgb, $amt);
+    fragColor = vec4(desaturated, rgba.a);
+}
+EOF
+done
+}
+) &
+
+(
+	gamma_dir="$HOME/.config/hypr/shaders/gamma"
+	[[ -e $gamma_dir/5.0.frag ]] || {
+	for n in {95..5..-5}; do
+    int_i=$((n / 10))
+    dec_i=$((n % 10))
+    i="${int_i}.${dec_i}"
+
+    val_num=$((100 - n))
+    if [ $val_num -lt 10 ]; then
+        val="0${val_num}"
+    else
+        val="${val_num}"
+    fi
+
+    FILENAME="$gamma_dir/${i}.frag"
+
+    cat <<EOF > "$FILENAME"
+#version 320 es
+precision mediump float;
+uniform sampler2D tex;
+in vec2 v_texcoord;
+out vec4 fragColor;
+
+void main() {
+    vec4 c = texture(tex, v_texcoord);
+    vec3 color = pow(max(c.rgb, 0.0), vec3(0.$val));
+    fragColor = vec4(color, c.a);
+}
+EOF
+done
+	}
+) &

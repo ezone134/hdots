@@ -1,0 +1,170 @@
+#!/usr/bin/env luajit
+-- helper theme_save_hex
+-- ported from bash sources/theme_save_hex
+-- pure Lua: no external binaries, no trailing newline on writes
+-- All individual states2 files are written via direct tf calls inside a bg_fn block;
+-- the monolithic JSON files are written LAST in the foreground via clean string formatting.
+
+dofile(sources .. "/hex_to_rgba")
+
+acc_ec8 = tostring(acc_ec) .. tostring(acc_alpha)
+acc8 = acc .. tostring(acc_alpha)
+gtk_acc = hex_to_rgba(acc8)
+bg8 = bg .. tostring(bg_alpha)
+fg8 = tostring(fg) .. "ff"
+
+if tonumber(gtk_app_bg_flag) ~= 1 then
+    bg_gtk = bg_bak
+end
+
+if tonumber(hyprland_border_flag) == 0 then
+    hlba = border8_bak
+else
+    hlba = border8
+end
+
+hlba = "rgba(" .. tostring(hlba):gsub("^#", "") .. ")"
+local hlbi_raw = tostring(bg) .. tostring(border_alpha)
+hlbi = "rgba(" .. hlbi_raw:gsub("^#", "") .. ")"
+
+-- Write all individual state files directly in the background via bg_fn
+bg_fn(function()
+    tf(states2 .. "/" .. m .. "bg", t_bg)
+    tf(states2 .. "/border", border)
+    tf(states2 .. "/border8", border8)
+    tf(states2 .. "/acc_ec", acc_ec)
+    tf(states2 .. "/sfg_ec", sfg_ec)
+    tf(states2 .. "/acc_ec8", acc_ec8)
+    tf(states2 .. "/acc", acc)
+    tf(states2 .. "/acc8", acc8)
+    tf(states2 .. "/acc_us", acc_us)
+    tf(states2 .. "/acc_hc", acc_hc)
+    tf(states2 .. "/acc_virgin", acc_virgin)
+    tf(states2 .. "/acc_virgin8", tostring(acc_virgin) .. tostring(acc_alpha))
+    tf(states2 .. "/bg", bg)
+    tf(states2 .. "/bg8", bg8)
+    tf(states2 .. "/bg_gtk", bg_gtk)
+    tf(states2 .. "/fg", fg)
+    tf(states2 .. "/fg8", fg8)
+    tf(states2 .. "/acc_alpha", acc_alpha)
+    tf(states2 .. "/border_alpha", border_alpha)
+    tf(states2 .. "/bg_alpha", bg_alpha)
+    tf(states2 .. "/bg_rgba", tostring(bg8):gsub("^#", ""))
+    tf(states2 .. "/bf", bf)
+    tf(states2 .. "/gtk_acc", gtk_acc)
+    tf(states2 .. "/sfg", sfg)
+    tf(states2 .. "/fg2", fg2)
+    tf(states2 .. "/fg3", fg3)
+    tf(states2 .. "/bg2", bg2)
+    tf(states2 .. "/bg3", bg3)
+    tf(states2 .. "/hover", hover)
+    tf(states2 .. "/focus", focus)
+    tf(states2 .. "/disabled", disabled)
+    tf(states2 .. "/success", success)
+    tf(states2 .. "/warning", warning)
+    tf(states2 .. "/danger", danger)
+    tf(states2 .. "/info", info)
+    tf(states2 .. "/series1", series1)
+    tf(states2 .. "/series2", series2)
+    tf(states2 .. "/series3", series3)
+    tf(states2 .. "/series4", series4)
+    tf(states2 .. "/series5", series5)
+    tf(states2 .. "/series6", series6)
+    tf(states2 .. "/cur_font", font_name)
+    tf(states2 .. "/cur_theme", theme_name)
+    tf(states2 .. "/cur_icon", icon_name)
+    tf(states2 .. "/cur_cursor", cursor_name)
+end)
+
+-- MONOLITHIC file (shell_vars.json)
+local shell_vars_content = string.format([[
+{
+  "fg": "%s",
+  "fg2": "%s",
+  "fg3": "%s",
+  "bg": "%s",
+  "bg2": "%s",
+  "bg3": "%s",
+  "acc": "%s",
+  "acc_us": "%s",
+  "acc_hc": "%s",
+  "acc_ec": "%s",
+  "sfg": "%s",
+  "sfg_ec": "%s",
+  "sfg_hc": "%s",
+  "sfg_us": "%s",
+  "border": "%s",
+  "hover": "%s",
+  "focus": "%s",
+  "disabled": "%s",
+  "success": "%s",
+  "warning": "%s",
+  "danger": "%s",
+  "info": "%s",
+  "series1": "%s",
+  "series2": "%s",
+  "series3": "%s",
+  "series4": "%s",
+  "series5": "%s",
+  "series6": "%s"
+}
+]],
+    fg, fg2, fg3,
+    bg, bg2, bg3,
+    acc, acc_us, acc_hc, acc_ec,
+    sfg, sfg_ec, sfg_hc, sfg_us,
+    border, hover, focus, disabled,
+    success, warning, danger, info,
+    series1, series2, series3, series4, series5, series6
+)
+
+tf(states2 .. "/shell_vars.json", shell_vars_content)
+
+-- JSON monolith (theme_vars.json)
+local theme_vars_content = string.format([[
+{
+  "s": "%s",
+  "m": "%s",
+  "sm": "%s",
+  "m_string": "%s",
+  "s_string": "%s",
+  "m_String": "%s",
+  "s_String": "%s",
+  "fg": "%s",
+  "fg2": "%s",
+  "fg3": "%s",
+  "bg": "%s",
+  "bg2": "%s",
+  "bg3": "%s",
+  "bg8": "%s",
+  "bf": "%s",
+  "acc": "%s",
+  "sfg": "%s",
+  "hover": "%s",
+  "focus": "%s",
+  "disabled": "%s",
+  "success": "%s",
+  "warning": "%s",
+  "danger": "%s",
+  "info": "%s",
+  "series1": "%s",
+  "series2": "%s",
+  "series3": "%s",
+  "series4": "%s",
+  "series5": "%s",
+  "series6": "%s"
+}
+]],
+    s, m, sm,
+    m_string, s_string, m_String, s_String,
+    fg, fg2, fg3,
+    bg, bg2, bg3,
+    bg8, bf,
+    acc, sfg,
+    hover, focus, disabled,
+    success, warning, danger, info,
+    series1, series2, series3,
+    series4, series5, series6
+)
+
+tf(states2 .. "/theme_vars.json", theme_vars_content)

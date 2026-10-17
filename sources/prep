@@ -1,0 +1,7 @@
+# -*- mode: sh -*-
+[[ $EUID == 0 && -f /etc/systemd/system/prep.service ]] && {
+> /tmp/prep_on
+SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
+. "$SCRIPT_DIR/pvars"
+boot_logic "$@"
+}

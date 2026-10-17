@@ -1,0 +1,2 @@
+// rofi launcher configuration — expanded from $states2 by rconfig_gen
+@theme "$rconfig/rofi/dmenu.rasi"

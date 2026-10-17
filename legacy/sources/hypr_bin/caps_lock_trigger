@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+. $hypr_global/qpid splash && pkill splash
+state=$(<$states2/caps_lock_state)
+new_state=$((1 - state))
+echo $new_state > $states2/caps_lock_state
+# Prefer the quickshell bar OSD toast (matches the shell's vol/mic/mute OSDs).
+
+on_cmd () {
+    . $hypr_sources/helpers/center_pop "CAPSLOCK" "ON" &
+}
+
+off_cmd () {
+    . $hypr_sources/helpers/center_pop "CAPSLOCK" "OFF" &
+}
+if ((new_state == 1)); then
+    on_cmd
+    else
+        off_cmd
+    fi
+
+{
+sleep 2
+path=$(<$states2/caps_lock_file_path)
+real_state=$(<$path)
+[[ $real_state == $new_state ]] || {
+if ((real_state == 1)); then
+    on_cmd
+    else
+        off_cmd
+    fi
+    echo $real_state > $states2/caps_lock_state
+}
+} &
+
+exit 0

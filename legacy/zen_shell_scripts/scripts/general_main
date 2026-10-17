@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+s=$(<$states2/s)
+
+[[ "$1" == reset ]] && {
+> $HOME/.config/hypr/configs/general.lua
+exit 0
+}
+
+gaps_in_val=$(<$states/gaps_in_${s})
+gaps_out_val=$(<$states/gaps_out_${s})
+rounding_val=$(<$states/rounding_${s})
+rounding_power_val=$(<$states/rounding_power_${s})
+border_size_val=$(<$states/border_size_${s})
+resize_on_border_val=$(<$states/resize_on_border_${s})
+allow_tearing_val=$(<$states/allow_tearing_${s})
+layout_val=$(<$states/layout_${s})
+
+
+echo "hl.config({
+general = {
+gaps_in = $gaps_in_val,
+gaps_out = $gaps_out_val,
+border_size = $border_size_val,
+resize_on_border = $resize_on_border_val,
+allow_tearing = $allow_tearing_val,
+layout = $layout_val,
+},
+decoration = {
+rounding = $rounding_val,
+rounding_power = $rounding_power_val,
+},
+})" > $HOME/.config/hypr/configs/general.lua
+
+echo 1 > $states2/general_done
+exit 0

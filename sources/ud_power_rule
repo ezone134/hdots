@@ -1,0 +1,2 @@
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ADP*", RUN+="$r_daemon/udev_run"
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ucsi-source-psy-*", RUN+="$r_daemon/udev_run"

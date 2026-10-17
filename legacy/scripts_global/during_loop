@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+fire_count=$(<$SCRIPT_DIR/fire_count)
+new_count=$((fire_count - 1))
+[[ $new_count -lt 0 ]] && new_count=0
+echo $new_count > $SCRIPT_DIR/fire_count
+
+[[ $(<$SCRIPT_DIR/flag_cpu) == 1 ]] && {
+    $SCRIPT_DIR/set_cpu_freqs
+    echo 0 > $SCRIPT_DIR/flag_cpu
+}
+
+  umount_counter=0
+  shopt -s nullglob
+
+  while [[ $umount_counter -lt 10 ]]; do
+      files=("$SCRIPT_DIR/disks_to_unmount_batch"/*)
+      [[ ${#files[@]} -eq 0 ]] && break
+
+      for file in "${files[@]}"; do
+          base_name="${file##*/}"
+          mount_point=/dev/$base_name
+                            if [[ "$base_name" =~ [0-9] ]]; then
+                                echo "$base_name contains a number."
+                                unmount_all=0
+                                if grep -qF "$mount_point" /proc/mounts; then
+                                    # Run the unmount sequence in the background
+                                    (
+                                        umount "$mount_point" || umount -l "$mount_point"
+                                        sleep 0.5
+                                        # Check again after the sleep to see if it worked
+                                        if ! grep -qF "$mount_point" /proc/mounts; then
+                                            rm -f "$file"
+                                        fi
+                                    ) &
+                                else
+                                    # File exists but is not mounted; clean it up
+                                    rm -f "$file"
+                                fi
+                            else
+                                unmount_all=1
+                                echo "$base_name does not contain a number."
+                                unmount_all=1
+                                                                echo "$base_name does not contain a number. Finding partitions in /proc/mounts..."
+
+                                                                # Use awk to find lines in /proc/mounts where the device
+                                                                # starts with /dev/$base_name followed by a number
+                                                                # This avoids matching /dev/sda when looking for sda, but catches sda1, sda2, etc.
+                                                                partitions=$(awk '$1 ~ /^\/dev\/'"$base_name"'[0-9]/ {print $1}' /proc/mounts)
+
+                                                                if [ -z "$partitions" ]; then
+                                                                    # No partitions found mounted
+                                                                    rm -f "$file"
+                                                                else
+                                                                    for part in $partitions; do
+                                                                        (
+                                                                            echo "Unmounting $part..."
+                                                                            umount "$part" || umount -l "$part"
+                                                                        ) &
+                                                                    done
+
+                                                                    # We don't remove the file yet; let the next loop
+                                                                    # iteration verify that all partitions are gone
+                                                                fi
+                                # here give me unmount all partition in $mount_point if /dev/sda then unmount all device mounted on /dev/sda
+                            fi
+
+      done
+
+      ((umount_counter++))
+      sleep 1 # Optional: wait a moment between batches
+  done
+chmod 777 $SCRIPT_DIR/fire_count $SCRIPT_DIR/set_cpu_freqs $SCRIPT_DIR/flag_disk_unmount 2>/dev/null
+echo hi_from_inside_loop > $SCRIPT_DIR/loop_is_running

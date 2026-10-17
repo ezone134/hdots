@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+pidof fuzzel && pkill fuzzel || fuzzel
+exit 0

@@ -1,0 +1,242 @@
+#!/usr/bin/env luajit
+-- helper brightness_body
+
+-- sorted so discovery is deterministic when more than one backlight is present
+function _bri_dir()
+    local entries = list_dir("/sys/class/backlight")
+    table.sort(entries)
+    for _, d in ipairs(entries) do
+        local path = "/sys/class/backlight/" .. d
+        if is_file(path .. "/brightness") and is_file(path .. "/max_brightness") then
+            return path
+        end
+    end
+    return nil
+end
+
+function bri_get()
+    local d = _bri_dir()
+    if not d then return 0 end
+    local cur = tonumber(ff(d .. "/brightness")) or 0
+    local max = tonumber(ff(d .. "/max_brightness")) or 1
+    if max <= 0 then max = 1 end
+    return math.floor(cur * 100 / max)
+end
+
+function bri_raw()
+    local d = _bri_dir()
+    if not d then return 0 end
+    return tonumber(ff(d .. "/brightness")) or 0
+end
+
+function bri_max()
+    local d = _bri_dir()
+    if not d then return 65535 end
+    return tonumber(ff(d .. "/max_brightness")) or 1
+end
+
+function bri_write(raw)
+    raw = tonumber(raw) or 0
+    local dir = _bri_dir()
+    if not dir then return false end
+    local max = tonumber(ff(dir .. "/max_brightness")) or 1
+    if max <= 0 then max = 1 end
+    if raw < 1 then raw = 1 end
+    if raw > max then raw = max end
+
+    local bright_path = dir .. "/brightness"
+    local f = io.open(bright_path, "w")
+    if f then f:write(tostring(raw) .. "\n"); f:close(); return true end
+
+    -- direct write denied (root / video group / polkit ACL): ask logind
+    if command_v("busctl") then
+        local dev = basename(dir)
+        return run("busctl call org.freedesktop.login1 /org/freedesktop/login1/session/auto org.freedesktop.login1.Session SetBrightness ssu backlight " .. shq(dev) .. " " .. tostring(raw)) and true or false
+    end
+    return false
+end
+
+-- HOW SOFT a FINE step is. On amdgpu_bl one write is a visible blink, and the
+-- binds are `repeating = true`, so holding a key is a stream of one-process
+-- one-write steps. A 1 % step blinking is very visible; a 5 % step is a
+-- deliberate jump, and coalescing it would only make the key feel dead (the
+-- first cut swallowed 9 of 10 presses at 5 %). So the settle window applies to
+-- the fine steps only, and anything larger lands immediately.
+--
+-- The panel is told over BRI_SETTLE seconds instead of being teleported: the GPU
+-- interpolates on its own between the two levels, so the user sees a ramp
+-- while the kernel only ever sees two values. BRI_SETTLE_SOFT is the "barely
+-- moves, never blinks" end. `BRI_SETTLE=0` restores the old one-write-per-press
+-- behaviour exactly.
+BRI_SETTLE      = tonumber(os.getenv("BRI_SETTLE") or 0.045)
+BRI_SETTLE_SOFT = 0.25
+-- above this step, no coalescing (percent)
+BRI_SETTLE_MAX  = 2
+
+-- every keypress is its own process, so the settle stamp lives in a state
+-- file, not a local: a local resets to 0 on every spawn and the window never
+-- throttles anything. MILLISECONDS via clock_gettime — os.time() only has
+-- second resolution, which can never gate a 0.045 s window.
+local _settle_file = states .. "/last_bri_write"
+local ok_clock, clock_gettime = pcall(function()
+    local ffi = require("ffi")
+    ffi.cdef[[
+struct timespec { long tv_sec; long tv_nsec; };
+int clock_gettime(int clk_id, struct timespec *tp);
+]]
+    local ts = ffi.new("struct timespec[1]")
+    return function()
+        ffi.C.clock_gettime(0, ts) -- CLOCK_REALTIME
+        return tonumber(ts[0].tv_sec) + tonumber(ts[0].tv_nsec) / 1e9
+    end
+end)
+
+function _now()
+    if ok_clock then return clock_gettime() end
+    return os.time()
+end
+
+function _set_settle(bri_value, step_pct)
+    local soft = os.getenv("BRI_SETTLE") == "soft"
+    local window = soft and BRI_SETTLE_SOFT or BRI_SETTLE
+    if window <= 0 or step_pct > BRI_SETTLE_MAX then return bri_write(bri_value) end
+    local last = tonumber(ff(_settle_file)) or 0
+    local now = _now()
+    if now - last < window then return false end
+    tf(_settle_file, string.format("%.6f", now))
+    return bri_write(bri_value)
+end
+
+function bri_step(sign, step)
+    step = tonumber(step) or 5
+    local max_val = bri_max()
+    local cur = bri_raw()
+    local raw = math.floor(max_val * step / 100)
+    if raw < 1 then raw = 1 end
+    local new
+    if sign == "+" then
+        new = cur + raw
+        if new > max_val then new = max_val end
+    else
+        new = cur - raw
+        if new < 1 then new = 1 end
+    end
+    _set_settle(new, step)
+end
+
+-- gamma above max backlight is owned by scr_main: it holds the level (1..19) in
+-- states/gamma_v and bakes it into $shaders/master.glsl. Only the level is read
+-- back here, to decide whether a down-press dims through gamma before touching
+-- backlight.
+function _gamma_get()
+    return tonumber(ff(states .. "/gamma_v")) or 0
+end
+
+function _gamma_apply(dir)
+    run("scr_main gamma-" .. dir)
+end
+
+-- gamma only counts while the screen actually has the shader up, and under
+-- scr_body's rule a non-zero gamma IS one of the three things that keeps it up
+-- -- so the level alone answers it, and there is no switch file left to disagree
+-- with. Level 0 is normal, so that goes to backlight instead.
+function _gamma_active()
+    return _gamma_get() > 0
+end
+
+function gamma_up_func()
+    _gamma_apply("up")
+end
+
+function gamma_down_func()
+    _gamma_apply("down")
+end
+
+function bri_up_func(step)
+    step = tonumber(step) or 5
+    local max_val = bri_max()
+    local cur = bri_raw()
+    if cur == max_val then
+        run_bg("notify-send -a Brightness -t 800 'Brightness' 'Max brightness -- tweaking gamma'")
+        gamma_up_func()
+        return
+    end
+    bri_step("+", step)
+end
+
+function bri_down_func(step)
+    step = tonumber(step) or 5
+    -- while a gamma shader is active, dim via gamma first (mirror of up)
+    if _gamma_active() then
+        gamma_down_func()
+        return
+    end
+    bri_step("-", step)
+end
+
+function bri_lazy_up_func()
+    local max_val = bri_max()
+    local cur = bri_raw()
+    if cur == max_val then
+        gamma_up_func()
+        return
+    end
+    bri_step("+", 1)
+    local p = bri_get()
+    run_bg(string.format("notify-send -a Brightness -u low -h int:value:%s -t 2000 -h string:x-canonical-private-synchronous:brightness 'Brightness' '%s%%'", p, p))
+end
+
+function bri_lazy_down_func()
+    if _gamma_active() then
+        gamma_down_func()
+        return
+    end
+    bri_step("-", 1)
+    local p = bri_get()
+    run_bg(string.format("notify-send -a Brightness -u low -h int:value:%s -t 2000 -h string:x-canonical-private-synchronous:brightness 'Brightness' '%s%%'", p, p))
+end
+
+function bri_cmd(action, arg2)
+    if action == nil or action == "" then action = "get" end
+    if action == "get" or action == "cur" then
+        print(bri_get() .. "%")
+    elseif action == "set" then
+        local pct = tonumber(arg2)
+        if not pct then err("bri set: requires a percentage N"); return end
+        -- an ABSOLUTE level, not a step: a profile restore or hypridle asking
+        -- for a specific brightness has to land immediately, so it bypasses the
+        -- settle window that only exists to soften key repeat
+        bri_write(math.floor(bri_max() * pct / 100))
+    elseif action == "up" then
+        bri_up_func(tonumber(arg2) or 5)
+    elseif action == "down" then
+        bri_down_func(tonumber(arg2) or 5)
+    elseif action == "lazy" then
+        local sub = arg2
+        if sub == "up" then bri_lazy_up_func()
+        elseif sub == "down" then bri_lazy_down_func()
+        else err("bri lazy: use up|down")
+        end
+    elseif action == "gamma" then
+        local sub = arg2
+        if sub == "up" then gamma_up_func()
+        elseif sub == "down" then gamma_down_func()
+        else err("bri gamma: use up|down")
+        end
+    elseif action == "save" or action == "restore" then
+        -- single-writer contract: the only save of the backlight level is the
+        -- one this script makes, so restore lands where the script left it.
+        -- brightnessctl's own -s/-r pair resurrects a level the script has
+        -- already moved, and that jump reads as a flicker.
+        -- save must run at DIM time (before the level changes), so a kill or
+        -- sleep in the dimmed state still restores the pre-dim level.
+        if action == "save" then
+            tf(states .. "/bri_saved", tostring(bri_raw()))
+        else
+            local v = tonumber(ff(states .. "/bri_saved"))
+            if v then bri_write(v) end
+        end
+    else
+        err("bri: use get|set N|up [N]|down [N]|lazy up|down|gamma up|down|save|restore")
+    end
+end

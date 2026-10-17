@@ -1,0 +1,1 @@
+/home/tmp/.config/hdots/wms/hyprland.lua

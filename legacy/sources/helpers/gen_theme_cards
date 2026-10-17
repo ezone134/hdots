@@ -1,0 +1,109 @@
+# -*- mode: sh -*-
+# we need bg, fg, acc, sfg, border only no other fancy vars
+. "$hypr_sources/helpers/theme_init"
+
+fetch_theme_names () {
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Trim leading whitespace to inspect the start of the line safely
+        trimmed="${line#"${line%%[![:space:]]*}"}"
+
+        # Skip empty lines or lines starting with '#'
+        [[ -z "$trimmed" || "$trimmed" == \#* ]] && continue
+
+        # Check if the line contains the array assignment operator '=('
+        if [[ "$line" == *'=('* ]]; then
+            # Extract everything before '=('
+            theme_name="${line%%=\(*}"
+
+            # Strip out any remaining whitespace or tabs around the name
+            theme_name="${theme_name//[[:space:]]/}"
+
+            # Output or process the extracted theme name
+            echo "$theme_name"
+        fi
+    done < "$hypr_sources/helpers/themes"
+}
+
+all_themes=(
+$(fetch_theme_names)
+)
+
+load_default_extras () {
+    sfg_d="#1a1a1e"
+    sfg_l="#f3f4f6"
+}
+
+# Fixed layout — every side block is 27 fields. Indices are 0-based array offsets.
+#   [0]=sort_index [1]=theme_mode [2]=extras
+#   dark side:   base=[3..14] (sfg_mode bg bg2 bg3 fg fg2 fg3 acc acc_hc acc_ec acc_us border),
+#                extras=[22] sfg_d, [23] sfg_l
+#   light side:  base=[30..41], extras=[49] sfg_d, [50] sfg_l
+load_first_base () {
+    sfg_mode="${ref[3]}"
+    bg="${ref[4]}"
+    fg="${ref[7]}"
+    acc="${ref[10]}"
+    border="${ref[14]}"
+}
+
+load_first_extras () {
+    sfg_d="${ref[22]}"
+    sfg_l="${ref[23]}"
+}
+
+load_light_base () {
+    sfg_mode="${ref[30]}"
+    bg="${ref[31]}"
+    fg="${ref[34]}"
+    acc="${ref[37]}"
+    border="${ref[41]}"
+}
+
+load_light_extras () {
+    sfg_d="${ref[49]}"
+    sfg_l="${ref[50]}"
+}
+
+generate_theme_json () {
+    printf '[\n'
+    local _first=1
+
+    for i in "${all_themes[@]}"; do
+        local -n ref="$i"
+        sort_index="${ref[0]}"
+        theme_mode="${ref[1]}"
+
+        if [[ $theme_mode != b ]]; then
+            load_first_base
+            load_first_extras
+
+            [[ $sfg_mode == d ]] && sfg_val=$sfg_d || sfg_val=$sfg_l
+
+            (( ! _first )) && printf ',\n'
+            _first=0
+            printf '{"name":"%s","dual":false,"dark":{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"},"light":null}' \
+                "$i" "$bg" "$fg" "$acc" "$sfg_val" "$border"
+        else
+            # dark side
+            load_first_base
+            load_first_extras
+            [[ $sfg_mode == d ]] && d_sfg=$sfg_d || d_sfg=$sfg_l
+            local d_bg=$bg d_fg=$fg d_acc=$acc d_border=$border d_sfg_val=$d_sfg
+
+            # light side (fixed +27 offset)
+            load_light_base
+            load_light_extras
+            [[ $sfg_mode == d ]] && l_sfg=$sfg_d || l_sfg=$sfg_l
+            local l_bg=$bg l_fg=$fg l_acc=$acc l_border=$border l_sfg_val=$l_sfg
+
+            (( ! _first )) && printf ',\n'
+            _first=0
+            printf '{"name":"%s","dual":true,"dark":{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"},"light":{"bg":"%s","fg":"%s","acc":"%s","sfg":"%s","border":"%s"}}' \
+                "$i" "$d_bg" "$d_fg" "$d_acc" "$d_sfg_val" "$d_border" "$l_bg" "$l_fg" "$l_acc" "$l_sfg_val" "$l_border"
+        fi
+    done
+
+    printf '\n]\n'
+} > "$states2/themes"
+
+generate_theme_json

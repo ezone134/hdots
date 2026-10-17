@@ -1,0 +1,85 @@
+-- helper hidle_body
+-- ported from bash sources/hidle_body
+-- Two callers: the `hi_main` wrapper, and theme_body_run, which SOURCES this
+-- file and calls `hi_restore_func()` in-process instead of spawning a binary.
+-- So: functions only, no top-level side effects.
+
+function hi_restore_func()
+    local kbo   = ff(states .. "/kbo") or ""
+    local sdim  = ff(states .. "/sdim") or ""
+    local soff  = ff(states .. "/soff") or ""
+    local slock = ff(states .. "/slock") or ""
+    local slp   = ff(states .. "/sleep") or ""
+
+    -- keyboard_id is the sysfs path of the kbd backlight, or "0" when the
+    -- machine has none — bash's `[[ $(<$states2/keyboard_id) == 0 ]]`. No
+    -- device, no listener: brightnessctl would be told to drive a path that
+    -- is not there. A missing file reads as "" (not "0"), so the block is
+    -- emitted exactly as bash emitted it.
+    local keyboard_block = ""
+    if ff(states2 .. "/keyboard_id") ~= "0" then
+        keyboard_block =
+            "listener {\n" ..
+            "timeout = " .. kbo .. "\n" ..
+            "on-timeout = brightnessctl -sd platform::kbd_backlight set 0\n" ..
+            "on-resume = brightnessctl -rd platform::kbd_backlight\n" ..
+            "}"
+    end
+
+    -- byte-exact with the bash `echo "…"` it replaces: leading newline, the
+    -- two blank lines that bracket $keyboard_block, and one trailing newline.
+    tf(rconfig .. "/hypr/hypridle.conf",
+        "\n" ..
+        "general {\n" ..
+        "    lock_cmd = pidof hyprlock || hyprlock\n" ..
+        "    before_sleep_cmd = custom-sleep\n" ..
+        "    after_sleep_cmd = hyprctl dispatch dpms on\n" ..
+        "}\n" ..
+        "\n" ..
+        keyboard_block .. "\n" ..
+        "\n" ..
+        "listener {\n" ..
+        "    timeout = " .. sdim .. "\n" ..
+        "    on-timeout = brightness_main save && brightness_main set 10\n" ..
+        "    on-resume = brightness_main restore\n" ..
+        "}\n" ..
+        "\n" ..
+        "listener {\n" ..
+        "    timeout = " .. soff .. "\n" ..
+        "    on-timeout = hyprctl dispatch 'hl.dsp.dpms({ action = \"disable\" })'\n" ..
+        "    on-resume = hyprctl dispatch 'hl.dsp.dpms({ action = \"enable\" })' && brightness_main restore && kill_launcher\n" ..
+        "}\n" ..
+        "\n" ..
+        "listener {\n" ..
+        "    timeout = " .. slock .. "\n" ..
+        "    on-timeout = loginctl lock-session\n" ..
+        "    on-resume = kill_launcher\n" ..
+        "}\n" ..
+        "\n" ..
+        "listener {\n" ..
+        "    timeout = " .. slp .. "\n" ..
+        "    on-timeout = custom-sleep\n" ..
+        "}\n")
+
+    -- hypridle reads its conf only at startup, so tell the daemon to restart
+    -- it for us — daemon/run_inside_loop owns the restart and clears this.
+    flagf_set(states2 .. "/restart_hidle", "1")
+end
+
+function hi_set_func(name, value) -- called like: hi_main set kbo 60
+    tf(states .. "/" .. tostring(name), tostring(value))
+    hi_restore_func()
+end
+
+function hi_cmd(...)
+    local a = { ... }
+    if a[1] == "set" then
+        hi_set_func(a[2], a[3])
+    elseif a[1] == "restore" then
+        hi_restore_func()
+    elseif a[1] == nil then
+        print("Usage: hi_main {set|restore} [variable] [value]")
+    else
+        print("Unknown command: " .. tostring(a[1]))
+    end
+end

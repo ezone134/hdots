@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=VSCodium
+Comment=Free/Libre Open Source Software Binaries of VS Code
+GenericName=Text Editor
+Exec=codium %F
+Icon=vscodium
+Type=Application
+StartupNotify=true
+StartupWMClass=VSCodium
+Categories=Utility;TextEditor;Development;IDE;
+MimeType=text/plain;inode/directory;application/x-code-workspace;
+Actions=new-empty-window;
+
+[Desktop Action new-empty-window]
+Name=New Empty Window
+Exec=codium --new-window %F
+Icon=vscodium

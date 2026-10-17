@@ -1,0 +1,6 @@
+#!/usr/bin/env luajit
+-- ws_main — Hyprland workspace CLI.
+sources = os.getenv("sources")
+dofile(sources .. "/utils")
+dofile(sources .. "/ws_body")
+ws_cmd(unpack(arg))

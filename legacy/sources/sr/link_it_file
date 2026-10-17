@@ -1,0 +1,3 @@
+# -*- mode: sh -*-
+. $hypr_sources/helpers/link_it_defs
+link_it_file_func $1 $2

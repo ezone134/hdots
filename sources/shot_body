@@ -1,0 +1,19 @@
+#!/usr/bin/env luajit
+-- helper shot_body
+
+function shot_cmd(action)
+    local dir = os.getenv("XDG_PICTURES_DIR") .. "/Screenshots"
+    mkdir_p(dir)
+    local f = dir .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".png"
+    if action == "full" then
+        run("grim " .. shq(f))
+    elseif action == "region" then
+        local coords = out("slurp 2>/dev/null")
+        run("grim -g " .. shq(coords) .. " " .. shq(f))
+    else
+        err("shot: use full|region")
+        return false
+    end
+    run("quickshell ipc call osd screenshot_toast " .. shq(basename(f)) .. " 2>/dev/null || true")
+    print("saved " .. f)
+end

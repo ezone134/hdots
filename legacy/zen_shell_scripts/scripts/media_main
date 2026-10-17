@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# media_main — MPRIS (playerctl) CLI. Was: qs-ctl media.
+set -u
+. "$hypr_sources/helpers/media_body"
+media_cmd "$@"

@@ -1,0 +1,83 @@
+# -*- mode: sh -*-
+
+extract_cmd() {
+    local file="$1"
+    [[ -z "$file" ]] && exit 1
+
+    local dir
+    dir="${file%/*}"
+    [[ "$dir" == "$file" ]] && dir="."
+
+    local name="${file##*/}"
+    local base="${name%.*}"
+
+    echo "Extracting...."
+    notify-send "Extractor" "Extracting $name…" &
+
+    # Fixed: Removed 'local' from the function definition
+    final_message() {
+        notify-send "Extractor" "All files extracted" &
+    }
+
+    # Handle AppImages or binaries using pattern matching
+    if [[ "$name" =~ \.AppImage$ ]] || [[ "$name" == "$base" ]]; then
+        if [[ -f "$dir/$name" ]]; then
+            chmod +x "$dir/$name" 2>/dev/null
+            (cd "$dir" && "./$name" --appimage-extract)
+            exit 0
+        fi
+    fi
+
+    # Extraction handling using case statement
+    case "$name" in
+        *.zip)
+            (cd "$dir" && unzip -q "$name" -d "$base")
+            final_message
+            ;;
+        *.tar)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && tar -xf "$name" -C "$base")
+            final_message
+            ;;
+        *.tar.gz | *.tgz)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && tar -xzf "$name" -C "$base")
+            final_message
+            ;;
+        *.tar.xz)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && tar -xJf "$name" -C "$base")
+            final_message
+            ;;
+        *.tar.bz2)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && tar -xjf "$name" -C "$base")
+            final_message
+            ;;
+        *.lz)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && lzip -dc "$name" > "$base/$base")
+            final_message
+            ;;
+        *.gz)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && gunzip -c "$name" > "$base/$base")
+            final_message
+            ;;
+        *.7z | *.apk | *.deb)
+            (cd "$dir" && 7z x "$name" "-o$base")
+            final_message
+            ;;
+        *.rar)
+            mkdir -p "$dir/$base"
+            (cd "$dir" && unrar x "$name" "$base/")
+            final_message
+            ;;
+        *)
+            notify-send "Extractor" "Unsupported file: $name" &
+            exit 1
+            ;;
+    esac
+
+    exit 0
+}

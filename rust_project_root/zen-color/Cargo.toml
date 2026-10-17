@@ -1,0 +1,16 @@
+[package]
+name = "zen-color"
+version = "0.1.0"
+edition = "2021"
+description = "Shared zen color primitives: hex/RGB/HSV parsing, blending, palette math."
+license = "MIT"
+
+[lib]
+name = "zen_color"
+path = "src/lib.rs"
+
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1
+strip = true

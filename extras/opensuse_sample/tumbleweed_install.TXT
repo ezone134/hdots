@@ -1,0 +1,86 @@
+- kernel-firmware-amdgpu is not installed install manually later
+
+- this is opensues virgin
+- all untouched even vim not installed just update and rsync to new location
+-
+-
+- install all these manually later
+
+bluetui brightnessctl cliphist foot fuse geany
+git
+glibc
+grub2-x86_64-efi
+gsettings-desktop-schemas
+hypridle
+hyprland
+hyprlock
+kernel-default
+kernel-firmware-amdgpu
+kernel-firmware-mediatek
+mako
+mousepad
+ncdu
+NetworkManager
+NetworkManager-tui
+nwg-look
+patterns-base-base
+pipewire
+pipewire-pulseaudio
+mate-polkit
+python313-pipx
+rofi
+rsync
+sudo
+swww
+sypper
+tar
+thunar
+ucode-amd
+unzip
+vim
+waybar
+wireplumber
+hyprsunset
+zip
+zypper
+
+
+
+# or in a list
+patterns-base-base  or zypper in --no-recommends -t pattern base  (#NO NEED OF THIS COMMAND) SEE BELOW TO INSTALL PATTERN
+
+mkdir -p /tmp/aajpt
+sudo zypper --installroot /tmp/aajpt in --no-recommends patterns-base-base zypper sypper NetworkManager  sudo shadow NetworkManager-tui kernel-default kernel-firmware-mediatek dracut
+passwd root
+useradd tw
+passwd tw
+# gen fstab
+
+
+sudo zypper --installroot /mnt/a3 in patterns-base-base zypper sypper NetworkManager  sudo shadow NetworkManager-tui kernel-default kernel-firmware-mediatek dracut kernel-firmware
+
+
+# install manually later or after chroot
+sudo zypper in --no-recommends libfuse2 iotop libnotify-tools libva-utils Mesa-libva ImageMagick bluetui brightnessctl cliphist foot fuse geany git grub2-x86_64-efi gsettings-desktop-schemas hypridle hyprland hyprlock kernel-firmware-amdgpu mako mousepad ncdu nwg-look pipewire pipewire-pulseaudio mate-polkit python313-pipx rofi-wayland rsync swww  tar thunar ucode-amd unzip vim waybar wireplumber hyprsunset zip tlp fastfetch udisks2 gvfs-backends tumbler imv
+systemctl enable NetworkManager tlp
+systemctl enable --user pipewire wireplumber
+sudo mkdir -p /boot/grub2
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# to backup installation
+
+sudo rsync -caAxXhHiv --inplace --no-whole-file /s /d
+
+
+
+
+
+# FOR TESTING ALL IN ONE
+mkdir -p /tmp/aajpt
+sudo zypper --installroot /tmp/aajpt in --no-recommends libfuse2 iotop libnotify-tools patterns-base-base zypper sypper NetworkManager  sudo shadow NetworkManager-tui kernel-default kernel-firmware-mediatek dracut libva-utils Mesa-libva ImageMagick bluetui brightnessctl cliphist foot fuse geany git grub2-x86_64-efi gsettings-desktop-schemas hypridle hyprland hyprlock kernel-firmware-amdgpu mako mousepad ncdu nwg-look pipewire pipewire-pulseaudio mate-polkit python313-pipx rofi-wayland rsync swww  tar thunar ucode-amd unzip vim waybar wireplumber hyprsunset zip tlp fastfetch udisks2 gvfs-backends tumbler imv
+
+
+
+
+# NEW ALL IN ONE LET NIX HANDLE OTHER ONLY THIS ZYPPER
+sudo zypper --installroot /tmp/aajpt in --no-recommends patterns-base-base zypper sypper NetworkManager NetworkManager-tui sudo shadow kernel-default kernel-firmware-mediatek kernel-firmware-amdgpu ucode-amd dracut libva-utils Mesa-libva grub2-x86_64-efi gsettings-desktop-schemas  hyprland pipewire pipewire-pulseaudio wireplumber mate-polkit thunar tlp udisks2 gvfs-backends tumbler fuse libfuse2

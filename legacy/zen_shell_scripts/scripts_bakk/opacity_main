@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+. $hypr_sources/helpers/opacity_body
+
+case $1 in
+toggle)
+    opacity_toggle_function
+    ;;
+on)
+    opacity_enable_function
+    ;;
+off)
+    opacity_disable_function
+;;
+restore)
+    opacity_restore_function
+    ;;
+reset)
+    opacity_reset_function
+    ;;
+esac

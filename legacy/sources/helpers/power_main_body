@@ -1,0 +1,83 @@
+# -*- mode: sh -*-
+# power_body — functions for the power_main CLI: power|session
+# Sourced by the matching *_main CLI (see scripts/).
+#
+## ---- power (battery / AC, pure sysfs) ------------------------------------
+
+battery_pct() {
+    local d p
+    p=?
+    for d in /sys/class/power_supply/BAT*; do
+        [[ -e "$d" ]] || continue
+        read -r p < "$d/capacity" 2>/dev/null || p=?
+        break
+    done
+    printf '%s\n' "$p"
+}
+
+battery_state() {
+    local d s
+    s=?
+    for d in /sys/class/power_supply/BAT*; do
+        [[ -e "$d" ]] || continue
+        read -r s < "$d/status" 2>/dev/null || s=?
+        break
+    done
+    printf '%s\n' "$s"
+}
+
+ac_state() {
+    local d t o
+    o=?
+    for d in /sys/class/power_supply/*; do
+        [[ -e "$d" ]] || continue
+        read -r t < "$d/type" 2>/dev/null || continue
+        [[ "$t" == Mains ]] || continue
+        read -r o < "$d/online" 2>/dev/null || o=?
+        break
+    done
+    printf '%s\n' "$o"
+}
+
+power_cmd() {
+    case "${1:-status}" in
+        battery|pct|percent) printf '%s%%\n' "$(battery_pct)";;
+        ac)                   printf '%s\n' "$(ac_state)";;
+        state)                printf '%s\n' "$(battery_state)";;
+        status) printf 'battery: %s%%  %s  ac: %s\n' "$(battery_pct)" "$(battery_state)" "$(ac_state)";;
+        *)       err "power: use status|battery|ac|state";;
+    esac
+}
+
+## ---- session (lock / power) ----------------------------------------------
+
+session_cmd() {
+    if [[ $1 == lock ]]; then
+    echo "Since called lock not syncing state files"
+    notify-send "lock is called" &
+    else
+        echo "calling $hypr_sources/helpers/sync_back_call"
+        $hypr_sources/helpers/sync_back_call # calling binary works but sourcing doensot work
+        # exit 0
+        notify-send "$1 is called" &
+
+    fi
+#    exit 0
+    case "${1:-lock}" in
+        # Lock through the shell's IPC (flips StateController.locked, which
+        # drives the full-screen WlSessionLock). If quickshell isn't running /
+        # can't be reached, fall back to hyprlock if installed, then to
+        # loginctl (systemd session lock) so Lock never silently no-ops.
+        lock)       hyprlock 2>/dev/null \
+                   || loginctl lock-session;;
+        logout)    loginctl terminate-user "$USER" 2>/dev/null \
+                   || hyprctl dispatch exit 2>/dev/null \
+                   || loginctl terminate-user "$USER" 2>/dev/null \
+                   || pkill -u "$USER" Hyprland;;
+        suspend)   custom-sleep;;  # custom script
+        hibernate) systemctl hibernate;;
+        reboot)    systemctl reboot;;
+        shutdown)  systemctl poweroff;;
+        *)         err "session: use lock|logout|suspend|hibernate|reboot|shutdown";;
+    esac
+}
